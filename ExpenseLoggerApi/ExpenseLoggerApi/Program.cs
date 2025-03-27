@@ -16,10 +16,10 @@ var jsonString = JsonHandler.ToJson(credentials);
 var app = builder.Build();
 
 var todosApi = app.MapGroup("/log-expense");
-todosApi.MapGet("/", async () =>
+todosApi.MapPut("/", async (string description, float amount, string category = "") =>
 {
     var sheetsLogger = new GoogleSheetsExpenseLogger(jsonString);
-    await sheetsLogger.LogExpense("Outros", "Lanche  2.1", 12.9);
+    await sheetsLogger.LogExpense(description, amount, category);
 
     return Results.Ok(new ResponseModel { Success = true });
 });

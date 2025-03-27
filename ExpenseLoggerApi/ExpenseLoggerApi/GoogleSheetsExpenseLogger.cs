@@ -12,6 +12,7 @@ class GoogleSheetsExpenseLogger
     private const string SpreadsheetId = "10KLvA6_aK992hVNB0PC9grsrhIZdrr2SdBctAKvNiqM";
     private const string SheetName = "expenses";
     private readonly SheetsService _service;
+    private readonly string[] _categories = ["Passagem", "Locomoção", "Hospedagem", "Mercado", "Comida", "Fun", "Outros"];
 
     public GoogleSheetsExpenseLogger(string credentialsJson)
     {
@@ -25,10 +26,14 @@ class GoogleSheetsExpenseLogger
         });
     }
 
-    public async Task LogExpense(string category, string description, double amount)
+    public async Task LogExpense(string description, double amount, string category)
     {
         const int startRow = 15; // Starting row for expenses
         const int searchColumn = 2; // Column B (2nd column)
+
+        if (!_categories.Contains(category))
+            category = "";
+
         var row = await FindLastExpenseRow(startRow, searchColumn);
 
         // Insert a new row at the found position
