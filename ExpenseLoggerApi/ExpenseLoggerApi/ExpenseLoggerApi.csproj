@@ -6,6 +6,11 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <InvariantGlobalization>true</InvariantGlobalization>
         <PublishAot>true</PublishAot>
+        <UserSecretsId>1c668b0f-a8a8-4b41-9f04-b1323480dc4d</UserSecretsId>
     </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Google.Apis.Sheets.v4" Version="1.69.0.3694" />
+    </ItemGroup>
 
 </Project>

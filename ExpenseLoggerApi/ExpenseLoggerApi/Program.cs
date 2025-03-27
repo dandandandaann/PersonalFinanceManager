@@ -1,35 +1,38 @@
 using System.Text.Json.Serialization;
+using ExpenseLoggerApi;
 
 var builder = WebApplication.CreateSlimBuilder(args);
-
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
 });
 
+var credentials = builder.Configuration.GetSection("credentials").Get<Dictionary<string, object>>();
+if (credentials is null)
+    throw new InvalidOperationException("Google credentials not found in configuration");
+
+var jsonString = JsonHandler.ToJson(credentials);
+
 var app = builder.Build();
 
-var sampleTodos = new Todo[]
+var todosApi = app.MapGroup("/log-expense");
+todosApi.MapGet("/", async () =>
 {
-    new(1, "Walk the dog"),
-    new(2, "Do the dishes", DateOnly.FromDateTime(DateTime.Now)),
-    new(3, "Do the laundry", DateOnly.FromDateTime(DateTime.Now.AddDays(1))),
-    new(4, "Clean the bathroom"),
-    new(5, "Clean the car", DateOnly.FromDateTime(DateTime.Now.AddDays(2)))
-};
+    var sheetsLogger = new GoogleSheetsExpenseLogger(jsonString);
+    await sheetsLogger.LogExpense("Outros", "Lanche  2.1", 12.9);
 
-var todosApi = app.MapGroup("/todos");
-todosApi.MapGet("/", () => sampleTodos);
-todosApi.MapGet("/{id}", (int id) =>
-    sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
-        ? Results.Ok(todo)
-        : Results.NotFound());
+    return Results.Ok(new ResponseModel { Success = true });
+});
 
 app.Run();
 
-public record Todo(int Id, string? Title, DateOnly? DueBy = null, bool IsComplete = false);
 
-[JsonSerializable(typeof(Todo[]))]
-internal partial class AppJsonSerializerContext : JsonSerializerContext
+public class ResponseModel
+{
+    public bool Success { get; set; }
+}
+
+[JsonSerializable(typeof(ResponseModel))]
+public partial class AppJsonSerializerContext : JsonSerializerContext
 {
 }
