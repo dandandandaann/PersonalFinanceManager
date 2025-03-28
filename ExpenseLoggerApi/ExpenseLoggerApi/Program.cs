@@ -10,11 +10,15 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 var apiKey = builder.Configuration["apikey"];
 if (apiKey is null)
-    throw new InvalidOperationException("Api key not found in configuration");
+    throw new InvalidOperationException($"{nameof(apiKey)} not found in configuration");
 
 var credentials = builder.Configuration.GetSection("credentials").Get<Dictionary<string, object>>();
 if (credentials is null)
-    throw new InvalidOperationException("Google credentials not found in configuration");
+    throw new InvalidOperationException($"{nameof(credentials)} not found in configuration");
+
+var spreadsheetId = builder.Configuration["spreadsheetId"];
+if (spreadsheetId is null)
+    throw new InvalidOperationException($"{nameof(spreadsheetId)} not found in configuration");
 
 var jsonString = JsonHandler.ToJson(credentials);
 
@@ -48,12 +52,13 @@ app.Use(async (context, next) =>
 
 app.UseRateLimiter();
 
+var sheetsLogger = new GoogleSheetsExpenseLogger(jsonString, spreadsheetId);
+
 var expenseLoggerApi = app.MapGroup("/log-expense");
 expenseLoggerApi.MapPut("/", async (string description, string amount, string category = "") =>
 {
     try
     {
-        var sheetsLogger = new GoogleSheetsExpenseLogger(jsonString);
         await sheetsLogger.LogExpense(description, amount, category);
     }
     catch (Exception e)

@@ -9,15 +9,16 @@ class GoogleSheetsExpenseLogger
 {
     private readonly string[] _scopes = [SheetsService.Scope.Spreadsheets];
     private const string ApplicationName = "Expense Logger";
-    private const string SpreadsheetId = "10KLvA6_aK992hVNB0PC9grsrhIZdrr2SdBctAKvNiqM";
-    private const string SheetName = "expenses";
+    private const string SheetName = "03-2025";
     private readonly SheetsService _service;
+    private readonly string _spreadsheetId;
 
     private readonly string[] _categories = // TODO: get category from secrets?
         ["Passagem", "Locomoção", "Hospedagem", "Mercado", "Comida", "Fun", "Outros"];
 
-    public GoogleSheetsExpenseLogger(string credentialsJson)
+    public GoogleSheetsExpenseLogger(string credentialsJson, string spreadsheetId)
     {
+        _spreadsheetId = spreadsheetId;
         using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(credentialsJson));
         var credential = GoogleCredential.FromStream(stream).CreateScoped(_scopes);
 
@@ -33,24 +34,26 @@ class GoogleSheetsExpenseLogger
         const int startRow = 15; // Starting row for expenses
         const int searchColumn = 2; // Column B (2nd column)
 
-        if (!float.TryParse(amount.Replace(',', '.'), out float floatAmount))
+        if (!double.TryParse(amount.Replace(',', '.'), out double doubleAmount))
             throw new ArgumentException("Invalid amount");
-        // var floatAmount = float.Parse(amount);
+        doubleAmount = Math.Round(doubleAmount, 2);
 
         if (!_categories.Contains(category))
             category = "";
 
+        int sheetId = GetSheetId(_spreadsheetId);
+
         var row = await FindLastExpenseRow(startRow, searchColumn);
 
         // Insert a new row at the found position
-        await InsertRow(row);
+        await InsertRow(row, sheetId);
 
         // Prepare data updates
         List<ValueRange> updates =
         [
             new() { Range = $"{SheetName}!B{row}", Values = Value(description) },
             new() { Range = $"{SheetName}!E{row}", Values = Value(category)},
-            new() { Range = $"{SheetName}!H{row}", Values = Value(amount) },
+            new() { Range = $"{SheetName}!H{row}", Values = Value(doubleAmount) },
             new()
             {
                 Range = $"{SheetName}!I{row}",
@@ -64,7 +67,7 @@ class GoogleSheetsExpenseLogger
             ValueInputOption = "USER_ENTERED"
         };
 
-        var updateRequest = _service.Spreadsheets.Values.BatchUpdate(requestBody, SpreadsheetId);
+        var updateRequest = _service.Spreadsheets.Values.BatchUpdate(requestBody, _spreadsheetId);
         await updateRequest.ExecuteAsync();
 
         Console.WriteLine($"Expense logged successfully in row {row}!");
@@ -75,7 +78,7 @@ class GoogleSheetsExpenseLogger
     private async Task<int> FindLastExpenseRow(int startRow, int columnIndex)
     {
         var range = $"{SheetName}!B{startRow}:B"; // Search column B from row 15 downward
-        var request = _service.Spreadsheets.Values.Get(SpreadsheetId, range);
+        var request = _service.Spreadsheets.Values.Get(_spreadsheetId, range);
         var response = await request.ExecuteAsync();
         var values = response.Values;
 
@@ -92,7 +95,7 @@ class GoogleSheetsExpenseLogger
         return startRow + values.Count;
     }
 
-    private async Task InsertRow(int row)
+    private async Task InsertRow(int row, int sheetId)
     {
         var requestBody = new Request
         {
@@ -100,7 +103,7 @@ class GoogleSheetsExpenseLogger
             {
                 Range = new DimensionRange
                 {
-                    SheetId = GetSheetId(),
+                    SheetId = sheetId,
                     Dimension = "ROWS",
                     StartIndex = row - 1,
                     EndIndex = row
@@ -109,13 +112,13 @@ class GoogleSheetsExpenseLogger
         };
 
         var batchRequest = new BatchUpdateSpreadsheetRequest { Requests = new List<Request> { requestBody } };
-        var request = _service.Spreadsheets.BatchUpdate(batchRequest, SpreadsheetId);
+        var request = _service.Spreadsheets.BatchUpdate(batchRequest, _spreadsheetId);
         await request.ExecuteAsync();
     }
 
-    private int GetSheetId()
+    private int GetSheetId(string spreadsheetId)
     {
-        var spreadsheet = _service.Spreadsheets.Get(SpreadsheetId).Execute();
+        var spreadsheet = _service.Spreadsheets.Get(spreadsheetId).Execute();
         var sheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == SheetName);
         return sheet?.Properties.SheetId ?? throw new Exception("Sheet not found!");
     }
