@@ -9,7 +9,6 @@ class GoogleSheetsExpenseLogger
 {
     private readonly string[] _scopes = [SheetsService.Scope.Spreadsheets];
     private const string ApplicationName = "Expense Logger";
-    private const string SheetName = "03-2025";
     private readonly SheetsService _service;
     private readonly string _spreadsheetId;
 
@@ -32,7 +31,9 @@ class GoogleSheetsExpenseLogger
     public async Task LogExpense(string description, string amount, string category)
     {
         const int startRow = 15; // Starting row for expenses
-        const int searchColumn = 2; // Column B (2nd column)
+        const string searchColumn = "B"; // 2nd column
+
+        string sheetName = DateTime.Now.ToString("MM-yyyy");
 
         if (!double.TryParse(amount.Replace(',', '.'), out double doubleAmount))
             throw new ArgumentException("Invalid amount");
@@ -41,9 +42,9 @@ class GoogleSheetsExpenseLogger
         if (!_categories.Contains(category))
             category = "";
 
-        int sheetId = GetSheetId(_spreadsheetId);
+        int sheetId = GetSheetId(_spreadsheetId, sheetName);
 
-        var row = await FindLastExpenseRow(startRow, searchColumn);
+        var row = await FindLastExpenseRow(sheetName, startRow, searchColumn);
 
         // Insert a new row at the found position
         await InsertRow(row, sheetId);
@@ -51,12 +52,12 @@ class GoogleSheetsExpenseLogger
         // Prepare data updates
         List<ValueRange> updates =
         [
-            new() { Range = $"{SheetName}!B{row}", Values = Value(description) },
-            new() { Range = $"{SheetName}!E{row}", Values = Value(category)},
-            new() { Range = $"{SheetName}!H{row}", Values = Value(doubleAmount) },
+            new() { Range = $"{sheetName}!B{row}", Values = Value(description) },
+            new() { Range = $"{sheetName}!E{row}", Values = Value(category)},
+            new() { Range = $"{sheetName}!H{row}", Values = Value(doubleAmount) },
             new()
             {
-                Range = $"{SheetName}!I{row}",
+                Range = $"{sheetName}!I{row}",
                 Values = Value($"=IF(ISBLANK(H{row}); 0; IF(ISBLANK(F{row}); H{row}; F{row}*H{row}))")
             }
         ];
@@ -75,9 +76,9 @@ class GoogleSheetsExpenseLogger
 
     private static List<IList<object>> Value(object value) => [new List<object> { value }];
 
-    private async Task<int> FindLastExpenseRow(int startRow, int columnIndex)
+    private async Task<int> FindLastExpenseRow(string sheetName, int startRow, string column)
     {
-        var range = $"{SheetName}!B{startRow}:B"; // Search column B from row 15 downward
+        var range = $"{sheetName}!{column}{startRow}:{column}"; // Search column B from row 15 downward
         var request = _service.Spreadsheets.Values.Get(_spreadsheetId, range);
         var response = await request.ExecuteAsync();
         var values = response.Values;
@@ -116,10 +117,10 @@ class GoogleSheetsExpenseLogger
         await request.ExecuteAsync();
     }
 
-    private int GetSheetId(string spreadsheetId)
+    private int GetSheetId(string spreadsheetId, string sheetName)
     {
         var spreadsheet = _service.Spreadsheets.Get(spreadsheetId).Execute();
-        var sheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == SheetName);
+        var sheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == sheetName);
         return sheet?.Properties.SheetId ?? throw new Exception("Sheet not found!");
     }
 }
