@@ -61,7 +61,7 @@ expenseLoggerApi.MapPut("/", async (string description, string amount, string ca
     {
         await sheetsLogger.LogExpense(description, amount, category);
     }
-    catch (Exception e)
+    catch
     {
         return Results.Ok(new ResponseModel { Success = false });
     }
