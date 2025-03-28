@@ -12,7 +12,9 @@ class GoogleSheetsExpenseLogger
     private const string SpreadsheetId = "10KLvA6_aK992hVNB0PC9grsrhIZdrr2SdBctAKvNiqM";
     private const string SheetName = "expenses";
     private readonly SheetsService _service;
-    private readonly string[] _categories = ["Passagem", "Locomoção", "Hospedagem", "Mercado", "Comida", "Fun", "Outros"];
+
+    private readonly string[] _categories = // TODO: get category from secrets?
+        ["Passagem", "Locomoção", "Hospedagem", "Mercado", "Comida", "Fun", "Outros"];
 
     public GoogleSheetsExpenseLogger(string credentialsJson)
     {
@@ -26,10 +28,14 @@ class GoogleSheetsExpenseLogger
         });
     }
 
-    public async Task LogExpense(string description, double amount, string category)
+    public async Task LogExpense(string description, string amount, string category)
     {
         const int startRow = 15; // Starting row for expenses
         const int searchColumn = 2; // Column B (2nd column)
+
+        if (!float.TryParse(amount.Replace(',', '.'), out float floatAmount))
+            throw new ArgumentException("Invalid amount");
+        // var floatAmount = float.Parse(amount);
 
         if (!_categories.Contains(category))
             category = "";
@@ -42,22 +48,13 @@ class GoogleSheetsExpenseLogger
         // Prepare data updates
         List<ValueRange> updates =
         [
-            new ValueRange
-            {
-                Range = $"{SheetName}!B{row}", Values = new List<IList<object>> { new List<object> { description } }
-            },
-
-            new ValueRange
-                { Range = $"{SheetName}!C{row}", Values = new List<IList<object>> { new List<object> { category } } },
-
-            new ValueRange
-                { Range = $"{SheetName}!H{row}", Values = new List<IList<object>> { new List<object> { amount } } },
-
-            new ValueRange
+            new() { Range = $"{SheetName}!B{row}", Values = Value(description) },
+            new() { Range = $"{SheetName}!E{row}", Values = Value(category)},
+            new() { Range = $"{SheetName}!H{row}", Values = Value(amount) },
+            new()
             {
                 Range = $"{SheetName}!I{row}",
-                Values = new List<IList<object>>
-                    { new List<object> { $"=IF(ISBLANK(H{row}); 0; IF(ISBLANK(F{row}); H{row}; F{row}*H{row}))" } }
+                Values = Value($"=IF(ISBLANK(H{row}); 0; IF(ISBLANK(F{row}); H{row}; F{row}*H{row}))")
             }
         ];
 
@@ -72,6 +69,8 @@ class GoogleSheetsExpenseLogger
 
         Console.WriteLine($"Expense logged successfully in row {row}!");
     }
+
+    private static List<IList<object>> Value(object value) => [new List<object> { value }];
 
     private async Task<int> FindLastExpenseRow(int startRow, int columnIndex)
     {

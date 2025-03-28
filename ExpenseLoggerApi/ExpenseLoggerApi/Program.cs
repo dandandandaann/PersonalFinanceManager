@@ -1,5 +1,6 @@
-using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using ExpenseLoggerApi;
+using ExpenseLoggerApi.Model;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -7,32 +8,60 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
 });
 
+var apiKey = builder.Configuration["apikey"];
+if (apiKey is null)
+    throw new InvalidOperationException("Api key not found in configuration");
+
 var credentials = builder.Configuration.GetSection("credentials").Get<Dictionary<string, object>>();
 if (credentials is null)
     throw new InvalidOperationException("Google credentials not found in configuration");
 
 var jsonString = JsonHandler.ToJson(credentials);
 
+var maxDailyRequest = builder.Configuration["maxDailyRequest"] ?? "20";
+
+// Add Rate Limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            apiKey,
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = int.Parse(maxDailyRequest), // Allow X requests
+                Window = TimeSpan.FromDays(1), // Per day
+            }));
+});
+
 var app = builder.Build();
 
-var todosApi = app.MapGroup("/log-expense");
-todosApi.MapPut("/", async (string description, float amount, string category = "") =>
+app.Use(async (context, next) =>
 {
-    var sheetsLogger = new GoogleSheetsExpenseLogger(jsonString);
-    await sheetsLogger.LogExpense(description, amount, category);
+    if (!context.Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != apiKey)
+    {
+        context.Response.StatusCode = 401;
+        await context.Response.WriteAsync("Unauthorized");
+        return;
+    }
+    await next();
+});
+
+app.UseRateLimiter();
+
+var expenseLoggerApi = app.MapGroup("/log-expense");
+expenseLoggerApi.MapPut("/", async (string description, string amount, string category = "") =>
+{
+    try
+    {
+        var sheetsLogger = new GoogleSheetsExpenseLogger(jsonString);
+        await sheetsLogger.LogExpense(description, amount, category);
+    }
+    catch (Exception e)
+    {
+        return Results.Ok(new ResponseModel { Success = false });
+    }
 
     return Results.Ok(new ResponseModel { Success = true });
 });
 
 app.Run();
-
-
-public class ResponseModel
-{
-    public bool Success { get; set; }
-}
-
-[JsonSerializable(typeof(ResponseModel))]
-public partial class AppJsonSerializerContext : JsonSerializerContext
-{
-}

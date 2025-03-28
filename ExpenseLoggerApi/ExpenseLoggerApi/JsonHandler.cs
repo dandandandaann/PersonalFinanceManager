@@ -12,7 +12,7 @@ public static class JsonHandler
 
         foreach (var kvp in dict)
         {
-            string value = kvp.Value is string ? $"\"{kvp.Value}\"" : kvp.Value.ToString();
+            string? value = kvp.Value is string ? $"\"{kvp.Value}\"" : kvp.Value.ToString();
             sb.AppendLine($"{indent}    \"{kvp.Key}\": {value},");
         }
 

@@ -11,6 +11,7 @@
 
     <ItemGroup>
       <PackageReference Include="Google.Apis.Sheets.v4" Version="1.69.0.3694" />
+      <PackageReference Include="Microsoft.AspNetCore.RateLimiting" Version="7.0.0-rc.2.22476.2" />
     </ItemGroup>
 
 </Project>
