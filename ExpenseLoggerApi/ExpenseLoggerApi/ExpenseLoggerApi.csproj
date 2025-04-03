@@ -5,13 +5,20 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <InvariantGlobalization>true</InvariantGlobalization>
-        <PublishAot>true</PublishAot>
         <UserSecretsId>1c668b0f-a8a8-4b41-9f04-b1323480dc4d</UserSecretsId>
+        <PublishAot>true</PublishAot>
+        <TrimMode>partial</TrimMode>
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.7.4" />
+      <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
       <PackageReference Include="Google.Apis.Sheets.v4" Version="1.69.0.3694" />
       <PackageReference Include="Microsoft.AspNetCore.RateLimiting" Version="7.0.0-rc.2.22476.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <TrimmerRootAssembly Include="Newtonsoft.Json" />
     </ItemGroup>
 
 </Project>

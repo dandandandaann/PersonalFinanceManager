@@ -1,26 +1,21 @@
 using System.Threading.RateLimiting;
 using ExpenseLoggerApi;
 using ExpenseLoggerApi.Model;
+using Amazon.Lambda.Serialization.SystemTextJson;
 
 var builder = WebApplication.CreateSlimBuilder(args);
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
-});
 
-var apiKey = builder.Configuration["apikey"];
-if (apiKey is null)
-    throw new InvalidOperationException($"{nameof(apiKey)} not found in configuration");
+var googleApiKey = builder.Configuration["googleApiKey"];
+if (googleApiKey is null)
+    throw new InvalidOperationException($"{nameof(googleApiKey)} not found in configuration");
 
-var credentials = builder.Configuration.GetSection("credentials").Get<Dictionary<string, object>>();
-if (credentials is null)
-    throw new InvalidOperationException($"{nameof(credentials)} not found in configuration");
+var googleCredentials = builder.Configuration["credentials"];
+if (googleCredentials is null)
+    throw new InvalidOperationException($"{nameof(googleCredentials)} not found in configuration");
 
 var spreadsheetId = builder.Configuration["spreadsheetId"];
 if (spreadsheetId is null)
     throw new InvalidOperationException($"{nameof(spreadsheetId)} not found in configuration");
-
-var jsonString = JsonHandler.ToJson(credentials);
 
 var maxDailyRequest = builder.Configuration["maxDailyRequest"] ?? "20";
 
@@ -29,7 +24,7 @@ builder.Services.AddRateLimiter(options =>
 {
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
-            apiKey,
+            googleApiKey,
             _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = int.Parse(maxDailyRequest), // Allow X requests
@@ -37,32 +32,48 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
+});
+
+#pragma warning disable IL2026
+builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi, options =>
+{
+    options.Serializer = new SourceGeneratorLambdaJsonSerializer<AppJsonSerializerContext>();
+});
+#pragma warning restore IL2026
+
 var app = builder.Build();
+
+app.Logger.LogInformation($"Creating GoogleSheetsExpenseLogger with spreadsheetId '{spreadsheetId}'");
+var sheetsLogger = new GoogleSheetsExpenseLogger(googleCredentials, spreadsheetId, app.Logger);
 
 app.Use(async (context, next) =>
 {
-    if (!context.Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != apiKey)
+    if (!context.Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != googleApiKey)
     {
         context.Response.StatusCode = 401;
         await context.Response.WriteAsync("Unauthorized");
         return;
     }
+
     await next();
 });
 
 app.UseRateLimiter();
 
-var sheetsLogger = new GoogleSheetsExpenseLogger(jsonString, spreadsheetId);
+app.MapGet("", () => "Hello world!");
 
-var expenseLoggerApi = app.MapGroup("/log-expense");
-expenseLoggerApi.MapPut("/", async (string description, string amount, string category = "") =>
+app.MapPut("/log-expense", async (string description, string amount, string category = "") =>
 {
     try
     {
         await sheetsLogger.LogExpense(description, amount, category);
     }
-    catch
+    catch (Exception ex)
     {
+        app.Logger.LogError("Failed to log expense. Exception: {exception}", ex);
         return Results.Ok(new ResponseModel { Success = false });
     }
 
