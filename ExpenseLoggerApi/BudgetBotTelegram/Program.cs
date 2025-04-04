@@ -1,0 +1,50 @@
+using BudgetBotTelegram;
+using BudgetBotTelegram.Model;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.ConfigureTelegramBot<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt => opt.SerializerOptions);
+
+// 1. Bind Bot configuration
+var botConfigurationSection = builder.Configuration.GetSection(BotConfiguration.Configuration);
+builder.Services.Configure<BotConfiguration>(botConfigurationSection);
+// Register typed HttpClient directly (optional, but good practice if you need custom HttpClient settings)
+builder.Services.AddHttpClient("telegram_bot_client")
+    .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
+    {
+        var botConfig = sp.GetRequiredService<IOptions<BotConfiguration>>().Value;
+        TelegramBotClientOptions options = new(botConfig.Token);
+        return new TelegramBotClient(options, httpClient);
+    })
+    .SetHandlerLifetime(TimeSpan.FromMinutes(5)); // Configure lifetime as needed
+
+// 2. Bind Expense Logger API configuration
+var expenseLoggerApiSection = builder.Configuration.GetSection(ExpenseLoggerApiOptions.Configuration);
+builder.Services.Configure<ExpenseLoggerApiOptions>(expenseLoggerApiSection);
+
+// 3. Register Expense Logger API Client
+builder.Services.AddHttpClient<ExpenseLoggerApiClient>();
+
+// Register the background service that sets the webhook
+builder.Services.AddHostedService<ConfigureWebhook>();
+
+// Add services for handling updates (optional, can be expanded later)
+builder.Services.AddScoped<UpdateHandler>(); // Example handler service
+
+var app = builder.Build();
+
+// Configure the webhook endpoint
+app.MapPost("/webhook", async ([FromBody] Update update, [FromServices] UpdateHandler updateHandler, CancellationToken cancellationToken) =>
+{
+    await updateHandler.HandleUpdateAsync(update, cancellationToken);
+    return Results.Ok(); // Always return OK to Telegram quickly
+});
+
+// Optional: Map a root endpoint for basic checks
+app.MapGet("/", () => "Telegram Bot Webhook receiver is running!");
+
+app.Run();
