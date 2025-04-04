@@ -4,7 +4,10 @@ using Telegram.Bot.Types.Enums;
 
 namespace BudgetBotTelegram;
 
-public class UpdateHandler(ITelegramBotClient botClient, ILogger<UpdateHandler> logger)
+public class UpdateHandler(
+    ITelegramBotClient botClient,
+    ExpenseLoggerApiClient expenseApiClient,
+    ILogger<UpdateHandler> logger)
 {
     public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken)
     {
@@ -33,16 +36,38 @@ public class UpdateHandler(ITelegramBotClient botClient, ILogger<UpdateHandler> 
         if (message.Text is not { } messageText) return;
 
         var chatId = message.Chat.Id;
+        string replyMessage, logMessage;
         logger.LogInformation("Received '{MessageText}' message in chat {ChatId}.", messageText, chatId);
 
+        switch (messageText)
+        {
+            case { } when messageText.StartsWith("log "):
+            case { } when messageText.StartsWith("/log "):
 
-        // TODO: add logic
+                try
+                {
+                    var expense = await expenseApiClient.LogExpenseAsync(messageText, cancellationToken);
+                    replyMessage = $"Logged Expense - {expense}";
+                    logMessage = "Logged expense message sent with Id: {SentMessageId}";
+                }
+                catch (ArgumentException e)
+                {
+                    replyMessage = e.Message;
+                    logMessage = $"Argument Exception: {e.Message}. MessageId: {{MessageId}}";
+                }
+                break;
+
+            default:
+                replyMessage = "You said:\n" + messageText;
+                logMessage = "Echo message sent with Id: {SentMessageId}";
+                break;
+        }
 
         var sentMessage = await botClient.SendMessage(
             chatId: chatId,
-            text: "You said:\n" + messageText,
+            text: replyMessage,
             cancellationToken: cancellationToken);
-        logger.LogInformation("Echo message sent with Id: {SentMessageId}", sentMessage.MessageId);
+        logger.LogInformation(logMessage, sentMessage.MessageId);
     }
 
     private async Task HandleCallbackQueryAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken)
@@ -52,10 +77,10 @@ public class UpdateHandler(ITelegramBotClient botClient, ILogger<UpdateHandler> 
         // Acknowledge the callback query is required
         await botClient.AnswerCallbackQuery(
             callbackQueryId: callbackQuery.Id,
-            text: $"Received {callbackQuery.Data}", // Optional message shown to user
+            text: $"Received {callbackQuery.Data}",
             cancellationToken: cancellationToken);
 
-        // TODO: Add logic to handle the callback query data
+        // Add logic to handle the callback query data
         // Example: Modify the message or perform an action based on callbackQuery.Data
     }
 
@@ -67,7 +92,7 @@ public class UpdateHandler(ITelegramBotClient botClient, ILogger<UpdateHandler> 
         {
             var sentMessage = await botClient.SendMessage(
                 chatId: update.Message.Chat.Id,
-                text: "That's unknown to me.",
+                text: $"I can't handle message type {update.Type}.",
                 cancellationToken: cancellationToken);
             logger.LogInformation("Echo message sent with Id: {SentMessageId}", sentMessage.MessageId);
         }

@@ -1,33 +1,65 @@
 using BudgetBotTelegram.Model;
 using Microsoft.Extensions.Options;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
 
 namespace BudgetBotTelegram
 {
     public class ExpenseLoggerApiClient
     {
         private readonly HttpClient _httpClient;
-        private readonly ExpenseLoggerApiOptions _options;
+        private readonly ILogger<ExpenseLoggerApiClient> _logger;
 
-        public ExpenseLoggerApiClient(HttpClient httpClient, IOptions<ExpenseLoggerApiOptions> options)
+        public ExpenseLoggerApiClient(HttpClient httpClient, IOptions<ExpenseLoggerApiOptions> options,
+            ILogger<ExpenseLoggerApiClient> logger)
         {
             _httpClient = httpClient;
-            _options = options.Value;
+            _logger = logger;
+
+            if (options.Value is not { } apiOptions ||
+                string.IsNullOrEmpty(apiOptions.Url) ||
+                string.IsNullOrEmpty(apiOptions.Key))
+                throw new ArgumentNullException(nameof(apiOptions));
 
             // Configure HttpClient base address and default headers
-            _httpClient.BaseAddress = new Uri(_options.Url);
-            _httpClient.DefaultRequestHeaders.Add("x-api-key", _options.Key);
+            _httpClient.BaseAddress = new Uri(apiOptions.Url);
+            _httpClient.DefaultRequestHeaders.Add("x-api-key", apiOptions.Key);
         }
 
-        public async Task LogExpenseAsync(string description, string amount, string category = "", CancellationToken cancellationToken = default)
+        public async Task<Expense> LogExpenseAsync(string message, CancellationToken cancellationToken)
+        {
+            var messageSplit = message.Split(' ');
+            if (messageSplit.Length < 3)
+            {
+                throw new ArgumentException("Invalid message format for logging expense.", nameof(message));
+            }
+
+            if (!decimal.TryParse(messageSplit[2], out var amount))
+            {
+                // Handle error: invalid amount format
+                throw new ArgumentException("Invalid amount format.", nameof(message));
+            }
+
+            var expense = new Expense
+            {
+                Description = messageSplit[1],
+                Amount = amount,
+                Category = messageSplit.Length >= 4 ? messageSplit[3] : string.Empty
+            };
+
+            await LogExpenseAsync(expense, cancellationToken);
+
+            return expense;
+        }
+
+        public async Task LogExpenseAsync(Expense expense, CancellationToken cancellationToken = default)
         {
             // Construct the URL with query parameters
             var uriBuilder = new UriBuilder(_httpClient.BaseAddress!)
             {
                 Path = "/log-expense",
-                Query = $"description={Uri.EscapeDataString(description)}&amount={Uri.EscapeDataString(amount)}&category={Uri.EscapeDataString(category)}"
+                Query =
+                    $"description={Uri.EscapeDataString(expense.Description)}" +
+                    $"&amount={expense.Amount}" +
+                    $"&category={Uri.EscapeDataString(expense.Category)}"
             };
 
             // Create the request message
@@ -37,10 +69,9 @@ namespace BudgetBotTelegram
             var response = await _httpClient.SendAsync(request, cancellationToken);
 
             // Ensure the request was successful
-            response.EnsureSuccessStatusCode();
+            response.EnsureSuccessStatusCode(); // TODO: better error handling and return bool result?
 
-            // Optionally, you could read and process the response body if needed
-            // var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogInformation($"Log expense request sent for {expense.Description}. Response: {response.StatusCode}");
         }
     }
-} 
+}
