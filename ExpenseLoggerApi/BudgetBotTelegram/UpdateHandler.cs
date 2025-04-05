@@ -41,8 +41,8 @@ public class UpdateHandler(
 
         switch (messageText)
         {
-            case { } when messageText.StartsWith("log "):
-            case { } when messageText.StartsWith("/log "):
+            case { } when messageText.ToLower().StartsWith("log "):
+            case { } when messageText.ToLower().StartsWith("/log "):
 
                 try
                 {

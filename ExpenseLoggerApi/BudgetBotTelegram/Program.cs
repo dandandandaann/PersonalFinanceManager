@@ -1,3 +1,4 @@
+using Amazon.Lambda.Serialization.SystemTextJson;
 using BudgetBotTelegram;
 using BudgetBotTelegram.Model;
 using Microsoft.AspNetCore.Mvc;
@@ -35,6 +36,13 @@ builder.Services.AddHostedService<ConfigureWebhook>();
 // Add services for handling updates (optional, can be expanded later)
 builder.Services.AddScoped<UpdateHandler>(); // Example handler service
 
+#pragma warning disable IL2026
+builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi, options =>
+{
+    options.Serializer = new SourceGeneratorLambdaJsonSerializer<AppJsonSerializerContext>();
+});
+#pragma warning restore IL2026
+
 var app = builder.Build();
 
 // Configure the webhook endpoint
@@ -46,5 +54,7 @@ app.MapPost("/webhook", async ([FromBody] Update update, [FromServices] UpdateHa
 
 // Optional: Map a root endpoint for basic checks
 app.MapGet("/", () => "Telegram Bot Webhook receiver is running!");
+
+// TODO: when not in development only allow calls from telegram
 
 app.Run();

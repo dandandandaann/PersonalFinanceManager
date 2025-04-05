@@ -32,7 +32,7 @@ namespace BudgetBotTelegram
                 throw new ArgumentException("Invalid message format for logging expense.", nameof(message));
             }
 
-            if (!decimal.TryParse(messageSplit[2], out var amount))
+            if (!decimal.TryParse(messageSplit[2], out _))
             {
                 // Handle error: invalid amount format
                 throw new ArgumentException("Invalid amount format.", nameof(message));
@@ -41,7 +41,7 @@ namespace BudgetBotTelegram
             var expense = new Expense
             {
                 Description = messageSplit[1],
-                Amount = amount,
+                Amount = messageSplit[2],
                 Category = messageSplit.Length >= 4 ? messageSplit[3] : string.Empty
             };
 
@@ -58,7 +58,7 @@ namespace BudgetBotTelegram
                 Path = "/log-expense",
                 Query =
                     $"description={Uri.EscapeDataString(expense.Description)}" +
-                    $"&amount={expense.Amount}" +
+                    $"&amount={Uri.EscapeDataString(expense.Amount)}" +
                     $"&category={Uri.EscapeDataString(expense.Category)}"
             };
 
