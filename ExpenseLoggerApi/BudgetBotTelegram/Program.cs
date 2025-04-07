@@ -1,5 +1,8 @@
 using Amazon.Lambda.Serialization.SystemTextJson;
 using BudgetBotTelegram;
+using BudgetBotTelegram.ApiClient;
+using BudgetBotTelegram.Handler;
+using BudgetBotTelegram.Handler.Command;
 using BudgetBotTelegram.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -20,8 +23,8 @@ builder.Services.AddHttpClient("telegram_bot_client")
         var botConfig = sp.GetRequiredService<IOptions<BotConfiguration>>().Value;
         TelegramBotClientOptions options = new(botConfig.Token);
         return new TelegramBotClient(options, httpClient);
-    })
-    .SetHandlerLifetime(TimeSpan.FromMinutes(5)); // Configure lifetime as needed
+    });
+    // .SetHandlerLifetime(TimeSpan.FromMinutes(5)); // Configure lifetime as needed
 
 // 2. Bind Expense Logger API configuration
 var expenseLoggerApiSection = builder.Configuration.GetSection(ExpenseLoggerApiOptions.Configuration);
@@ -33,8 +36,15 @@ builder.Services.AddHttpClient<ExpenseLoggerApiClient>();
 // Register the background service that sets the webhook
 builder.Services.AddHostedService<ConfigureWebhook>();
 
-// Add services for handling updates (optional, can be expanded later)
-builder.Services.AddScoped<UpdateHandler>(); // Example handler service
+builder.Services.AddSingleton<SenderGateway>();
+
+// Register handlers
+builder.Services.AddScoped<UpdateHandler>();
+builder.Services.AddScoped<MessageHandler>();
+builder.Services.AddScoped<CommandHandler>();
+
+// Register commands
+builder.Services.AddScoped<LogCommand>();
 
 #pragma warning disable IL2026
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi, options =>

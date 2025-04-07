@@ -2,19 +2,20 @@
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace BudgetBotTelegram;
+namespace BudgetBotTelegram.Handler;
 
 public class UpdateHandler(
     ITelegramBotClient botClient,
-    ExpenseLoggerApiClient expenseApiClient,
+    MessageHandler messageHandler,
     ILogger<UpdateHandler> logger)
 {
+
     public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken)
     {
         var handler = update.Type switch
         {
             // Handle different update types
-            UpdateType.Message => HandleMessageAsync(update.Message!, cancellationToken),
+            UpdateType.Message => messageHandler.HandleMessageAsync(update.Message!, cancellationToken),
             UpdateType.CallbackQuery => HandleCallbackQueryAsync(update.CallbackQuery!, cancellationToken),
             // Add handlers for other update types as needed (EditedMessage, ChannelPost, etc.)
             _ => HandleUnknownUpdateAsync(update, cancellationToken)
@@ -28,46 +29,6 @@ public class UpdateHandler(
         {
             await HandlePollingErrorAsync(exception, cancellationToken);
         }
-    }
-
-    private async Task HandleMessageAsync(Message message, CancellationToken cancellationToken)
-    {
-        logger.LogInformation("Received message type: {MessageType}", message.Type);
-        if (message.Text is not { } messageText) return;
-
-        var chatId = message.Chat.Id;
-        string replyMessage, logMessage;
-        logger.LogInformation("Received '{MessageText}' message in chat {ChatId}.", messageText, chatId);
-
-        switch (messageText)
-        {
-            case { } when messageText.ToLower().StartsWith("log "):
-            case { } when messageText.ToLower().StartsWith("/log "):
-
-                try
-                {
-                    var expense = await expenseApiClient.LogExpenseAsync(messageText, cancellationToken);
-                    replyMessage = $"Logged Expense - {expense}";
-                    logMessage = "Logged expense message sent with Id: {SentMessageId}";
-                }
-                catch (ArgumentException e)
-                {
-                    replyMessage = e.Message;
-                    logMessage = $"Argument Exception: {e.Message}. MessageId: {{MessageId}}";
-                }
-                break;
-
-            default:
-                replyMessage = "You said:\n" + messageText;
-                logMessage = "Echo message sent with Id: {SentMessageId}";
-                break;
-        }
-
-        var sentMessage = await botClient.SendMessage(
-            chatId: chatId,
-            text: replyMessage,
-            cancellationToken: cancellationToken);
-        logger.LogInformation(logMessage, sentMessage.MessageId);
     }
 
     private async Task HandleCallbackQueryAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken)

@@ -1,7 +1,7 @@
 using BudgetBotTelegram.Model;
 using Microsoft.Extensions.Options;
 
-namespace BudgetBotTelegram
+namespace BudgetBotTelegram.ApiClient
 {
     public class ExpenseLoggerApiClient
     {
@@ -22,32 +22,6 @@ namespace BudgetBotTelegram
             // Configure HttpClient base address and default headers
             _httpClient.BaseAddress = new Uri(apiOptions.Url);
             _httpClient.DefaultRequestHeaders.Add("x-api-key", apiOptions.Key);
-        }
-
-        public async Task<Expense> LogExpenseAsync(string message, CancellationToken cancellationToken)
-        {
-            var messageSplit = message.Split(' ');
-            if (messageSplit.Length < 3)
-            {
-                throw new ArgumentException("Invalid message format for logging expense.", nameof(message));
-            }
-
-            if (!decimal.TryParse(messageSplit[2], out _))
-            {
-                // Handle error: invalid amount format
-                throw new ArgumentException("Invalid amount format.", nameof(message));
-            }
-
-            var expense = new Expense
-            {
-                Description = messageSplit[1],
-                Amount = messageSplit[2],
-                Category = messageSplit.Length >= 4 ? messageSplit[3] : string.Empty
-            };
-
-            await LogExpenseAsync(expense, cancellationToken);
-
-            return expense;
         }
 
         public async Task LogExpenseAsync(Expense expense, CancellationToken cancellationToken = default)

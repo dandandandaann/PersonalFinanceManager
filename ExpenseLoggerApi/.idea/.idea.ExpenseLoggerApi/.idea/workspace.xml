@@ -10,8 +10,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="540f2d96-5b8d-4f7e-8c68-c593d9cc72d7" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/BudgetBotTelegram/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BudgetAutomation.sln" beforeDir="false" afterPath="$PROJECT_DIR$/BudgetAutomation.sln" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.ExpenseLoggerApi/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ExpenseLoggerApi/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BudgetBotTelegram/ExpenseLoggerApiClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BudgetBotTelegram/ApiClient/ExpenseLoggerApiClient.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BudgetBotTelegram/Model/Expense.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BudgetBotTelegram/Model/Expense.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BudgetBotTelegram/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BudgetBotTelegram/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BudgetBotTelegram/UpdateHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/BudgetBotTelegram/Handler/UpdateHandler.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ExpenseLoggerApi/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/ExpenseLoggerApi/Program.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,13 +40,17 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/80e75e31cd218d96f358856c57af836cfc396624535297066a4c06cf422bac1/DefaultCredentialProvider.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/8d2acda3ceeb8dc27180865164d2ddac7debb2a3/GeneratedRouteBuilderExtensions.g.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/a3eba1471b9b8be9455dad862715a96b751b3fa/JsonCredentialContext.JsonGoogleCredentialParameters.g.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/afb879cbb986ad369e895038ef7644694e1a8be72914f3a0a8d0de20a24f/ChatId.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/bad045602bcbc3e12ad775c846415df1f4d1a984dbf211f51afcd1cdf36344/TelegramBotClientExtensions.ApiMethods.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/bd1dc6c2e7fc53403f11a99c62db03595d8fe2d848497f7f9dd8f263286574e/Chat.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d4a75fcb3c30c47c67286dd213715c599f14340fe6d88c452bbfede8aa6c/Message.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/ExpenseLoggerApi/GoogleSheetsExpenseLogger.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/ExpenseLoggerApi/Model/GoogleCredentialsModel.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/ExpenseLoggerApi/Program.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
+    <option name="selectedTabId" value="SWEA" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
@@ -55,24 +63,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;.NET Launch Settings Profile.BudgetBotTelegram: http.executor&quot;: &quot;Debug&quot;,
-    &quot;.NET Launch Settings Profile.ExpenseLoggerApi: http.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    ".NET Launch Settings Profile.BudgetBotTelegram: http.executor": "Debug",
+    ".NET Launch Settings Profile.ExpenseLoggerApi: http.executor": "Debug",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.sourceCode",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
-  <component name="RunManager" selected=".NET Launch Settings Profile.BudgetBotTelegram: http">
+}]]></component>
+  <component name="RunManager" selected=".NET Launch Settings Profile.ExpenseLoggerApi: http">
     <configuration name="BudgetBotTelegram: http" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/BudgetBotTelegram/BudgetBotTelegram.csproj" />
       <option name="LAUNCH_PROFILE_TFM" value="net8.0" />
@@ -136,7 +144,7 @@
       <workItem from="1743446318876" duration="4586000" />
       <workItem from="1743518095816" duration="11952000" />
       <workItem from="1743623270135" duration="6000" />
-      <workItem from="1743623293027" duration="22781000" />
+      <workItem from="1743623293027" duration="66175000" />
     </task>
     <servers />
   </component>
