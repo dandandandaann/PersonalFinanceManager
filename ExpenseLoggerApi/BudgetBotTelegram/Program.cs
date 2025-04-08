@@ -41,6 +41,7 @@ builder.Services.AddSingleton<ISenderGateway, SenderGateway>();
 // Register handlers
 builder.Services.AddScoped<UpdateHandler>();
 builder.Services.AddScoped<MessageHandler>();
+builder.Services.AddScoped<TextMessageHandler>();
 builder.Services.AddScoped<CommandHandler>();
 
 // Register commands
