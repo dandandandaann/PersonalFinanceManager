@@ -3,7 +3,12 @@ using Microsoft.Extensions.Options;
 
 namespace BudgetBotTelegram.ApiClient
 {
-    public class ExpenseLoggerApiClient
+    public interface IExpenseLoggerApiClient
+    {
+        Task LogExpenseAsync(Expense expense, CancellationToken cancellationToken = default);
+    }
+
+    public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<ExpenseLoggerApiClient> _logger;

@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpenseLoggerApi", "Expense
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BudgetBotTelegram", "BudgetBotTelegram\BudgetBotTelegram.csproj", "{AC8AD2B6-3708-4CB8-86E3-B9824864920D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpenseLoggerApi.Tests", "ExpenseLoggerApi.Tests\ExpenseLoggerApi.Tests.csproj", "{C727B433-5B69-4EF8-845D-067762CDF804}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BudgetBotTelegram.Tests", "BudgetBotTelegram.Tests\BudgetBotTelegram.Tests.csproj", "{65290D53-9BFD-49FD-A11C-02962B88E0F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{AC8AD2B6-3708-4CB8-86E3-B9824864920D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC8AD2B6-3708-4CB8-86E3-B9824864920D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC8AD2B6-3708-4CB8-86E3-B9824864920D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C727B433-5B69-4EF8-845D-067762CDF804}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C727B433-5B69-4EF8-845D-067762CDF804}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C727B433-5B69-4EF8-845D-067762CDF804}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C727B433-5B69-4EF8-845D-067762CDF804}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65290D53-9BFD-49FD-A11C-02962B88E0F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65290D53-9BFD-49FD-A11C-02962B88E0F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65290D53-9BFD-49FD-A11C-02962B88E0F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65290D53-9BFD-49FD-A11C-02962B88E0F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

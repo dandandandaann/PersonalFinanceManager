@@ -31,12 +31,12 @@ var expenseLoggerApiSection = builder.Configuration.GetSection(ExpenseLoggerApiO
 builder.Services.Configure<ExpenseLoggerApiOptions>(expenseLoggerApiSection);
 
 // 3. Register Expense Logger API Client
-builder.Services.AddHttpClient<ExpenseLoggerApiClient>();
+builder.Services.AddHttpClient<IExpenseLoggerApiClient, ExpenseLoggerApiClient>();
 
 // Register the background service that sets the webhook
 builder.Services.AddHostedService<ConfigureWebhook>();
 
-builder.Services.AddSingleton<SenderGateway>();
+builder.Services.AddSingleton<ISenderGateway, SenderGateway>();
 
 // Register handlers
 builder.Services.AddScoped<UpdateHandler>();
@@ -44,7 +44,7 @@ builder.Services.AddScoped<MessageHandler>();
 builder.Services.AddScoped<CommandHandler>();
 
 // Register commands
-builder.Services.AddScoped<LogCommand>();
+builder.Services.AddScoped<ILogCommand, LogCommand>();
 
 #pragma warning disable IL2026
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi, options =>
