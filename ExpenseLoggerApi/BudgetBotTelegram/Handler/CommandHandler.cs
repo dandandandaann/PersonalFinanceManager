@@ -1,10 +1,11 @@
 ﻿using BudgetBotTelegram.Handler.Command;
+using BudgetBotTelegram.Interface;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace BudgetBotTelegram.Handler;
 
-public class CommandHandler(ISenderGateway sender, ILogger<CommandHandler> logger, ILogCommand log)
+public class CommandHandler(ISenderGateway sender, ILogger<CommandHandler> logger, ILogCommand log) : ICommandHandler
 {
     public async Task<Message> HandleCommandAsync(Message message, CancellationToken cancellationToken)
     {

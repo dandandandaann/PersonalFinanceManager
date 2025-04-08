@@ -3,6 +3,7 @@ using BudgetBotTelegram;
 using BudgetBotTelegram.ApiClient;
 using BudgetBotTelegram.Handler;
 using BudgetBotTelegram.Handler.Command;
+using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -40,9 +41,9 @@ builder.Services.AddSingleton<ISenderGateway, SenderGateway>();
 
 // Register handlers
 builder.Services.AddScoped<UpdateHandler>();
-builder.Services.AddScoped<MessageHandler>();
-builder.Services.AddScoped<TextMessageHandler>();
-builder.Services.AddScoped<CommandHandler>();
+builder.Services.AddScoped<IMessageHandler, MessageHandler>();
+builder.Services.AddScoped<ITextMessageHandler, TextMessageHandler>();
+builder.Services.AddScoped<ICommandHandler, CommandHandler>();
 
 // Register commands
 builder.Services.AddScoped<ILogCommand, LogCommand>();

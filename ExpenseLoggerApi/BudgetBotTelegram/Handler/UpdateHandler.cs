@@ -1,4 +1,5 @@
-﻿using Telegram.Bot;
+﻿using BudgetBotTelegram.Interface;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -6,7 +7,7 @@ namespace BudgetBotTelegram.Handler;
 
 public class UpdateHandler(
     ITelegramBotClient botClient,
-    MessageHandler messageHandler,
+    IMessageHandler messageHandler,
     ILogger<UpdateHandler> logger)
 {
 
