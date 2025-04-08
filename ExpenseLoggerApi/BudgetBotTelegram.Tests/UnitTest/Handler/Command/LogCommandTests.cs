@@ -1,11 +1,11 @@
-using BudgetBotTelegram.ApiClient;
 using BudgetBotTelegram.Handler.Command;
+using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 using Moq;
 using Telegram.Bot.Types;
 using Xunit;
 
-namespace BudgetBotTelegram.Tests.Handler.Command;
+namespace BudgetBotTelegram.Tests.UnitTest.Handler.Command;
 
 public class LogCommandTests
 {

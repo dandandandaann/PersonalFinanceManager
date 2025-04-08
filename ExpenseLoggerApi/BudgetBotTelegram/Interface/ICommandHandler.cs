@@ -1,9 +1,8 @@
 using Telegram.Bot.Types;
 
-namespace BudgetBotTelegram.Interface
+namespace BudgetBotTelegram.Interface;
+
+public interface ICommandHandler
 {
-    public interface ICommandHandler
-    {
-        Task<Message> HandleCommandAsync(Message message, CancellationToken cancellationToken);
-    }
+    Task<Message> HandleCommandAsync(Message message, CancellationToken cancellationToken);
 }

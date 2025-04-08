@@ -1,14 +1,10 @@
 ﻿using System.Text.RegularExpressions;
 using BudgetBotTelegram.ApiClient;
+using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 using Telegram.Bot.Types;
 
 namespace BudgetBotTelegram.Handler.Command;
-
-public interface ILogCommand
-{
-    Task<Message> HandleLogAsync(Message message, CancellationToken cancellationToken);
-}
 
 public class LogCommand(ISenderGateway sender, IExpenseLoggerApiClient expenseApiClient) : ILogCommand
 {

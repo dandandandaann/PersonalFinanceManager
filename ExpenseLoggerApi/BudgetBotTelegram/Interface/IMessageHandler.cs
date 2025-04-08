@@ -1,9 +1,8 @@
 using Telegram.Bot.Types;
 
-namespace BudgetBotTelegram.Interface
+namespace BudgetBotTelegram.Interface;
+
+public interface IMessageHandler
 {
-    public interface IMessageHandler
-    {
-        Task HandleMessageAsync(Message message, CancellationToken cancellationToken);
-    }
+    Task HandleMessageAsync(Message message, CancellationToken cancellationToken);
 }
