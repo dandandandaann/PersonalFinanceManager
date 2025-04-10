@@ -1,6 +1,6 @@
-namespace BudgetBotTelegram.Model
+namespace BudgetBotTelegram.Settings
 {
-    public class ExpenseLoggerApiOptions
+    public class ExpenseLoggerApiSettings
     {
         public const string Configuration = "ExpenseLoggerApi";
 

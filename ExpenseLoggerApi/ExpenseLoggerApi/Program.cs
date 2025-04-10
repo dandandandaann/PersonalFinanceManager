@@ -5,7 +5,6 @@ using Amazon.Lambda.Serialization.SystemTextJson;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-// TODO: better organize secrets with __
 var googleApiKey = builder.Configuration["googleApiKey"];
 if (googleApiKey is null)
     throw new InvalidOperationException($"{nameof(googleApiKey)} not found in configuration");

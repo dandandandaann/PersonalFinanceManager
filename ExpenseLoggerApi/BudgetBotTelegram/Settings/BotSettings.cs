@@ -1,6 +1,6 @@
-﻿namespace BudgetBotTelegram.Model;
+﻿namespace BudgetBotTelegram.Settings;
 
-public class BotConfiguration
+public class BotSettings
 {
     public const string Configuration = "BotConfiguration";
 

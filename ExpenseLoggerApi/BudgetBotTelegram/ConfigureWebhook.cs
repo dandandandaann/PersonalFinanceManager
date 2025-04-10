@@ -1,4 +1,5 @@
-﻿using BudgetBotTelegram.Model;
+﻿using BudgetBotTelegram.Settings;
+using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
@@ -7,9 +8,9 @@ namespace BudgetBotTelegram;
 public class ConfigureWebhook(
     ILogger<ConfigureWebhook> logger,
     IServiceProvider serviceProvider,
-    Microsoft.Extensions.Options.IOptions<BotConfiguration> botOptions) : IHostedService
+    IOptions<BotSettings> botOptions) : IHostedService
 {
-    private readonly BotConfiguration _botConfig = botOptions.Value;
+    private readonly BotSettings _botConfig = botOptions.Value;
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {

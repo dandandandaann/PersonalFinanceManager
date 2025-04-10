@@ -1,5 +1,6 @@
 using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
+using BudgetBotTelegram.Settings;
 using Microsoft.Extensions.Options;
 
 namespace BudgetBotTelegram.ApiClient;
@@ -9,7 +10,7 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
     private readonly HttpClient _httpClient;
     private readonly ILogger<ExpenseLoggerApiClient> _logger;
 
-    public ExpenseLoggerApiClient(HttpClient httpClient, IOptions<ExpenseLoggerApiOptions> options,
+    public ExpenseLoggerApiClient(HttpClient httpClient, IOptions<ExpenseLoggerApiSettings> options,
         ILogger<ExpenseLoggerApiClient> logger)
     {
         _httpClient = httpClient;
