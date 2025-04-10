@@ -43,8 +43,7 @@ class GoogleSheetsExpenseLogger
             throw new ArgumentException("Invalid amount");
         doubleAmount = Math.Round(doubleAmount, 2);
 
-        if (!_categories.Contains(category))
-            category = "";
+        category = DecideCategory(category);
 
         var sheetName = DateTime.Now.ToString("MM-yyyy");
         _logger.LogInformation($"Getting sheet id for spreadsheet '{_spreadsheetId}'.");
@@ -80,6 +79,19 @@ class GoogleSheetsExpenseLogger
         _logger.LogInformation("updateRequest created. Executing request.");
         await updateRequest.ExecuteAsync();
         _logger.LogInformation($"Expense logged successfully in row {row}!");
+    }
+
+    private string DecideCategory(string userCategory)
+    {
+        foreach (var category in _categories)
+        {
+            if (category.Equals(userCategory, StringComparison.OrdinalIgnoreCase))
+            {
+                return category;
+            }
+        }
+
+        return "";
     }
 
     private static List<IList<object>> Value(object value) => [new List<object> { value }];
