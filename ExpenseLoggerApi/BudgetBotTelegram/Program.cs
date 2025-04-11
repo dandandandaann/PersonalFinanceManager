@@ -6,15 +6,17 @@ using BudgetBotTelegram.ApiClient;
 using BudgetBotTelegram.Handler;
 using BudgetBotTelegram.Handler.Command;
 using BudgetBotTelegram.Interface;
-using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Settings;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
+
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
+
+LocalDev.CheckNgrok(builder);
 
 // Serialize Options for AOT
 builder.Services.ConfigureTelegramBot<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt => opt.SerializerOptions);
