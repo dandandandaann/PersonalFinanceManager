@@ -1,4 +1,5 @@
 ﻿using BudgetBotTelegram.Interface;
+using BudgetBotTelegram.Model;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -7,6 +8,7 @@ namespace BudgetBotTelegram.Handler;
 
 public class UpdateHandler(
     ITelegramBotClient botClient,
+    ISenderGateway sender,
     IMessageHandler messageHandler,
     ILogger<UpdateHandler> logger)
 {
@@ -26,6 +28,16 @@ public class UpdateHandler(
         {
             await handler;
         }
+        catch (InvalidUserInputException e)
+        {
+            var message = update.Message ?? update.CallbackQuery!.Message;
+
+
+            await sender.ReplyAsync(message.Chat, e.Message,
+                $"InvalidUserInputException: {e.Message}. Message: {message.Text}.",
+                logLevel: LogLevel.Warning,
+                cancellationToken: cancellationToken);
+        }
         catch (Exception exception)
         {
             await HandlePollingErrorAsync(exception, cancellationToken);
@@ -37,7 +49,7 @@ public class UpdateHandler(
         logger.LogInformation("Received callback query with data: {CallbackData}", callbackQuery.Data);
 
         // Acknowledge the callback query is required
-        await botClient.AnswerCallbackQuery(
+        await botClient.AnswerCallbackQuery( // TODO: implement this method in SenderGateway
             callbackQueryId: callbackQuery.Id,
             text: $"Received {callbackQuery.Data}",
             cancellationToken: cancellationToken);

@@ -11,6 +11,7 @@ public interface ISenderGateway
         ChatId chatId,
         string text,
         string logMessage = "",
+        LogLevel logLevel = LogLevel.Information,
         ParseMode parseMode = default,
         ReplyParameters? replyParameters = default,
         ReplyMarkup? replyMarkup = default,
@@ -31,6 +32,7 @@ public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> 
         ChatId chatId,
         string text,
         string logMessage = "",
+        LogLevel logLevel = LogLevel.Information,
         ParseMode parseMode = default,
         ReplyParameters? replyParameters = default,
         ReplyMarkup? replyMarkup = default,
@@ -61,11 +63,10 @@ public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> 
             cancellationToken: cancellationToken
         );
 
-        const string logDefault = "MessageId: {MessageId}. UserId: {UserId}.";
-        logMessage = string.IsNullOrWhiteSpace(logMessage) ? logDefault : $"{logMessage} {logDefault}";
-        logger.LogInformation(logMessage, sentMessage.MessageId, chatId.Username);
+        const string logDefault = "ChatId: {ChatId}. Username: {Username}.";
+        logMessage = string.IsNullOrWhiteSpace(logMessage) ? $"Sent message. {logDefault}" : $"Sent. {logMessage} {logDefault}";
+        logger.Log(logLevel, logMessage, chatId, chatId.Username);
 
-        // Call the underlying SendMessageAsync method from the Telegram.Bot library
         return sentMessage;
     }
 }

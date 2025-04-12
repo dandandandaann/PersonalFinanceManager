@@ -1,9 +1,10 @@
-﻿using BudgetBotTelegram.Interface;
+﻿using BudgetBotTelegram.Handler.Command;
+using BudgetBotTelegram.Interface;
 using Telegram.Bot.Types;
 
 namespace BudgetBotTelegram.Handler;
 
-public class CommandHandler(ISenderGateway sender, ILogger<CommandHandler> logger, ILogCommand log) : ICommandHandler
+public class CommandHandler(ISenderGateway sender, ILogger<CommandHandler> logger, ILogCommand log, ICancelCommand cancel) : ICommandHandler
 {
     public async Task<Message> HandleCommandAsync(Message message, CancellationToken cancellationToken)
     {
@@ -22,10 +23,11 @@ public class CommandHandler(ISenderGateway sender, ILogger<CommandHandler> logge
         // Extract the command using the entity's length
         var command = message.Text.Substring(0, commandEntity.Length).Split('@')[0];
 
-        if (command.Equals("/log", StringComparison.OrdinalIgnoreCase))
-        {
+        if (command.Equals($"/{LogCommand.CommandName}", StringComparison.OrdinalIgnoreCase))
             return await log.HandleLogAsync(message, cancellationToken);
-        }
+
+        if (command.Equals($"/{CancelCommand.CommandName}", StringComparison.OrdinalIgnoreCase))
+            return await cancel.HandleCancelAsync(message, cancellationToken);
 
         return await sender.ReplyAsync(
             message.Chat,

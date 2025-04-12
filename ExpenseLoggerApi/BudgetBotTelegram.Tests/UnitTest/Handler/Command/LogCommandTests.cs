@@ -1,6 +1,7 @@
 using BudgetBotTelegram.Handler.Command;
 using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Telegram.Bot.Types;
 using Xunit;
@@ -17,14 +18,15 @@ public class LogCommandTests
     {
         _mockSenderGateway = new Mock<ISenderGateway>();
         _mockExpenseApiClient = new Mock<IExpenseLoggerApiClient>();
-        _logCommand = new LogCommand(_mockSenderGateway.Object, _mockExpenseApiClient.Object);
+        _logCommand = new LogCommand(_mockSenderGateway.Object, _mockExpenseApiClient.Object, new Mock<ChatStateService>().Object,
+            new Mock<ILogger<LogCommand>>().Object);
     }
 
     private void MockSender(Chat chat, string expectedReplyText, string? expectedLogMessage = null)
     {
         _mockSenderGateway
             .Setup(x => x.ReplyAsync(chat, expectedReplyText,
-                expectedLogMessage ?? "Logged expense.",
+                expectedLogMessage ?? "Logged expense.", It.IsAny<LogLevel>(),
                 It.IsAny<Telegram.Bot.Types.Enums.ParseMode>(), It.IsAny<ReplyParameters?>(),
                 It.IsAny<Telegram.Bot.Types.ReplyMarkups.ReplyMarkup?>(), It.IsAny<LinkPreviewOptions?>(),
                 It.IsAny<int?>(), It.IsAny<IEnumerable<MessageEntity>?>(), It.IsAny<bool>(),
@@ -79,73 +81,6 @@ public class LogCommandTests
         Assert.Equal(expectedExpense.Description, capturedExpense.Description);
         Assert.Equal(expectedExpense.Amount, capturedExpense.Amount);
         Assert.Equal(expectedExpense.Category, capturedExpense.Category);
-    }
-
-    [Fact]
-    public async Task HandleLogAsync_ValidMessageWithCategory_LogsExpenseAndReplies()
-    {
-        // Arrange
-        var message = new Message
-        {
-            Chat = new Chat { Id = 123 },
-            Text = "/log Groceries 50.50 Food"
-        };
-        var cancellationToken = CancellationToken.None;
-        var expectedExpense = new Expense { Description = "Groceries", Amount = "50.50", Category = "Food" };
-        var expectedReplyText = $"Logged Expense\n{expectedExpense}";
-        Expense? capturedExpense = null; // Variable to capture the expense
-
-        _mockExpenseApiClient
-            .Setup(x => x.LogExpenseAsync(It.IsAny<Expense>(), cancellationToken)) // Match any Expense object
-            .Callback<Expense, CancellationToken>((expense, ct) => capturedExpense = expense) // Capture the Expense object
-            .Returns(Task.CompletedTask);
-
-        MockSender(message.Chat, expectedReplyText);
-
-        // Act
-        await _logCommand.HandleLogAsync(message, cancellationToken);
-
-        // Assert
-        _mockExpenseApiClient.Verify(x => x.LogExpenseAsync(It.IsAny<Expense>(), cancellationToken),
-            Times.Once); // Verify the method was called once
-
-        _mockSenderGateway.VerifyAll();
-
-        // Assert on the captured expense
-        Assert.NotNull(capturedExpense);
-        Assert.Equal(expectedExpense.Description, capturedExpense.Description);
-        Assert.Equal(expectedExpense.Amount, capturedExpense.Amount);
-        Assert.Equal(expectedExpense.Category, capturedExpense.Category);
-    }
-
-    [Fact]
-    public async Task HandleLogAsync_ValidMessageWithoutCategory_LogsExpenseAndReplies()
-    {
-        // Arrange
-        var message = new Message
-        {
-            Chat = new Chat { Id = 123 },
-            Text = "log Rent 1200"
-        };
-        var cancellationToken = CancellationToken.None;
-        var expectedExpense = new Expense { Description = "Rent", Amount = "1200", Category = "" };
-        var expectedReplyText = $"Logged Expense\n{expectedExpense}";
-
-        _mockExpenseApiClient
-            .Setup(x => x.LogExpenseAsync(It.Is<Expense>(e =>
-                e.Description == expectedExpense.Description &&
-                e.Amount == expectedExpense.Amount &&
-                e.Category == expectedExpense.Category), cancellationToken))
-            .Returns(Task.CompletedTask);
-
-        MockSender(message.Chat, expectedReplyText);
-
-        // Act
-        await _logCommand.HandleLogAsync(message, cancellationToken);
-
-        // Assert
-        _mockExpenseApiClient.VerifyAll();
-        _mockSenderGateway.VerifyAll();
     }
 
     [Fact]

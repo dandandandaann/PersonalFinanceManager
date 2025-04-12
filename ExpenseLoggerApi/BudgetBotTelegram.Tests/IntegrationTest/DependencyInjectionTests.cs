@@ -117,14 +117,14 @@ public class DependencyInjectionTests(WebApplicationFactory<Program> factory, IT
 
                     // If the interface IS registered, we need to check if the implementation
                     // resolved IS our handlerClassType.
-                    if (serviceRegisteredForInterface != null && serviceRegisteredForInterface.GetType() == handlerClassType)
+                    if (serviceRegisteredForInterface != null)
                     {
-                        resolvedByInterface = true;
-                        break; // Found registration via one interface, no need to check others
-                    }
-                    // Optimization: Check if interface is registered at all
-                    else if (serviceRegisteredForInterface != null)
-                    {
+                        if (serviceRegisteredForInterface.GetType() == handlerClassType)
+                        {
+                            resolvedByInterface = true;
+                            break; // Found registration via one interface, no need to check others
+                        }
+
                         output.WriteLine(
                             $"  -> Interface {iface.FullName} is registered, but with a different implementation ({serviceRegisteredForInterface.GetType().Name})");
                     }
@@ -135,17 +135,18 @@ public class DependencyInjectionTests(WebApplicationFactory<Program> factory, IT
 
                 if (!isRegistered)
                 {
-                    output.WriteLine($"FAILED: Not found registered directly or via a resolved interface for class '{handlerClassType.FullName}'.");
+                    output.WriteLine(
+                        $"FAILED: Not found registered directly or via a resolved interface for class '{handlerClassType.FullName}'.");
                     unregisteredHandlers.Add(handlerClassType.FullName!);
                 }
-                else if (resolvedByConcreteType != null)
-                {
-                    // output.WriteLine($"  -> OK: Registered/resolvable via concrete type.");
-                }
-                else // resolvedByInterface must be true
-                {
-                    // output.WriteLine($"  -> OK: Registered/resolvable via interface.");
-                }
+                // else if (resolvedByConcreteType != null)
+                // {
+                //     // output.WriteLine($"  -> OK: Registered/resolvable via concrete type.");
+                // }
+                // else // resolvedByInterface must be true
+                // {
+                //     // output.WriteLine($"  -> OK: Registered/resolvable via interface.");
+                // }
             }
         }
 

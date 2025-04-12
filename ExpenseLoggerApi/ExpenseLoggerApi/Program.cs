@@ -73,7 +73,7 @@ app.MapPut("/log-expense", async (string description, string amount, string cate
     }
     catch (Exception ex)
     {
-        app.Logger.LogError("Failed to log expense. Exception: {exception}", ex);
+        app.Logger.LogError("Failed to log expense. Exception: {ExceptionMessage}", ex.Message);
         return Results.Ok(new ResponseModel { Success = false });
     }
 

@@ -1,5 +1,6 @@
 using Amazon;
 using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using BudgetBotTelegram;
 using BudgetBotTelegram.ApiClient;
@@ -37,9 +38,17 @@ builder.Services.Configure<ExpenseLoggerApiSettings>(config.GetSection(ExpenseLo
 builder.Services.AddHttpClient<IExpenseLoggerApiClient, ExpenseLoggerApiClient>();
 
 builder.Services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(RegionEndpoint.USEast2));
-builder.Services.Configure<DatabaseSettings>(config.GetSection(DatabaseSettings.Configuration));
 
-builder.Services.AddScoped<ChatStateManager>();
+builder.Services.AddScoped<IDynamoDBContext>(sp =>
+{
+    var client = sp.GetRequiredService<IAmazonDynamoDB>();
+    var contextBuilder = new DynamoDBContextBuilder()
+        .WithDynamoDBClient(() => client);
+    // contextBuilder = contextBuilder.WithTableNamePrefix("DEV_");
+    return contextBuilder.Build();
+});
+
+builder.Services.AddScoped<ChatStateService>();
 
 builder.Services.AddHostedService<ConfigureWebhook>();
 builder.Services.AddSingleton<ISenderGateway, SenderGateway>();
@@ -52,6 +61,7 @@ builder.Services.AddScoped<ICommandHandler, CommandHandler>();
 
 // Register commands
 builder.Services.AddScoped<ILogCommand, LogCommand>();
+builder.Services.AddScoped<ICancelCommand, CancelCommand>();
 
 #pragma warning disable IL2026
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,
