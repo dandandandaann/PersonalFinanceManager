@@ -16,7 +16,7 @@ public class ConfigureWebhook(
         using var scope = serviceProvider.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
 
-        var webhookAddress = $"{botOptions.Value.HostAddress.TrimEnd('/')}/webhook";
+        var webhookAddress = $"{botOptions.Value.HostAddress.TrimEnd('/')}/webhook?token={botOptions.Value.WebhookToken}";
         logger.LogInformation("Setting webhook: {WebhookAddress}", webhookAddress);
 
         try

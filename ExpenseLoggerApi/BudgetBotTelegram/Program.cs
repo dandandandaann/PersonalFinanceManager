@@ -8,6 +8,7 @@ using BudgetBotTelegram.Handler;
 using BudgetBotTelegram.Handler.Command;
 using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Settings;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
@@ -71,8 +72,12 @@ var app = builder.Build();
 
 // Configure the webhook endpoint
 app.MapPost("/webhook",
-    async ([FromBody] Update update, [FromServices] UpdateHandler updateHandler, CancellationToken cancellationToken) =>
+    async ([FromQuery] string token, [FromBody] Update update,
+        [FromServices] UpdateHandler updateHandler, [FromServices] IOptions<BotSettings> botOptions, CancellationToken cancellationToken) =>
     {
+        if (token != botOptions.Value.WebhookToken)
+            return Results.Unauthorized();
+
         await updateHandler.HandleUpdateAsync(update, cancellationToken);
         return Results.Ok(); // Always return OK to Telegram quickly
     });
