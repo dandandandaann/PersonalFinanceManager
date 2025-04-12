@@ -1,6 +1,7 @@
 ﻿using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -40,7 +41,7 @@ public class UpdateHandler(
         }
         catch (Exception exception)
         {
-            await HandlePollingErrorAsync(exception, cancellationToken);
+            HandlePollingErrorAsync(exception);
         }
     }
 
@@ -72,17 +73,16 @@ public class UpdateHandler(
         }
     }
 
-    private Task HandlePollingErrorAsync(Exception exception, CancellationToken cancellationToken)
+    private void HandlePollingErrorAsync(Exception exception)
     {
         var errorMessage = exception switch
         {
             // Handle specific Telegram API exceptions if needed
-            // ApiRequestException apiRequestException
-            //     => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
+            ApiRequestException apiRequestException
+                => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
             _ => exception.ToString()
         };
 
         logger.LogError("Error handling update: {ErrorMessage}", errorMessage);
-        return Task.CompletedTask;
     }
 }

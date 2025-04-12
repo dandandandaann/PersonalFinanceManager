@@ -1,9 +1,10 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 using BudgetBotTelegram.Model;
+using BudgetBotTelegram.Interface;
 
 namespace BudgetBotTelegram
 {
-    public class ChatStateService(IDynamoDBContext dbContext, ILogger<ChatStateService> logger)
+    public class ChatStateService(IDynamoDBContext dbContext, ILogger<ChatStateService> logger) : IChatStateService
     {
         /// <summary>
         /// Checks if a chat state exists for the given chatId and retrieves it.

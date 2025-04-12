@@ -3,7 +3,7 @@ using Telegram.Bot.Types;
 
 namespace BudgetBotTelegram.Handler.Command;
 
-public class CancelCommand(ISenderGateway sender, ChatStateService chatStateService) : ICancelCommand
+public class CancelCommand(ISenderGateway sender, IChatStateService chatStateService) : ICancelCommand
 {
     public const string CommandName = "cancel";
 

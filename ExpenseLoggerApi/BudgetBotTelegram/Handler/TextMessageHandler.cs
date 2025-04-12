@@ -8,7 +8,7 @@ namespace BudgetBotTelegram.Handler;
 public class TextMessageHandler(
     ISenderGateway sender,
     ILogCommand log,
-    ChatStateService chatStateService,
+    IChatStateService chatStateService,
     ILogger<TextMessageHandler> logger,
     ICancelCommand cancel) : ITextMessageHandler
 {

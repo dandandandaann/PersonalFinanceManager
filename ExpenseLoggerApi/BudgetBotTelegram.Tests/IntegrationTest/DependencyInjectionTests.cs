@@ -34,6 +34,7 @@ public class DependencyInjectionTests(WebApplicationFactory<Program> factory, IT
     [Theory]
     [InlineData(typeof(ILogCommand), "Command")]
     [InlineData(typeof(IMessageHandler), "Handler")]
+    [InlineData(typeof(IChatStateService), "Service")]
     public void ShouldResolve_AllServicesEndingWithCommand_InApplicationAssembly_FromScopedProvider(Type interfaceExample,
         string interfaceEnding)
     {

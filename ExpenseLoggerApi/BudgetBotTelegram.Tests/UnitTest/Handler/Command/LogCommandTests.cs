@@ -18,7 +18,7 @@ public class LogCommandTests
     {
         _mockSenderGateway = new Mock<ISenderGateway>();
         _mockExpenseApiClient = new Mock<IExpenseLoggerApiClient>();
-        _logCommand = new LogCommand(_mockSenderGateway.Object, _mockExpenseApiClient.Object, new Mock<ChatStateService>().Object,
+        _logCommand = new LogCommand(_mockSenderGateway.Object, _mockExpenseApiClient.Object, new Mock<IChatStateService>().Object,
             new Mock<ILogger<LogCommand>>().Object);
     }
 
@@ -63,7 +63,7 @@ public class LogCommandTests
 
         _mockExpenseApiClient
             .Setup(x => x.LogExpenseAsync(It.IsAny<Expense>(), cancellationToken)) // Match any Expense object
-            .Callback<Expense, CancellationToken>((expense, ct) => capturedExpense = expense) // Capture the Expense object
+            .Callback<Expense, CancellationToken>((expense, _) => capturedExpense = expense) // Capture the Expense object
             .Returns(Task.CompletedTask);
 
         MockSender(message.Chat, expectedReplyText);
@@ -83,64 +83,13 @@ public class LogCommandTests
         Assert.Equal(expectedExpense.Category, capturedExpense.Category);
     }
 
-    [Fact]
-    public async Task HandleLogAsync_InvalidAmountFormat_RepliesWithError()
-    {
-        // Arrange
-        var message = new Message
-        {
-            Chat = new Chat { Id = 123 },
-            Text = "/log Coffee abc"
-        };
-        var cancellationToken = CancellationToken.None;
-        var expectedReplyText = "Invalid message format for logging expense.";
-
-        MockSender(message.Chat, expectedReplyText, ""); // TODO: change log on invalid amount
-
-        // Act
-        await _logCommand.HandleLogAsync(message, cancellationToken);
-
-        // Assert
-        _mockSenderGateway.VerifyAll();
-        _mockExpenseApiClient.Verify(x => x.LogExpenseAsync(It.IsAny<Expense>(), It.IsAny<CancellationToken>()),
-            Times.Never); // Ensure LogExpenseAsync was not called
-    }
-
-    [Fact]
-    public async Task HandleLogAsync_ExpenseApiThrowsArgumentException_RepliesWithErrorMessage()
-    {
-        // Arrange
-        var message = new Message
-        {
-            Chat = new Chat { Id = 123 },
-            Text = "/log Test 10"
-        };
-        var cancellationToken = CancellationToken.None;
-        var expectedExceptionMessage = "API Error";
-        var apiException = new ArgumentException(expectedExceptionMessage);
-        var expectedReplyText = expectedExceptionMessage;
-        var expectedLogMessage = $"Argument Exception: {expectedExceptionMessage}.";
-
-        _mockExpenseApiClient
-            .Setup(x => x.LogExpenseAsync(It.IsAny<Expense>(), cancellationToken))
-            .ThrowsAsync(apiException);
-
-        MockSender(message.Chat, expectedReplyText, expectedLogMessage);
-
-        // Act
-        await _logCommand.HandleLogAsync(message, cancellationToken);
-
-        // Assert
-        _mockExpenseApiClient.VerifyAll();
-        _mockSenderGateway.VerifyAll();
-    }
-
     [Theory]
-    [InlineData("/log Invalid")] // Too few arguments
-    [InlineData("Invalid")] // Too few arguments (no slash)
-    [InlineData("log 10")] // Too few arguments (no slash)
-    [InlineData("log Invalid")] // Too few arguments (no slash)
-    public async Task HandleLogAsync_InvalidMessageFormat_ThrowsArgumentException(string messageText)
+    [InlineData("/log Invalid", "Invalid message format")] // Too few arguments
+    [InlineData("log 10", "Invalid message format")] // Too few arguments (no slash)
+    [InlineData("log Invalid", "Invalid message format")] // Too few arguments (no slash)
+    [InlineData("Invalid", "doesn't start with log command")] // Too few arguments (no slash)
+    [InlineData("/log Coffee abc", "Invalid amount format")] // Too few arguments (no slash)
+    public async Task HandleLogAsync_InvalidMessageFormat_ThrowsInvalidUserInputException(string messageText, string exceptionMessage)
     {
         // Arrange
         var message = new Message
@@ -151,7 +100,8 @@ public class LogCommandTests
         var cancellationToken = CancellationToken.None;
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() => _logCommand.HandleLogAsync(message, cancellationToken));
+        var exception = await Assert.ThrowsAsync<InvalidUserInputException>(() => _logCommand.HandleLogAsync(message, cancellationToken));
+        Assert.Contains(exceptionMessage, exception.Message, StringComparison.OrdinalIgnoreCase);
 
         MockSender(message.Chat, string.Empty);
 
@@ -181,14 +131,14 @@ public class LogCommandTests
     }
 
     [Fact]
-    public async Task HandleLogAsync_MessageNotStartingWithLog_ThrowsArgumentException()
+    public async Task HandleLogAsync_MessageNotStartingWithLog_ThrowsInvalidUserInputException()
     {
         // Arrange
         var message = new Message { Chat = new Chat { Id = 123 }, Text = "hello world" };
         var cancellationToken = CancellationToken.None;
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => _logCommand.HandleLogAsync(message, cancellationToken));
+        var exception = await Assert.ThrowsAsync<InvalidUserInputException>(() => _logCommand.HandleLogAsync(message, cancellationToken));
         Assert.Contains("doesn't start with log command", exception.Message);
     }
 }

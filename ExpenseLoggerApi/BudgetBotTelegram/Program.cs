@@ -13,7 +13,6 @@ using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 
@@ -48,7 +47,7 @@ builder.Services.AddScoped<IDynamoDBContext>(sp =>
     return contextBuilder.Build();
 });
 
-builder.Services.AddScoped<ChatStateService>();
+builder.Services.AddScoped<IChatStateService, ChatStateService>();
 
 builder.Services.AddHostedService<ConfigureWebhook>();
 builder.Services.AddSingleton<ISenderGateway, SenderGateway>();

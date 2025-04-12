@@ -8,7 +8,7 @@ namespace BudgetBotTelegram.Handler.Command;
 public class LogCommand(
     ISenderGateway sender,
     IExpenseLoggerApiClient expenseApiClient,
-    ChatStateService chatStateService,
+    IChatStateService chatStateService,
     ILogger<LogCommand> logger) : ILogCommand
 {
     public const string CommandName = "log";
