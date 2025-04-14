@@ -2,7 +2,7 @@
 using Amazon.Lambda.APIGatewayEvents;
 using ExpenseLoggerApi.Model;
 
-namespace ExpenseLoggerApi;
+namespace ExpenseLoggerApi.AotTypes;
 
 [JsonSerializable(typeof(ResponseModel))]
 [JsonSerializable(typeof(APIGatewayHttpApiV2ProxyRequest))]

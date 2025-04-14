@@ -21,4 +21,8 @@
         <TrimmerRootAssembly Include="Newtonsoft.Json" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="ExpenseLoggerApi.Tests" />
+    </ItemGroup>
+
 </Project>

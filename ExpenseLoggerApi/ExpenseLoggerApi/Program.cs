@@ -17,6 +17,10 @@ var spreadsheetId = builder.Configuration["spreadsheetId"];
 if (spreadsheetId is null)
     throw new InvalidOperationException($"{nameof(spreadsheetId)} not found in configuration");
 
+var categories = builder.Configuration.GetSection("Categories").Get<List<Category>>();
+if (categories is null || categories.Count == 0)
+    throw new InvalidOperationException("Categories not found in configuration");
+
 var maxDailyRequest = builder.Configuration["maxDailyRequest"] ?? "20";
 
 // Add Rate Limiting
@@ -47,7 +51,7 @@ builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi, options =>
 var app = builder.Build();
 
 app.Logger.LogInformation($"Creating GoogleSheetsExpenseLogger with spreadsheetId '{spreadsheetId}'");
-var sheetsLogger = new GoogleSheetsExpenseLogger(googleCredentials, spreadsheetId, app.Logger);
+var sheetsLogger = new GoogleSheetsExpenseLogger(googleCredentials, spreadsheetId, categories, app.Logger);
 
 app.Use(async (context, next) =>
 {

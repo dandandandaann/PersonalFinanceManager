@@ -13,16 +13,15 @@ class GoogleSheetsExpenseLogger
     private const string ApplicationName = "Expense Logger";
     private readonly SheetsService _service;
     private readonly string _spreadsheetId;
-
-    private readonly string[] _categories = // TODO: get category from secrets?
-        ["Passagem", "Locomoção", "Hospedagem", "Mercado", "Comida", "Fun", "Outros"];
+    private readonly IEnumerable<Category> _categories;
 
     private readonly ILogger _logger;
 
-    public GoogleSheetsExpenseLogger(string credentialsJson, string spreadsheetId, ILogger logger)
+    public GoogleSheetsExpenseLogger(string credentialsJson, string spreadsheetId, IEnumerable<Category> categories, ILogger logger)
     {
         _spreadsheetId = spreadsheetId;
         _logger = logger;
+        _categories = categories ?? throw new ArgumentNullException(nameof(categories));
 
         var credentialParameters = JsonSerializer.Deserialize(credentialsJson, JsonCredentialContext.Default.JsonCredentialParameters);
 
@@ -83,15 +82,28 @@ class GoogleSheetsExpenseLogger
 
     private string DecideCategory(string userCategory)
     {
+        string categoryAliasMatch = string.Empty;
+
         foreach (var category in _categories)
         {
-            if (category.Equals(userCategory, StringComparison.OrdinalIgnoreCase))
+            if (category.Name.Equals(userCategory, StringComparison.OrdinalIgnoreCase))
             {
-                return category;
+                return category.Name;
+            }
+
+            if (category.Alias != null)
+            {
+                foreach (var alias in category.Alias)
+                {
+                    if (alias.Equals(userCategory, StringComparison.OrdinalIgnoreCase))
+                    {
+                        categoryAliasMatch = category.Name;
+                    }
+                }
             }
         }
 
-        return "";
+        return categoryAliasMatch; // Return empty string if no match found
     }
 
     private static List<IList<object>> Value(object value) => [new List<object> { value }];
