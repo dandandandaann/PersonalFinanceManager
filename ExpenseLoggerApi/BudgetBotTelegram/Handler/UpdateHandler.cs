@@ -11,7 +11,7 @@ public class UpdateHandler(
     ITelegramBotClient botClient,
     ISenderGateway sender,
     IMessageHandler messageHandler,
-    ILogger<UpdateHandler> logger)
+    ILogger<UpdateHandler> logger) : IUpdateHandler
 {
 
     public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken)

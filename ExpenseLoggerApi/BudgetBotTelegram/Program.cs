@@ -22,7 +22,7 @@ LocalDev.CheckNgrok(builder);
 // Serialize Options for AOT
 builder.Services.ConfigureTelegramBot<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt => opt.SerializerOptions);
 
-// 1. Bind Bot configuration
+// Bind Bot configuration
 builder.Services.Configure<BotSettings>(config.GetSection(BotSettings.Configuration));
 // Register typed HttpClient directly (optional, but good practice if you need custom HttpClient settings)
 builder.Services.AddHttpClient("telegram_bot_client")
@@ -54,7 +54,7 @@ builder.Services.AddHostedService<ConfigureWebhook>();
 builder.Services.AddSingleton<ISenderGateway, SenderGateway>();
 
 // Register handlers
-builder.Services.AddScoped<UpdateHandler>();
+builder.Services.AddScoped<IUpdateHandler, UpdateHandler>();
 builder.Services.AddScoped<IMessageHandler, MessageHandler>();
 builder.Services.AddScoped<ITextMessageHandler, TextMessageHandler>();
 builder.Services.AddScoped<ICommandHandler, CommandHandler>();
@@ -72,8 +72,8 @@ var app = builder.Build();
 
 // Configure the webhook endpoint
 app.MapPost("/webhook",
-    async ([FromQuery] string token, [FromBody] Update update,
-        [FromServices] UpdateHandler updateHandler, [FromServices] IOptions<BotSettings> botOptions, CancellationToken cancellationToken) =>
+    async ([FromQuery] string? token, [FromBody] Update update,
+        [FromServices] IUpdateHandler updateHandler, [FromServices] IOptions<BotSettings> botOptions, CancellationToken cancellationToken) =>
     {
         if (token != botOptions.Value.WebhookToken)
             return Results.Unauthorized();
@@ -82,7 +82,6 @@ app.MapPost("/webhook",
         return Results.Ok(); // Always return OK to Telegram quickly
     });
 
-// Optional: Map a root endpoint for basic checks
 app.MapGet("/", () => "Telegram Bot Webhook receiver is running!");
 
 app.Run();
