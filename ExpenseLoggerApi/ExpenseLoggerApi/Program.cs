@@ -2,6 +2,10 @@ using System.Threading.RateLimiting;
 using ExpenseLoggerApi;
 using ExpenseLoggerApi.Model;
 using Amazon.Lambda.Serialization.SystemTextJson;
+using ExpenseLoggerApi.AotTypes;
+using ExpenseLoggerApi.Interface;
+using ExpenseLoggerApi.Service;
+using Google.Apis.Sheets.v4;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -17,8 +21,8 @@ var spreadsheetId = builder.Configuration["spreadsheetId"];
 if (spreadsheetId is null)
     throw new InvalidOperationException($"{nameof(spreadsheetId)} not found in configuration");
 
-var categories = builder.Configuration.GetSection("Categories").Get<List<Category>>();
-if (categories is null || categories.Count == 0)
+var categories = builder.Configuration.GetSection("Categories").Get<Category[]>();
+if (categories is null || categories.Length == 0)
     throw new InvalidOperationException("Categories not found in configuration");
 
 var maxDailyRequest = builder.Configuration["maxDailyRequest"] ?? "20";
@@ -42,16 +46,31 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 #pragma warning disable IL2026
-builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi, options =>
-{
-    options.Serializer = new SourceGeneratorLambdaJsonSerializer<AppJsonSerializerContext>();
-});
+builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,
+    options => { options.Serializer = new SourceGeneratorLambdaJsonSerializer<AppJsonSerializerContext>(); });
 #pragma warning restore IL2026
 
-var app = builder.Build();
+builder.Services.AddSingleton<GoogleSheetsClientFactory>();
 
-app.Logger.LogInformation($"Creating GoogleSheetsExpenseLogger with spreadsheetId '{spreadsheetId}'");
-var sheetsLogger = new GoogleSheetsExpenseLogger(googleCredentials, spreadsheetId, categories, app.Logger);
+builder.Services.AddSingleton<SheetsService>(sp =>
+{
+    var factory = sp.GetRequiredService<GoogleSheetsClientFactory>();
+    var credentials = sp.GetRequiredService<IConfiguration>()["credentials"];
+    return factory.CreateSheetsService(credentials!);
+});
+
+builder.Services.AddSingleton<ISheetsDataAccessor, GoogleSheetsDataAccessor>();
+
+builder.Services.AddScoped<ExpenseLoggerService>(sp =>
+    new ExpenseLoggerService(
+        sp.GetRequiredService<ISheetsDataAccessor>(),
+        categories,
+        spreadsheetId,
+        sp.GetRequiredService<ILogger<ExpenseLoggerService>>()
+    )
+);
+
+var app = builder.Build();
 
 app.Use(async (context, next) =>
 {
@@ -69,19 +88,19 @@ app.UseRateLimiter();
 
 app.MapGet("", () => "Hello world!");
 
-app.MapPut("/log-expense", async (string description, string amount, string category = "") =>
-{
-    try
+app.MapPut("/log-expense",
+    async (ExpenseLoggerService sheetsLogger, string description, string amount, string category = "") =>
     {
-        await sheetsLogger.LogExpense(description, amount, category);
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogError("Failed to log expense. Exception: {ExceptionMessage}", ex.Message);
-        return Results.Ok(new ResponseModel { Success = false });
-    }
-
-    return Results.Ok(new ResponseModel { Success = true });
-});
+        try
+        {
+            var expense = await sheetsLogger.LogExpense(description, amount, category);
+            return Results.Ok(new ResponseModel { Success = true, expense = expense });
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogError("Failed to log expense. Exception: {ExceptionMessage}", ex.Message);
+            return Results.Ok(new ResponseModel { Success = false });
+        }
+    });
 
 app.Run();
