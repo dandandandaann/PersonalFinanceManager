@@ -1,7 +1,9 @@
+using BudgetBotTelegram.AtoTypes;
 using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Settings;
 using Microsoft.Extensions.Options;
+using SharedLibrary;
 
 namespace BudgetBotTelegram.ApiClient;
 
@@ -26,7 +28,7 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
         _httpClient.DefaultRequestHeaders.Add("x-api-key", apiOptions.Key);
     }
 
-    public async Task LogExpenseAsync(Expense expense, CancellationToken cancellationToken = default)
+    public async Task<Expense> LogExpenseAsync(Expense expense, CancellationToken cancellationToken = default)
     {
         // Construct the URL with query parameters
         var uriBuilder = new UriBuilder(_httpClient.BaseAddress!)
@@ -41,12 +43,37 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
         // Create the request message
         var request = new HttpRequestMessage(HttpMethod.Put, uriBuilder.Uri);
 
-        // Send the request
         var response = await _httpClient.SendAsync(request, cancellationToken);
 
-        // Ensure the request was successful
-        response.EnsureSuccessStatusCode(); // TODO: better error handling and return bool result?
+        response.EnsureSuccessStatusCode();
 
-        _logger.LogInformation($"Log expense request sent for {expense.Description}. Response: {response.StatusCode}");
+        _logger.LogInformation(
+            $"Log expense request sent for {expense.Description}. Response: {response.StatusCode}");
+
+        if (response.Content is { Headers.ContentType.MediaType: "application/json" })
+        {
+            var responseExpense = await response.Content.ReadFromJsonAsync(
+                cancellationToken: cancellationToken,
+                jsonTypeInfo: AppJsonSerializerContext.Default.LogExpenseResponse);
+
+            if (responseExpense?.expense != null)
+            {
+                return responseExpense.expense;
+            }
+
+            _logger.LogError(
+                "Received successful status code but failed to deserialize Expense object from response body.");
+        }
+        else if
+            (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+        {
+            _logger.LogError("Request successful, no content returned.");
+        }
+        else
+        {
+            _logger.LogError($"Received successful status code {response.StatusCode} but content was null or not JSON.");
+        }
+
+        return new Expense();
     }
 }

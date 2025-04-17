@@ -1,8 +1,8 @@
-using BudgetBotTelegram.Model;
+using SharedLibrary;
 
 namespace BudgetBotTelegram.Interface;
 
 public interface IExpenseLoggerApiClient
 {
-    Task LogExpenseAsync(Expense expense, CancellationToken cancellationToken = default);
+    Task<Expense> LogExpenseAsync(Expense expense, CancellationToken cancellationToken = default);
 }

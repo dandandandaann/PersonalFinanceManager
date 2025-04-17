@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using AppJsonSerializerContext = BudgetBotTelegram.AtoTypes.AppJsonSerializerContext;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;

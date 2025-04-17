@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
+using SharedLibrary;
 using Telegram.Bot.Types;
 
 namespace BudgetBotTelegram.Handler.Command;
@@ -67,7 +68,7 @@ public class LogCommand(
 
         try
         {
-            await expenseApiClient.LogExpenseAsync(expense, cancellationToken);
+            expense = await expenseApiClient.LogExpenseAsync(expense, cancellationToken);
 
             return await sender.ReplyAsync(chatId,
                 $"Logged Expense\n{expense}",

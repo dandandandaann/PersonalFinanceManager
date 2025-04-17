@@ -1,4 +1,4 @@
-﻿namespace ExpenseLoggerApi.Model;
+﻿namespace SharedLibrary;
 
 public class LogExpenseResponse
 {

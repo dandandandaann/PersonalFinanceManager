@@ -2,6 +2,7 @@
 using ExpenseLoggerApi.Interface;
 using ExpenseLoggerApi.Model;
 using Google.Apis.Sheets.v4.Data;
+using SharedLibrary;
 
 namespace ExpenseLoggerApi.Service;
 
@@ -29,7 +30,10 @@ public class ExpenseLoggerService(
             throw new ArgumentException("Invalid amount format.", nameof(amount));
         }
 
-        expense.Amount = Math.Round(doubleAmount, 2);
+        doubleAmount = Math.Round(doubleAmount, 2);
+
+        // Parse amount manually to pt-BR
+        expense.Amount = doubleAmount.ToString("F2").Replace(",", "").Replace(".", ",");
 
         var sheetName = DateTime.Now.ToString("MM-yyyy");
         logger.LogInformation("Starting expense logging process for sheet '{SheetName}' in spreadsheet '{SpreadsheetId}'.",
@@ -47,7 +51,7 @@ public class ExpenseLoggerService(
             [
                 new() { Range = $"{sheetName}!B{row}", Values = Value(expense.Description) },
                 new() { Range = $"{sheetName}!E{row}", Values = Value(expense.Category) },
-                new() { Range = $"{sheetName}!H{row}", Values = Value(expense.Amount) },
+                new() { Range = $"{sheetName}!H{row}", Values = Value(doubleAmount) }, // let spreadsheet format the number
                 new() // Formula for amount calculation
                 {
                     Range = $"{sheetName}!I{row}",

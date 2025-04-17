@@ -6,6 +6,7 @@ using ExpenseLoggerApi.AotTypes;
 using ExpenseLoggerApi.Interface;
 using ExpenseLoggerApi.Service;
 using Google.Apis.Sheets.v4;
+using SharedLibrary;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -94,12 +95,12 @@ app.MapPut("/log-expense",
         try
         {
             var expense = await sheetsLogger.LogExpense(description, amount, category);
-            return Results.Ok(new ResponseModel { Success = true, expense = expense });
+            return Results.Ok(new LogExpenseResponse { Success = true, expense = expense });
         }
         catch (Exception ex)
         {
             app.Logger.LogError("Failed to log expense. Exception: {ExceptionMessage}", ex.Message);
-            return Results.Ok(new ResponseModel { Success = false });
+            return Results.Ok(new LogExpenseResponse { Success = false });
         }
     });
 

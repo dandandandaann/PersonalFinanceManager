@@ -1,4 +1,4 @@
-namespace BudgetBotTelegram.Model
+namespace SharedLibrary
 {
     public class Expense
     {
@@ -8,8 +8,8 @@ namespace BudgetBotTelegram.Model
 
         public override string ToString()
         {
-            var categoryString = string.IsNullOrEmpty(Category) ? string.Empty : $"\nCategory: {Category}";
-            return $"Description: {Description}\nAmount: {Amount}{categoryString}";
+            var categoryString = string.IsNullOrEmpty(Category) ? string.Empty : $" \nCategory: {Category}";
+            return $"Description: {Description} \nAmount: {Amount}{categoryString}";
         }
     }
 } 

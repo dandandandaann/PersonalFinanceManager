@@ -20,4 +20,8 @@
         <InternalsVisibleTo Include="BudgetBotTelegram.Tests" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
+    </ItemGroup>
+
 </Project>
