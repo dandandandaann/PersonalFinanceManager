@@ -15,8 +15,8 @@ namespace BudgetBotTelegram.Model
         [DynamoDBRangeKey("sk")]
         public string Sk { get; set; }
 
-        [DynamoDBProperty("userId")]
-        public string UserId { get; set; }
+        [DynamoDBProperty("telegramId")] // userId on telegram
+        public string TelegramId { get; set; }
 
         [DynamoDBProperty("chatId")]
         public string ChatId
@@ -24,9 +24,9 @@ namespace BudgetBotTelegram.Model
             get => _chatId;
             init
             {
-                _chatId = value ?? string.Empty;
-                // Keep UserId, Pk and Sk synchronized with ChatId for now
-                UserId = _chatId;
+                _chatId = value;
+                // Keep TelegramId, Pk and Sk synchronized with ChatId for now
+                TelegramId = _chatId;
                 Pk = _chatId;
                 Sk = _chatId;
             }
