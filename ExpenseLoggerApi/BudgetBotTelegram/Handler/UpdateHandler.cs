@@ -1,5 +1,6 @@
 ﻿using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
+using BudgetBotTelegram.Service;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;

@@ -1,8 +1,8 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
-using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Interface;
+using BudgetBotTelegram.Model;
 
-namespace BudgetBotTelegram
+namespace BudgetBotTelegram.Service
 {
     public class ChatStateService(IDynamoDBContext dbContext, ILogger<ChatStateService> logger) : IChatStateService
     {

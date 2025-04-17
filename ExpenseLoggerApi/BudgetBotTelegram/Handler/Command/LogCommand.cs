@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
+using BudgetBotTelegram.Service;
 using SharedLibrary;
 using Telegram.Bot.Types;
 
@@ -9,8 +10,7 @@ namespace BudgetBotTelegram.Handler.Command;
 public class LogCommand(
     ISenderGateway sender,
     IExpenseLoggerApiClient expenseApiClient,
-    IChatStateService chatStateService,
-    ILogger<LogCommand> logger) : ILogCommand
+    IChatStateService chatStateService) : ILogCommand
 {
     public const string CommandName = "log";
 

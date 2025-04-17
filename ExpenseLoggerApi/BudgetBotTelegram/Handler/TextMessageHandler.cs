@@ -1,5 +1,6 @@
 ﻿using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
+using BudgetBotTelegram.Service;
 using BudgetBotTelegram.Settings;
 using Telegram.Bot.Types;
 
@@ -9,7 +10,6 @@ public class TextMessageHandler(
     ISenderGateway sender,
     ILogCommand log,
     IChatStateService chatStateService,
-    ILogger<TextMessageHandler> logger,
     ICancelCommand cancel) : ITextMessageHandler
 {
     public async Task<Message> HandleTextMessageAsync(Message message, CancellationToken cancellationToken)
@@ -28,7 +28,7 @@ public class TextMessageHandler(
         if (!hasState) // Default message
             return await sender.ReplyAsync(message.Chat, "You said:\n" + messageText, cancellationToken: cancellationToken);
 
-        if (chatState.State == "AwaitingLogArguments")
+        if (chatState?.State == "AwaitingLogArguments")
             return await log.HandleLogAsync(message, chatState, cancellationToken);
 
         // TODO: handle state

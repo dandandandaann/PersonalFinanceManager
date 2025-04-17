@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace BudgetBotTelegram;
+namespace BudgetBotTelegram.Other;
 
 public static class LocalDev
 {
