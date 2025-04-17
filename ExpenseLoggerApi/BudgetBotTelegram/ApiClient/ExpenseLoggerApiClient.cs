@@ -1,3 +1,4 @@
+using System.Text.Json;
 using BudgetBotTelegram.AtoTypes;
 using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
@@ -53,8 +54,8 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
         if (response.Content is { Headers.ContentType.MediaType: "application/json" })
         {
             var responseExpense = await response.Content.ReadFromJsonAsync(
-                cancellationToken: cancellationToken,
-                jsonTypeInfo: AppJsonSerializerContext.Default.LogExpenseResponse);
+                AppJsonSerializerContext.Default.LogExpenseResponse,
+                cancellationToken);
 
             if (responseExpense?.expense != null)
             {
