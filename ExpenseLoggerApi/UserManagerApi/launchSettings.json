@@ -1,0 +1,12 @@
+﻿{
+  "profiles": {
+    "Lambda Runtime API": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "AWS_LAMBDA_RUNTIME_API": "localhost:5050",
+        "AWS_PROFILE": "default",
+        "AWS_REGION": "us-east-2"
+      }
+    }
+  }
+}

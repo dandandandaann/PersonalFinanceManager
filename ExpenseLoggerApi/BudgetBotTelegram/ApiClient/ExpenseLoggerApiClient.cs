@@ -1,7 +1,5 @@
-using System.Text.Json;
 using BudgetBotTelegram.AtoTypes;
 using BudgetBotTelegram.Interface;
-using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Settings;
 using Microsoft.Extensions.Options;
 using SharedLibrary;

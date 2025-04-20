@@ -18,10 +18,12 @@ public class TextMessageHandler(
         ArgumentNullException.ThrowIfNull(message.Text);
         var messageText = message.Text;
 
-        if (messageText.StartsWith("log ", StringComparison.CurrentCultureIgnoreCase) || messageText == "log")
+        if (messageText.StartsWith("log ", StringComparison.CurrentCultureIgnoreCase) ||
+            messageText.Equals("log", StringComparison.CurrentCultureIgnoreCase))
             return await log.HandleLogAsync(message, cancellationToken);
 
-        if (messageText.StartsWith("cancel", StringComparison.CurrentCultureIgnoreCase) || messageText == "cancel")
+        if (messageText.StartsWith("cancel", StringComparison.CurrentCultureIgnoreCase) ||
+            messageText.Equals("cancel", StringComparison.CurrentCultureIgnoreCase))
             return await cancel.HandleCancelAsync(message, cancellationToken);
 
         (bool hasState, ChatState chatState) = await chatStateService.HasState(message.Chat.Id);
