@@ -38,6 +38,42 @@
           }
         }
       }
+    },
+    "UserManagerApiFunctionsGetUserByTelegramIdAsyncGenerated": {
+      "Type": "AWS::Serverless::Function",
+      "Metadata": {
+        "Tool": "Amazon.Lambda.Annotations",
+        "SyncedEvents": [
+          "RootGet"
+        ],
+        "SyncedEventProperties": {
+          "RootGet": [
+            "Path",
+            "Method"
+          ]
+        }
+      },
+      "Properties": {
+        "Runtime": "dotnet8",
+        "CodeUri": ".",
+        "MemorySize": 128,
+        "Timeout": 10,
+        "Policies": [
+          "AWSLambdaBasicExecutionRole",
+          "DB_user_Read"
+        ],
+        "PackageType": "Zip",
+        "Handler": "UserManagerApi::UserManagerApi.Functions_GetUserByTelegramIdAsync_Generated::GetUserByTelegramIdAsync",
+        "Events": {
+          "RootGet": {
+            "Type": "HttpApi",
+            "Properties": {
+              "Path": "/user/telegram/{telegramId}",
+              "Method": "GET"
+            }
+          }
+        }
+      }
     }
   },
   "Outputs": {
