@@ -24,7 +24,7 @@
         "Timeout": 10,
         "Policies": [
           "AWSLambdaBasicExecutionRole",
-          "DB_user_CRUD"
+          "arn:aws:iam::795287297286:policy/DB_user_CRUD"
         ],
         "PackageType": "Zip",
         "Handler": "UserManagerApi::UserManagerApi.Functions_SignupUserAsync_Generated::SignupUserAsync",
@@ -60,7 +60,7 @@
         "Timeout": 10,
         "Policies": [
           "AWSLambdaBasicExecutionRole",
-          "DB_user_Read"
+          "arn:aws:iam::795287297286:policy/DB_user_Read"
         ],
         "PackageType": "Zip",
         "Handler": "UserManagerApi::UserManagerApi.Functions_GetUserByTelegramIdAsync_Generated::GetUserByTelegramIdAsync",

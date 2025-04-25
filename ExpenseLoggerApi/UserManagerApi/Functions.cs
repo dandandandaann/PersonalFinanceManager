@@ -6,7 +6,6 @@ using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.APIGatewayEvents;
 using SharedLibrary.UserClasses;
 using UserManagerApi.Common;
-using UserManagerApi.Model;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -25,7 +24,10 @@ public class Functions(IDynamoDBContext dbContext)
     /// <param name="request">The signup request containing TelegramId and optional Username.</param>
     /// <param name="context">Lambda context.</param>
     /// <returns>HTTP result indicating success (Created or OK).</returns>
-    [LambdaFunction(Policies = "AWSLambdaBasicExecutionRole, DB_user_CRUD")]
+    [LambdaFunction(
+        Policies = "AWSLambdaBasicExecutionRole, arn:aws:iam::795287297286:policy/DB_user_CRUD",
+        MemorySize = 128,
+        Timeout = 10)]
     [HttpApi(LambdaHttpMethod.Post, "/user/signup")]
     public async Task<APIGatewayHttpApiV2ProxyResponse> SignupUserAsync(
         [FromBody] UserSignupRequest request,
@@ -33,38 +35,48 @@ public class Functions(IDynamoDBContext dbContext)
     {
         context.Logger.LogInformation($"Signup attempt for TelegramId: {request.TelegramId}");
 
-        var existingUser = await FindUserByTelegramIdAsync(request.TelegramId, context);
-
-        if (existingUser != null)
+        try
         {
-            context.Logger.LogInformation($"User already exists with UserId: {existingUser.UserId}");
-            return ApiResponse.Ok(new UserExistsResponse { Success = false, UserId = existingUser.UserId });
-        }
+            var existingUser = await FindUserByTelegramIdAsync(request.TelegramId, context);
 
-        context.Logger.LogInformation("User not found. Creating new user.");
-        var newUser = await CreateNewUserAsync(request.TelegramId, request.Username, context);
-
-        return ApiResponse.Created(
-            $"/user/{newUser.UserId}", // TODO: Decide on canonical location header for user resource
-            new UserResponse
+            if (existingUser != null)
             {
-                Success = true,
-                User = newUser
-            });
+                context.Logger.LogInformation($"User already exists with UserId: {existingUser.UserId}");
+                return ApiResponse.Ok(new UserExistsResponse { Success = false, UserId = existingUser.UserId });
+            }
+
+            context.Logger.LogInformation("User not found. Creating new user.");
+            var newUser = await CreateNewUserAsync(request.TelegramId, request.Username, context);
+
+            return ApiResponse.Created(
+                $"/user/{newUser.UserId}",
+                new UserResponse
+                {
+                    Success = true,
+                    User = newUser
+                });
+        }
+        catch (Exception ex)
+        {
+            context.Logger.LogError("Error retrieving user by TelegramId {TelegramId}: {ExceptionMessage}",
+                request.TelegramId, ex.Message);
+            return ApiResponse.InternalServerError("An error occurred while retrieving the user.");
+        }
     }
 
     /// <summary>
     /// Retrieves a user by their Telegram ID. Exposed as an API endpoint.
     /// </summary>
     /// <param name="telegramId">User's Telegram ID.</param>
-    /// <param name="request">The API Gateway request containing the Telegram ID in the path.</param>
     /// <param name="context">Lambda context.</param>
     /// <returns>HTTP result containing the user if found, or NotFound/BadRequest.</returns>
-    [LambdaFunction(Policies = "AWSLambdaBasicExecutionRole, DB_user_Read")] // Read-only access needed
+    [LambdaFunction(
+        Policies = "AWSLambdaBasicExecutionRole, arn:aws:iam::795287297286:policy/DB_user_Read",
+        MemorySize = 128,
+        Timeout = 10)]
     [HttpApi(LambdaHttpMethod.Get, "/user/telegram/{telegramId}")]
     public async Task<APIGatewayHttpApiV2ProxyResponse> GetUserByTelegramIdAsync(
         string telegramId,
-        APIGatewayHttpApiV2ProxyRequest request,
         ILambdaContext context)
     {
         if (!long.TryParse(telegramId, out var telegramIdNumber))
@@ -82,23 +94,26 @@ public class Functions(IDynamoDBContext dbContext)
             if (user == null)
             {
                 context.Logger.LogInformation($"User not found for TelegramId: {telegramIdNumber}");
-                return ApiResponse.NotFound($"User not found with TelegramId: {telegramIdNumber}");
+                return ApiResponse.Ok(
+                    new UserResponse
+                    {
+                        Success = false,
+                        User = null
+                    });
             }
 
             context.Logger.LogInformation($"Found user with UserId: {user.UserId} for TelegramId: {telegramIdNumber}");
-            // Return only necessary user information, avoid exposing internal details if needed
             return ApiResponse.Ok(
                 new UserResponse
                 {
                     Success = true,
-                    User = user // TODO: don't send all user information for safety
+                    User = user // TODO: Return only necessary user information, not the whole user info
                 });
         }
         catch (Exception ex)
         {
-            // Catch exceptions from FindUserByTelegramIdAsync (e.g., DynamoDB errors)
-            context.Logger.LogError($"Error retrieving user by TelegramId {telegramIdNumber}: {ex.Message}");
-            // Return a generic server error response
+            context.Logger.LogError("Error retrieving user by TelegramId {TelegramId}: {ExceptionMessage}",
+                telegramIdNumber, ex.Message);
             return ApiResponse.InternalServerError("An error occurred while retrieving the user.");
         }
     }
@@ -118,7 +133,7 @@ public class Functions(IDynamoDBContext dbContext)
                         { ":v_telegramId", telegramId }
                     }
                 },
-                Limit = 1 // Optional: If you expect only one user per TelegramId
+                Limit = 1
             };
 
             var search = dbContext.FromQueryAsync<User>(queryOperationConfig);
@@ -137,7 +152,6 @@ public class Functions(IDynamoDBContext dbContext)
         catch (Exception ex)
         {
             context.Logger.LogError($"Error querying DynamoDB by TelegramId {telegramId}: {ex.Message}");
-            // Let the caller handle the exception and decide on the response
             throw;
         }
     }
@@ -162,7 +176,6 @@ public class Functions(IDynamoDBContext dbContext)
         catch (Exception ex)
         {
             context.Logger.LogError($"Error saving user to DynamoDB using DynamoDBContext: {ex.Message}");
-            // Let the caller handle the exception and decide on the response
             throw;
         }
     }

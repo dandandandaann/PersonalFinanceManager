@@ -5,7 +5,12 @@ using Telegram.Bot.Types;
 
 namespace BudgetBotTelegram.Handler;
 
-public class CommandHandler(ISenderGateway sender, ILogCommand log, ICancelCommand cancel) : ICommandHandler
+public class CommandHandler(
+    ISenderGateway sender,
+    ILogCommand logCommand,
+    ISignupCommand signupCommand,
+    ICancelCommand cancelCommand
+) : ICommandHandler
 {
     public async Task<Message> HandleCommandAsync(Message message, CancellationToken cancellationToken)
     {
@@ -25,10 +30,13 @@ public class CommandHandler(ISenderGateway sender, ILogCommand log, ICancelComma
         var command = message.Text.Substring(0, commandEntity.Length).Split('@')[0];
 
         if (command.Equals($"/{LogCommand.CommandName}", StringComparison.OrdinalIgnoreCase))
-            return await log.HandleLogAsync(message, cancellationToken);
+            return await logCommand.HandleLogAsync(message, cancellationToken);
+
+        if (command.Equals($"/{SignupCommand.CommandName}", StringComparison.OrdinalIgnoreCase))
+            return await signupCommand.HandleSignupAsync(message, cancellationToken);
 
         if (command.Equals($"/{CancelCommand.CommandName}", StringComparison.OrdinalIgnoreCase))
-            return await cancel.HandleCancelAsync(message, cancellationToken);
+            return await cancelCommand.HandleCancelAsync(message, cancellationToken);
 
         return await sender.ReplyAsync(
             message.Chat,

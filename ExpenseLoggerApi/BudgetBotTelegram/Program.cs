@@ -10,7 +10,6 @@ using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Other;
 using BudgetBotTelegram.Service;
 using BudgetBotTelegram.Settings;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
@@ -40,6 +39,10 @@ builder.Services.AddHttpClient("telegram_bot_client")
 builder.Services.Configure<ExpenseLoggerApiSettings>(config.GetSection(ExpenseLoggerApiSettings.Configuration));
 builder.Services.AddHttpClient<IExpenseLoggerApiClient, ExpenseLoggerApiClient>();
 
+// Register UserApiClient
+// TODO: Add UserManagerApiSettings configuration if needed (e.g., for base URL)
+builder.Services.AddHttpClient<IUserApiClient, UserApiClient>();
+
 builder.Services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(RegionEndpoint.USEast2));
 
 builder.Services.AddScoped<IDynamoDBContext>(sp =>
@@ -65,6 +68,7 @@ builder.Services.AddScoped<ICommandHandler, CommandHandler>();
 // Register commands
 builder.Services.AddScoped<ILogCommand, LogCommand>();
 builder.Services.AddScoped<ICancelCommand, CancelCommand>();
+builder.Services.AddScoped<ISignupCommand, SignupCommand>();
 
 #pragma warning disable IL2026
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,

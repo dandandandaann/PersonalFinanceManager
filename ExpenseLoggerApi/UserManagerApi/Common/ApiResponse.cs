@@ -2,9 +2,9 @@
 using System.Text.Json;
 using Amazon.Lambda.APIGatewayEvents;
 
-namespace UserManagerApi.Common; // Or any appropriate namespace
+namespace UserManagerApi.Common;
 
-public static class ApiResponse // Or name it ResponseHelpers, Results, etc.
+public static class ApiResponse
 {
     private static readonly Dictionary<string, string> JsonHeaders = new() { { "Content-Type", "application/json" } };
 

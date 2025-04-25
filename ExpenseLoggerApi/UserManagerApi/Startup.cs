@@ -20,14 +20,12 @@ public class Startup
     /// </summary>
     public void ConfigureServices(IServiceCollection services)
     {
-        // Here we'll add an instance of our calculator service that will be used by each function
-
-        services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(RegionEndpoint.USEast2));
-
-        // #pragma warning disable IL2026 // TODO: try removing it
+        // #pragma warning disable IL2026
         services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,
             options => { options.Serializer = new SourceGeneratorLambdaJsonSerializer<AppJsonSerializerContext>(); });
         // #pragma warning restore IL2026
+
+        services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(RegionEndpoint.USEast2));
 
         services.AddScoped<IDynamoDBContext>(sp =>
         {
