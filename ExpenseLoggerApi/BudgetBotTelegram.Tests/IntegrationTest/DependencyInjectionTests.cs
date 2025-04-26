@@ -9,8 +9,8 @@ using Xunit.Abstractions;
 
 namespace BudgetBotTelegram.Tests.IntegrationTest;
 
-public class DependencyInjectionTests(WebApplicationFactory<Program> factory, ITestOutputHelper output)
-    : IClassFixture<WebApplicationFactory<Program>>
+public class DependencyInjectionTests(WebApplicationFactory<Other.Program> factory, ITestOutputHelper output)
+    : IClassFixture<WebApplicationFactory<Other.Program>>
 {
     [Fact]
     public void ShouldResolve_IMessageHandler_FromScopedProvider() // Renamed for clarity

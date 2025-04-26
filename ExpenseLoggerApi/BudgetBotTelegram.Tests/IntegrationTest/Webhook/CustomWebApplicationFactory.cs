@@ -8,7 +8,7 @@ using Moq;
 
 namespace BudgetBotTelegram.Tests.IntegrationTest.Webhook
 {
-    public class CustomWebApplicationFactory : WebApplicationFactory<Program>
+    public class CustomWebApplicationFactory : WebApplicationFactory<Other.Program>
     {
         public string TestWebhookToken { get; set; } = "WebhookToken";
         public Mock<IUpdateHandler> MockUpdateHandler { get; } = new();
