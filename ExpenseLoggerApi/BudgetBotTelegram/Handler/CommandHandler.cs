@@ -12,7 +12,7 @@ public class CommandHandler(
     ICancelCommand cancelCommand
 ) : ICommandHandler
 {
-    public async Task<Message> HandleCommandAsync(Message message, CancellationToken cancellationToken)
+    public async Task<Message> HandleCommandAsync(Message message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(message.Entities);

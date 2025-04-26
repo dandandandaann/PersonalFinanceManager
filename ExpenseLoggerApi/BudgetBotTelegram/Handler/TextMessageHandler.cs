@@ -7,13 +7,14 @@ using Telegram.Bot.Types;
 namespace BudgetBotTelegram.Handler;
 
 public class TextMessageHandler(
+    ILogger<MessageHandler> logger,
     ISenderGateway sender,
     IChatStateService chatStateService,
     ILogCommand logCommand,
     ISignupCommand signupCommand,
     ICancelCommand cancelCommand) : ITextMessageHandler
 {
-    public async Task<Message> HandleTextMessageAsync(Message message, CancellationToken cancellationToken)
+    public async Task<Message> HandleTextMessageAsync(Message message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(message.Text);
@@ -29,14 +30,18 @@ public class TextMessageHandler(
         if (messageText.Equals(CancelCommand.CommandName, StringComparison.CurrentCultureIgnoreCase))
             return await cancelCommand.HandleCancelAsync(message, cancellationToken);
 
-        (bool hasState, ChatState chatState) = await chatStateService.HasState(message.Chat.Id);
+        if (!UserManagerService.UserLoggedIn)
+            throw new UnauthorizedAccessException();
+
+        (bool hasState, ChatState? chatState) = await chatStateService.HasState(message.Chat.Id);
         if (!hasState) // Default message
             return await sender.ReplyAsync(message.Chat, "You said:\n" + messageText, cancellationToken: cancellationToken);
 
-        if (chatState?.State == "AwaitingLogArguments")
+        if (chatState?.State == ChatStateService.StateEnum.AwaitingLogArguments.ToString())
             return await logCommand.HandleLogAsync(message, chatState, cancellationToken);
 
         // TODO: handle state
+        logger.LogError("Chat state is null or not implemented: {ChatState}", chatState?.State);
         throw new NotImplementedException();
     }
 }

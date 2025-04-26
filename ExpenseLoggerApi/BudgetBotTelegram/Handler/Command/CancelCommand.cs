@@ -8,12 +8,13 @@ public class CancelCommand(ISenderGateway sender, IChatStateService chatStateSer
 {
     public const string CommandName = "cancel";
 
-    public async Task<Message> HandleCancelAsync(Message message, CancellationToken cancellationToken)
+    public async Task<Message> HandleCancelAsync(Message message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(message.Text);
 
-        // TODO: clear chat state
+        if (!UserManagerService.UserLoggedIn)
+            throw new UnauthorizedAccessException();
 
         await chatStateService.ClearState(message.Chat.Id);
 

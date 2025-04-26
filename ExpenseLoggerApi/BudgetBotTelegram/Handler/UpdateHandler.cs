@@ -15,7 +15,7 @@ public class UpdateHandler(
     ILogger<UpdateHandler> logger) : IUpdateHandler
 {
 
-    public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken)
+    public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken = default)
     {
         var handler = update.Type switch
         {
@@ -30,14 +30,23 @@ public class UpdateHandler(
         {
             await handler;
         }
+        catch (UnauthorizedAccessException e)
+        {
+            var message = update.Message ?? update.CallbackQuery!.Message;
+
+            await sender.ReplyAsync(message.Chat, "Please signup to proceed.",
+                $"UnauthorizedAccessException: {e.Message}. User message: {message.Text}.",
+                logLevel: LogLevel.Warning,
+                cancellationToken: cancellationToken);
+
+        }
         catch (InvalidUserInputException e)
         {
             var message = update.Message ?? update.CallbackQuery!.Message;
 
-
-            await sender.ReplyAsync(message.Chat, e.Message,
-                $"InvalidUserInputException: {e.Message}. Message: {message.Text}.",
-                logLevel: LogLevel.Warning,
+            await sender.ReplyAsync(message.Chat, "Your message was invalid somehow. Please try something else.",
+                $"InvalidUserInputException: {e.Message}. User message: {message.Text}.",
+                logLevel: LogLevel.Information,
                 cancellationToken: cancellationToken);
         }
         catch (Exception exception)
@@ -46,7 +55,7 @@ public class UpdateHandler(
         }
     }
 
-    private async Task HandleCallbackQueryAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken)
+    private async Task HandleCallbackQueryAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Received callback query with data: {CallbackData}", callbackQuery.Data);
 
@@ -60,7 +69,7 @@ public class UpdateHandler(
         // Example: Modify the message or perform an action based on callbackQuery.Data
     }
 
-    private async Task HandleUnknownUpdateAsync(Update update, CancellationToken cancellationToken)
+    private async Task HandleUnknownUpdateAsync(Update update, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Unknown update type: {UpdateType}", update.Type);
 

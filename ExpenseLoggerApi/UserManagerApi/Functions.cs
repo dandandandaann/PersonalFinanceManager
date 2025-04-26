@@ -95,19 +95,18 @@ public class Functions(IDynamoDBContext dbContext)
             {
                 context.Logger.LogInformation($"User not found for TelegramId: {telegramIdNumber}");
                 return ApiResponse.Ok(
-                    new UserResponse
+                    new UserExistsResponse
                     {
-                        Success = false,
-                        User = null
+                        Success = false
                     });
             }
 
             context.Logger.LogInformation($"Found user with UserId: {user.UserId} for TelegramId: {telegramIdNumber}");
             return ApiResponse.Ok(
-                new UserResponse
+                new UserExistsResponse
                 {
                     Success = true,
-                    User = user // TODO: Return only necessary user information, not the whole user info
+                    UserId = user.UserId
                 });
         }
         catch (Exception ex)

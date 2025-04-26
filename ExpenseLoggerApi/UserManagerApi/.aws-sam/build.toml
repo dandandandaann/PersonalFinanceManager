@@ -18,6 +18,21 @@ RootPost = ["Path", "Method"]
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 [function_build_definitions.033c932f-ec4a-4bf8-bf35-d93359bfa212]
 codeuri = "C:\\repo\\BudgetAutomation\\ExpenseLoggerApi\\UserManagerApi"
 runtime = "dotnet8"
@@ -33,6 +48,21 @@ SyncedEvents = ["RootGet"]
 
 [function_build_definitions.033c932f-ec4a-4bf8-bf35-d93359bfa212.metadata.SyncedEventProperties]
 RootGet = ["Path", "Method"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

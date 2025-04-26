@@ -7,50 +7,46 @@ using Telegram.Bot.Types;
 
 namespace BudgetBotTelegram.Handler.Command;
 
-public class LogCommand(
+public partial class LogCommand(
     ISenderGateway sender,
     IExpenseLoggerApiClient expenseApiClient,
     IChatStateService chatStateService) : ILogCommand
 {
     public const string CommandName = "log";
 
-    public async Task<Message> HandleLogAsync(Message message, CancellationToken cancellationToken)
+    public async Task<Message> HandleLogAsync(Message message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(message.Text);
 
-        string expenseArguments;
-        // TODO: there's probably a better way to do this
-        if (message.Text.StartsWith("/log ", StringComparison.OrdinalIgnoreCase))
-            expenseArguments = message.Text[5..];
-        else if (message.Text.StartsWith("log ", StringComparison.OrdinalIgnoreCase) ||
-                 message.Text.StartsWith("/log", StringComparison.OrdinalIgnoreCase))
-            expenseArguments = message.Text[4..];
-        else if (message.Text.StartsWith("log", StringComparison.OrdinalIgnoreCase))
-            expenseArguments = message.Text[3..];
-        else
-            throw new InvalidUserInputException($"Message text doesn't start with {CommandName} command.");
+        // TODO: is it possible to make a virtual class with this verification? Is it worth it?
+        if (!UserManagerService.UserLoggedIn)
+            throw new UnauthorizedAccessException();
 
-        expenseArguments = expenseArguments.Trim();
+        if (!TryParseCommandArguments(message.Text, CommandName, out string expenseArguments))
+        {
+            throw new InvalidUserInputException($"Message text doesn't start with {CommandName} command.");
+        }
 
         if (String.IsNullOrEmpty(expenseArguments))
         {
-            await chatStateService.SetStateAsync(message.Chat.Id, "AwaitingLogArguments"); // TODO: create enum for chat states
+            var chatState = ChatStateService.StateEnum.AwaitingLogArguments.ToString();
+            await chatStateService.SetStateAsync(message.Chat.Id, chatState); // TODO: create enum for chat states
 
             return await sender.ReplyAsync(message.Chat,
                 "Okay, please enter the details for your expense. e.g. 'Café 5,50 Comida'",
-                "Chat state: AwaitingLogArguments.",
+                $"Chat state: {chatState}.",
                 cancellationToken: cancellationToken);
         }
 
         return await LogExpenseAsync(message.Chat, expenseArguments, cancellationToken);
     }
 
-    public async Task<Message> HandleLogAsync(Message message, ChatState chatState, CancellationToken cancellationToken)
+    public async Task<Message> HandleLogAsync(Message message, ChatState chatState, CancellationToken cancellationToken = default)
     {
         await chatStateService.ClearState(message.Chat.Id);
 
-        if (chatState.State == "AwaitingLogArguments")
+        if (chatState.State == ChatStateService.StateEnum.AwaitingLogArguments.ToString())
         {
             return await LogExpenseAsync(message.Chat, message.Text, cancellationToken);
         }
@@ -62,7 +58,8 @@ public class LogCommand(
         );
     }
 
-    private async Task<Message> LogExpenseAsync(ChatId chatId, string expenseArguments, CancellationToken cancellationToken)
+    private async Task<Message> LogExpenseAsync(ChatId chatId, string expenseArguments,
+        CancellationToken cancellationToken = default)
     {
         var expense = ParseExpenseArguments(expenseArguments);
 
@@ -86,7 +83,7 @@ public class LogCommand(
     private static Expense ParseExpenseArguments(string expenseArguments)
     {
         var expense = new Expense();
-        var match = Regex.Match(expenseArguments, @"^(.+)\s+([\d.,]+)\s*(.*)$");
+        var match = ExpenseArgumentsRegex().Match(expenseArguments);
 
         if (match.Success)
         {
@@ -113,4 +110,49 @@ public class LogCommand(
 
         return expense;
     }
+
+    private static bool TryParseCommandArguments(string text, string commandName, out string arguments)
+    {
+        arguments = "";
+        string commandWithSlash = "/" + commandName;
+        int prefixLength = -1;
+
+        // Check if it starts with "/command" (case-insensitive)
+        if (text.StartsWith(commandWithSlash, StringComparison.OrdinalIgnoreCase))
+        {
+            prefixLength = commandWithSlash.Length;
+        }
+        // Check if it starts with "command" (case-insensitive)
+        else if (text.StartsWith(commandName, StringComparison.OrdinalIgnoreCase))
+        {
+            prefixLength = commandName.Length;
+        }
+        else
+        {
+            // Doesn't start with the command at all
+            return false;
+        }
+
+        // Now check what follows the command prefix
+        // The message is exactly the command (e.g., "/log" or "log")
+        if (text.Length == prefixLength)
+        {
+            arguments = string.Empty;
+            return true;
+        }
+
+        // The command is followed by a space (e.g., "/log args" or "log args")
+        if (text.Length > prefixLength && text[prefixLength] == ' ')
+        {
+            // Extract arguments, trim potential whitespace around them
+            arguments = text.Substring(prefixLength + 1).Trim();
+            return true;
+        }
+
+        // It's something else (e.g., "/logfoobar" or "logfoobar") - invalid command invocation
+        return false;
+    }
+
+    [GeneratedRegex(@"^(.+)\s+([\d.,]+)\s*(.*)$")]
+    private static partial Regex ExpenseArgumentsRegex();
 }

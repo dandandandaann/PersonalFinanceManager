@@ -12,9 +12,10 @@ public interface IUserApiClient
     /// </summary>
     /// <param name="telegramId">The user's Telegram ID.</param>
     /// <param name="username">The user's Telegram username (optional).</param>
+    /// <param name="email">The user's email (optional).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A response indicating success or failure, potentially including user details.</returns>
-    Task<UserResponse> SignupUserAsync(long telegramId, string? username, CancellationToken cancellationToken);
+    Task<UserResponse> SignupUserAsync(long telegramId, string? username, string? email, CancellationToken cancellationToken = default);
 
-    // Potentially add GetUserByTelegramIdAsync later if needed
-} 
+    Task<UserExistsResponse> CheckUserAsync(long telegramId, CancellationToken cancellationToken = default);
+}

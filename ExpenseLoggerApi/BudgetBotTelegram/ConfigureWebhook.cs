@@ -11,7 +11,7 @@ public class ConfigureWebhook(
     IServiceProvider serviceProvider,
     IOptions<BotSettings> botOptions) : IHostedService
 {
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken = default)
     {
         using var scope = serviceProvider.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
@@ -55,7 +55,7 @@ public class ConfigureWebhook(
         }
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
+    public async Task StopAsync(CancellationToken cancellationToken = default)
     {
         // Clean up the webhook when the application stops
         using var scope = serviceProvider.CreateScope();

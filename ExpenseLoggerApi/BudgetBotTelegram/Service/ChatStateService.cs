@@ -6,6 +6,11 @@ namespace BudgetBotTelegram.Service
 {
     public class ChatStateService(IDynamoDBContext dbContext, ILogger<ChatStateService> logger) : IChatStateService
     {
+        public enum StateEnum
+        {
+            AwaitingLogArguments
+        }
+
         /// <summary>
         /// Checks if a chat state exists for the given chatId and retrieves it.
         /// </summary>

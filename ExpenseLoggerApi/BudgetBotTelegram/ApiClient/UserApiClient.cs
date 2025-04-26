@@ -2,27 +2,42 @@ using System.Net;
 using System.Text.Json;
 using BudgetBotTelegram.AtoTypes;
 using BudgetBotTelegram.Interface;
+using BudgetBotTelegram.Settings;
+using Microsoft.Extensions.Options;
 using SharedLibrary.UserClasses;
 
 namespace BudgetBotTelegram.ApiClient;
 
-public class UserApiClient(
-    HttpClient httpClient,
-    IConfiguration configuration,
-    ILogger<UserApiClient> logger) : IUserApiClient
+public class UserApiClient : IUserApiClient
 {
-    private readonly Uri _userManagerUri = new(
-        configuration["UserManagerApiUrl"] ??
-        throw new InvalidOperationException("UserManagerApiUrl is not configured.")
-    );
+    private readonly HttpClient _httpClient;
+    private readonly ILogger<UserApiClient> _logger;
 
-    public async Task<UserResponse> SignupUserAsync(long telegramId, string? username,
-        CancellationToken cancellationToken)
+    public UserApiClient(HttpClient httpClient,
+        IOptions<UserApiClientSettings> options,
+        ILogger<UserApiClient> logger)
     {
-        var requestUri = new Uri(_userManagerUri, "/user/signup");
+        _httpClient = httpClient;
+        _logger = logger;
+
+        if (options.Value is not { } apiOptions ||
+            string.IsNullOrEmpty(apiOptions.Url) ||
+            string.IsNullOrEmpty(apiOptions.Key))
+            throw new ArgumentNullException(nameof(apiOptions));
+
+        // Configure HttpClient base address and default headers
+        _httpClient.BaseAddress = new Uri(apiOptions.Url);
+        _httpClient.DefaultRequestHeaders.Add("x-api-key", apiOptions.Key);
+    }
+
+    public async Task<UserResponse> SignupUserAsync(
+        long telegramId, string? username, string? email,
+        CancellationToken cancellationToken = default)
+    {
+        var requestUri = new Uri(_httpClient.BaseAddress!, "/user/signup");
         var signupRequest = new UserSignupRequest(telegramId, username);
 
-        logger.LogInformation("Sending signup request for TelegramId {TelegramId} to {RequestUri}", telegramId,
+        _logger.LogInformation("Sending signup request for TelegramId {TelegramId} to {RequestUri}", telegramId,
             requestUri);
 
         try
@@ -33,11 +48,11 @@ public class UserApiClient(
             var content = JsonContent.Create(signupRequest, AppJsonSerializerContext.Default.UserSignupRequest);
             request.Content = content;
 
-            var response = await httpClient.SendAsync(request, cancellationToken);
+            var response = await _httpClient.SendAsync(request, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogError("Failed to create user for TelegramId {TelegramId}", telegramId);
+                _logger.LogError("Failed to create user for TelegramId {TelegramId}", telegramId);
                 return new UserResponse { Success = false };
             }
 
@@ -47,7 +62,7 @@ public class UserApiClient(
 
             if (userResponse is not { Success: true, User: not null })
             {
-                logger.LogError(
+                _logger.LogError(
                     "Received success status code but failed to deserialize UserResponse for TelegramId {TelegramId}",
                     telegramId);
                 return new UserResponse { Success = false };
@@ -55,44 +70,44 @@ public class UserApiClient(
 
             // --
 
-            logger.LogInformation("Signup successful for TelegramId {TelegramId}. User ID: {UserId}",
+            _logger.LogInformation("Signup successful for TelegramId {TelegramId}. User ID: {UserId}",
                 telegramId, userResponse.User.UserId);
             return userResponse;
         }
         catch (HttpRequestException ex)
         {
-            logger.LogError(ex, "HTTP request failed during signup for TelegramId {TelegramId}", telegramId);
+            _logger.LogError(ex, "HTTP request failed during signup for TelegramId {TelegramId}", telegramId);
             throw; // Re-throw or handle appropriately
         }
         catch (JsonException ex)
         {
-            logger.LogError(ex, "JSON deserialization failed during signup for TelegramId {TelegramId}", telegramId);
+            _logger.LogError(ex, "JSON deserialization failed during signup for TelegramId {TelegramId}", telegramId);
             throw; // Re-throw or handle appropriately
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An unexpected error occurred during signup for TelegramId {TelegramId}", telegramId);
+            _logger.LogError(ex, "An unexpected error occurred during signup for TelegramId {TelegramId}", telegramId);
             throw; // Re-throw or handle appropriately
         }
     }
 
-    public async Task<UserExistsResponse> CheckUserAsync(long telegramId, CancellationToken cancellationToken)
+    public async Task<UserExistsResponse> CheckUserAsync(long telegramId, CancellationToken cancellationToken = default)
     {
-        var requestUri = new Uri(_userManagerUri, $"/user/telegram/{telegramId}");
+        var requestUri = new Uri(_httpClient.BaseAddress!, $"/user/telegram/{telegramId}");
 
-        logger.LogInformation("Sending signup request for TelegramId {TelegramId} to {RequestUri}", telegramId,
+        _logger.LogInformation("Sending signup request for TelegramId {TelegramId} to {RequestUri}", telegramId,
             requestUri);
 
         try
         {
             var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
 
-            var response = await httpClient.SendAsync(request, cancellationToken);
+            var response = await _httpClient.SendAsync(request, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == HttpStatusCode.NotFound)
-                    logger.LogError("Failed to check user for TelegramId {TelegramId}", telegramId);
+                    _logger.LogError("Failed to check user for TelegramId {TelegramId}", telegramId);
                 return new UserExistsResponse { Success = false };
             }
 
@@ -102,29 +117,29 @@ public class UserApiClient(
 
             if (userExistsResponse is not { Success: true })
             {
-                logger.LogError(
+                _logger.LogError(
                     "Received success status code but failed to deserialize UserExistsResponse for TelegramId {TelegramId}",
                     telegramId);
                 return new UserExistsResponse { Success = false };
             }
 
-            logger.LogInformation("Signup successful for TelegramId {TelegramId}. User ID: {UserId}",
+            _logger.LogInformation("Signup successful for TelegramId {TelegramId}. User ID: {UserId}",
                 telegramId, userExistsResponse.UserId);
             return userExistsResponse;
         }
         catch (HttpRequestException ex)
         {
-            logger.LogError(ex, "HTTP request failed during signup for TelegramId {TelegramId}", telegramId);
+            _logger.LogError(ex, "HTTP request failed during signup for TelegramId {TelegramId}", telegramId);
             throw; // Re-throw or handle appropriately
         }
         catch (JsonException ex)
         {
-            logger.LogError(ex, "JSON deserialization failed during signup for TelegramId {TelegramId}", telegramId);
+            _logger.LogError(ex, "JSON deserialization failed during signup for TelegramId {TelegramId}", telegramId);
             throw; // Re-throw or handle appropriately
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An unexpected error occurred during signup for TelegramId {TelegramId}", telegramId);
+            _logger.LogError(ex, "An unexpected error occurred during signup for TelegramId {TelegramId}", telegramId);
             throw; // Re-throw or handle appropriately
         }
     }

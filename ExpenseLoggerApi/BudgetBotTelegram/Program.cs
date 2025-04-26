@@ -39,8 +39,7 @@ builder.Services.AddHttpClient("telegram_bot_client")
 builder.Services.Configure<ExpenseLoggerApiSettings>(config.GetSection(ExpenseLoggerApiSettings.Configuration));
 builder.Services.AddHttpClient<IExpenseLoggerApiClient, ExpenseLoggerApiClient>();
 
-// Register UserApiClient
-// TODO: Add UserManagerApiSettings configuration if needed (e.g., for base URL)
+builder.Services.Configure<UserApiClientSettings>(config.GetSection(UserApiClientSettings.Configuration));
 builder.Services.AddHttpClient<IUserApiClient, UserApiClient>();
 
 builder.Services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(RegionEndpoint.USEast2));
@@ -55,6 +54,7 @@ builder.Services.AddScoped<IDynamoDBContext>(sp =>
 });
 
 builder.Services.AddScoped<IChatStateService, ChatStateService>();
+builder.Services.AddScoped<IUserManagerService, UserManagerService>();
 
 builder.Services.AddHostedService<ConfigureWebhook>();
 builder.Services.AddSingleton<ISenderGateway, SenderGateway>();
@@ -80,7 +80,7 @@ var app = builder.Build();
 // Configure the webhook endpoint
 app.MapPost("/webhook",
     async ([FromQuery] string? token, [FromBody] Update update,
-        [FromServices] IUpdateHandler updateHandler, [FromServices] IOptions<BotSettings> botOptions, CancellationToken cancellationToken) =>
+        [FromServices] IUpdateHandler updateHandler, [FromServices] IOptions<BotSettings> botOptions, CancellationToken cancellationToken = default) =>
     {
         if (token != botOptions.Value.WebhookToken)
             return Results.Unauthorized();

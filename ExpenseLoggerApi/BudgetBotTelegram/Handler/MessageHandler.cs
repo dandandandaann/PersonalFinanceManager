@@ -1,4 +1,5 @@
 ﻿using BudgetBotTelegram.Interface;
+using BudgetBotTelegram.Service;
 using BudgetBotTelegram.Settings;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -8,13 +9,17 @@ namespace BudgetBotTelegram.Handler;
 public class MessageHandler(
     ILogger<MessageHandler> logger,
     ICommandHandler commandHandler,
+    IUserManagerService userManagerService,
     ITextMessageHandler textMessageHandler) : IMessageHandler
 {
-    public async Task HandleMessageAsync(Message message, CancellationToken cancellationToken)
+    public async Task HandleMessageAsync(Message message, CancellationToken cancellationToken = default)
     {
         // --- Get Core Information ---
         long chatId = message.Chat.Id;
-        long? fromUserId = message.From?.Id; // Use nullable long for safety
+
+        // long.TryParse(message.From?.Id, out long fromUserId);
+
+        long fromUserId = message.From?.Id ?? 0; // Use nullable long for safety
         long botId = BotSettings.BotId;
 
         if (message.Text is not { } messageText)
@@ -29,12 +34,13 @@ public class MessageHandler(
             return;
         }
 
-        if (fromUserId == null)
+        if (fromUserId == 0)
         {
             logger.LogWarning("Received message in Private Chat (ID: {ChatId}) but sender information is missing.",
                 chatId);
             return;
         }
+
         if (fromUserId == botId)
         {
             // Message from the bot to the user (ChatId)
@@ -44,7 +50,12 @@ public class MessageHandler(
         }
         // Message from the user (FromUserId) to the bot -> fromUserId == chatId
 
-        logger.LogInformation("Received '{MessageText}' from {Username} message in chat {ChatId}.", messageText, message.From?.Username, chatId);
+        if (!userManagerService.AuthenticateUser(fromUserId, cancellationToken))
+            logger.LogInformation("Received '{MessageText}' from new user {Username} in chat {ChatId}.", messageText,
+                message.From?.Username, chatId);
+        else
+            logger.LogInformation("Received '{MessageText}' from registered user {Username} in chat {ChatId}.", messageText,
+                message.From?.Username, chatId);
 
         // Check for commands (entities) and the first entity is a BotCommand
         if (message.Entities is { Length: > 0 } && message.Entities[0].Type == MessageEntityType.BotCommand)

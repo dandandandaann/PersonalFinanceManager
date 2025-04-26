@@ -1,4 +1,4 @@
-Get-ChildItem -Recurse -Filter deploy_lambda.ps1 | ForEach-Object {
+Get-ChildItem -Recurse -Filter deploy_function.ps1 | ForEach-Object {
     Write-Host "`nRunning: $($_.FullName)`n" -ForegroundColor Cyan
     & $_.FullName
 }

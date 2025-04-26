@@ -1,4 +1,3 @@
-using BudgetBotTelegram.Model;
 using Telegram.Bot.Types;
 
 namespace BudgetBotTelegram.Interface;
@@ -11,10 +10,5 @@ public interface ISignupCommand
     /// <summary>
     /// Handles the initial /signup command message.
     /// </summary>
-    Task<Message> HandleSignupAsync(Message message, CancellationToken cancellationToken);
-
-    /// <summary>
-    /// Handles subsequent messages when the chat is in a signup-related state.
-    /// </summary>
-    Task<Message> HandleSignupAsync(Message message, ChatState chatState, CancellationToken cancellationToken);
-} 
+    Task<Message> HandleSignupAsync(Message message, CancellationToken cancellationToken = default);
+}

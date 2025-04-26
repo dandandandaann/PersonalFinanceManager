@@ -46,9 +46,9 @@ public class User
     // Parameterless constructor required by DynamoDBContext
     public User() { }
 
-    public User(long userId, string email, string passwordHash, long? telegramId = null)
+    public User(string userId, string email = "", string passwordHash = "", long? telegramId = null)
     {
-        UserId = userId.ToString();
+        UserId = userId;
         Email = email;
         PasswordHash = passwordHash;
         TelegramId = telegramId ?? 0;
