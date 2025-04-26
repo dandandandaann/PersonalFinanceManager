@@ -329,6 +329,7 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+*.pyo
 
 # Cake - Uncomment if you are using it
 # tools/**
@@ -399,3 +400,16 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# AWS SAM
+.aws-sam/
+
+# AWS CloudFormation
+*.stack
+
+# AWS Lambda
+*.zip
+*.tar.gz
+
+# AWS CDK
+cdk.out/
