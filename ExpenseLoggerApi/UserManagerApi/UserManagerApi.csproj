@@ -10,6 +10,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <!-- Generate ready to run images during publishing to improvement cold starts. -->
     <PublishReadyToRun>true</PublishReadyToRun>
+    <UserSecretsId>07c932ed-4518-4d6d-8a4b-d8d3a7612445</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.7.4" />
