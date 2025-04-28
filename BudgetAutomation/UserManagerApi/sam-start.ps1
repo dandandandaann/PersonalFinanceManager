@@ -1,5 +1,4 @@
-﻿#!/bin/bash
-Write-Host "Checking for process running on 5011..."
+﻿Write-Host "Checking for process running on 5011..."
 $proc5011 = (Get-NetTCPConnection -LocalPort 5011 -ErrorAction SilentlyContinue).OwningProcess;
 if ($proc5011) {
     Stop-Process -Id $proc5011 -Force
