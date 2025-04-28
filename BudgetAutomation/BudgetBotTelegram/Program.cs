@@ -78,16 +78,32 @@ builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,
 var app = builder.Build();
 
 // Configure the webhook endpoint
-app.MapPost("/webhook",
-    async ([FromQuery] string? token, [FromBody] Update update,
-        [FromServices] IUpdateHandler updateHandler, [FromServices] IOptions<BotSettings> botOptions, CancellationToken cancellationToken = default) =>
+app.MapPost("/webhook", ([FromQuery] string? token, [FromBody] Update update,
+    [FromServices] IOptions<BotSettings> botOptions,
+    [FromServices] ILogger<Program> logger,
+    [FromServices] IServiceScopeFactory scopeFactory,
+    CancellationToken cancellationToken = default) =>
+{
+    if (update == null!)
     {
-        if (token != botOptions.Value.WebhookToken)
-            return Results.Unauthorized();
+        logger.LogError("Received null update payload.");
+        return Task.FromResult(Results.BadRequest());
+    }
 
-        await updateHandler.HandleUpdateAsync(update, cancellationToken);
-        return Results.Ok(); // Always return OK to Telegram quickly
-    });
+    if (token != botOptions.Value.WebhookToken)
+        return Task.FromResult(Results.Unauthorized());
+
+    _ = Task.Run(async () =>
+    {
+        using var scope = scopeFactory.CreateScope();
+        var scopedUpdateHandler = scope.ServiceProvider.GetRequiredService<IUpdateHandler>();
+
+        await scopedUpdateHandler.HandleUpdateAsync(update, cancellationToken);
+    }, cancellationToken);
+
+    // Return OK to Telegram quickly before it retries
+    return Task.FromResult(Results.Ok());
+});
 
 app.MapGet("/", () => "Telegram Bot Webhook receiver is running!");
 
