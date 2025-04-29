@@ -11,7 +11,7 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
     private readonly HttpClient _httpClient;
     private readonly ILogger<ExpenseLoggerApiClient> _logger;
 
-    public ExpenseLoggerApiClient(HttpClient httpClient, IOptions<ExpenseLoggerApiSettings> options,
+    public ExpenseLoggerApiClient(HttpClient httpClient, IOptions<ExpenseLoggerApiClientSettings> options,
         ILogger<ExpenseLoggerApiClient> logger)
     {
         _httpClient = httpClient;

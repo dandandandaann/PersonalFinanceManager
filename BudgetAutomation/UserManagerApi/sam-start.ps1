@@ -8,5 +8,5 @@ if ($proc5011) {
 }
 
 Write-Host "Starting SAM Local API on port 5011..."
-Set-Location UserManagerApi
+ Set-Location UserManagerApi
 sam local start-api -p 5011

@@ -12,6 +12,7 @@ using BudgetBotTelegram.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;
+using SharedLibrary.Validator;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using AppJsonSerializerContext = BudgetBotTelegram.AtoTypes.AppJsonSerializerContext;
@@ -20,11 +21,19 @@ var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 
 LocalDev.CheckNgrok(builder);
+var isLocalDev = builder.Environment.IsDevelopment() ? "dev-" : "";
 
 // Serialize Options for AOT
 builder.Services.ConfigureTelegramBot<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt => opt.SerializerOptions);
 
 // Bind Bot configuration
+
+// Configure AWS Parameter Store
+config.AddSystemsManager($"/{isLocalDev}{BudgetAutomationSettings.Configuration}/");
+
+builder.Services.Configure<BotSettings>(config.GetSection(BotSettings.Configuration));
+builder.Services.AddSingleton<IValidateOptions<BotSettings>, BotSettingsValidator>();
+
 builder.Services.Configure<BotSettings>(config.GetSection(BotSettings.Configuration));
 // Register typed HttpClient directly (optional, but good practice if you need custom HttpClient settings)
 builder.Services.AddHttpClient("telegram_bot_client")
@@ -36,7 +45,8 @@ builder.Services.AddHttpClient("telegram_bot_client")
     });
 // .SetHandlerLifetime(TimeSpan.FromMinutes(5)); // Configure lifetime as needed
 
-builder.Services.Configure<ExpenseLoggerApiSettings>(config.GetSection(ExpenseLoggerApiSettings.Configuration));
+builder.Services.Configure<ExpenseLoggerApiClientSettings>(config.GetSection(ExpenseLoggerApiClientSettings.Configuration));
+builder.Services.AddSingleton<IValidateOptions<ExpenseLoggerApiClientSettings>, ExpenseLoggerApiClientSettingsValidator>();
 builder.Services.AddHttpClient<IExpenseLoggerApiClient, ExpenseLoggerApiClient>();
 
 builder.Services.Configure<UserApiClientSettings>(config.GetSection(UserApiClientSettings.Configuration));
