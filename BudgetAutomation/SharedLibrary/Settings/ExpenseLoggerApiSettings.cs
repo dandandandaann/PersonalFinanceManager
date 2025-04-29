@@ -1,4 +1,4 @@
-namespace BudgetBotTelegram.Settings
+namespace SharedLibrary.Settings
 {
     public class ExpenseLoggerApiSettings
     {

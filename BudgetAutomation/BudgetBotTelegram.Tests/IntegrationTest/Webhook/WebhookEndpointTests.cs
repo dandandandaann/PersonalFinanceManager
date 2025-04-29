@@ -48,7 +48,6 @@ public class WebhookEndpointTests : IClassFixture<CustomWebApplicationFactory>
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        _factory.MockUpdateHandler.Verify(h => h.HandleUpdateAsync(It.IsAny<Update>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

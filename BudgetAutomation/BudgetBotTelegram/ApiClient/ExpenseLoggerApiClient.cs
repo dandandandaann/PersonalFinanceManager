@@ -1,8 +1,8 @@
 using BudgetBotTelegram.AtoTypes;
 using BudgetBotTelegram.Interface;
-using BudgetBotTelegram.Settings;
 using Microsoft.Extensions.Options;
 using SharedLibrary;
+using SharedLibrary.Settings;
 
 namespace BudgetBotTelegram.ApiClient;
 

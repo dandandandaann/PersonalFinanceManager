@@ -1,5 +1,5 @@
-﻿using BudgetBotTelegram.Settings;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
+using SharedLibrary.Settings;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;

@@ -2,8 +2,8 @@ using System.Net;
 using System.Text.Json;
 using BudgetBotTelegram.AtoTypes;
 using BudgetBotTelegram.Interface;
-using BudgetBotTelegram.Settings;
 using Microsoft.Extensions.Options;
+using SharedLibrary.Settings;
 using SharedLibrary.UserClasses;
 
 namespace BudgetBotTelegram.ApiClient;

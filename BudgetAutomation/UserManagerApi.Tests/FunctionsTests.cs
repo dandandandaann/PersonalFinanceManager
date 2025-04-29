@@ -204,7 +204,6 @@ public class FunctionsTests
 
         // Verify No DB call attempted
         _mockSearch.Verify(s => s.GetNextSetAsync(It.IsAny<CancellationToken>()), Times.Never);
-
     }
 
     [Fact]
