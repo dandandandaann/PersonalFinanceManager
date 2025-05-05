@@ -4,6 +4,7 @@ using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Service;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace BudgetBotTelegram.Handler.Command;
 
@@ -62,12 +63,13 @@ public partial class SignupCommand(
             var welcomeMessage = new StringBuilder();
             welcomeMessage.AppendLine("Signup successful.");
             welcomeMessage.AppendLine();
-            welcomeMessage.AppendLine(response.User?.Username == null ? "Welcome!" : $"Welcome, {response.User.Username}!");
+            welcomeMessage.AppendLine(response.User?.Username == null ? "**Welcome!**" : $"**Welcome, {response.User.Username}!**");
             welcomeMessage.AppendLine("Please type /start to see all available commands and /setup to configure your spreadsheet.");
 
             return await sender.ReplyAsync(message.Chat,
                 welcomeMessage.ToString(),
                 "User signup successful.",
+                parseMode: ParseMode.MarkdownV2,
                 cancellationToken: cancellationToken);
         }
         catch (Exception e)

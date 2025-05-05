@@ -25,7 +25,9 @@ public class Functions(IDynamoDBContext dbContext)
     /// <param name="context">Lambda context.</param>
     /// <returns>HTTP result indicating success (Created or OK).</returns>
     [LambdaFunction(
-        Policies = "AWSLambdaBasicExecutionRole, arn:aws:iam::795287297286:policy/DB_user_CRUD",
+        Policies = "AWSLambdaBasicExecutionRole, " +
+                   "arn:aws:iam::795287297286:policy/DB_user_CRUD, " +
+                   "arn:aws:iam::795287297286:policy/Configurations_Read",
         MemorySize = 128,
         Timeout = 10)]
     [HttpApi(LambdaHttpMethod.Post, "/user/signup")]
@@ -71,7 +73,9 @@ public class Functions(IDynamoDBContext dbContext)
     /// <param name="context">Lambda context.</param>
     /// <returns>HTTP result containing the user if found, or NotFound/BadRequest.</returns>
     [LambdaFunction(
-        Policies = "AWSLambdaBasicExecutionRole, arn:aws:iam::795287297286:policy/DB_user_Read",
+        Policies = "AWSLambdaBasicExecutionRole, " +
+                   "arn:aws:iam::795287297286:policy/DB_user_Read, " +
+                   "arn:aws:iam::795287297286:policy/Configurations_Read",
         MemorySize = 128,
         Timeout = 10)]
     [HttpApi(LambdaHttpMethod.Get, "/user/telegram/{telegramId}")]

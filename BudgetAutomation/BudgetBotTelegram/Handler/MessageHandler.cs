@@ -1,6 +1,5 @@
 ﻿using BudgetBotTelegram.Interface;
-using BudgetBotTelegram.Service;
-using BudgetBotTelegram.Settings;
+using SharedLibrary.Settings;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -20,7 +19,7 @@ public class MessageHandler(
         // long.TryParse(message.From?.Id, out long fromUserId);
 
         long fromUserId = message.From?.Id ?? 0; // Use nullable long for safety
-        long botId = BotSettings.BotId;
+        long botId = BotSettings.Id;
 
         if (message.Text is not { } messageText)
         {

@@ -34,7 +34,7 @@ public class UpdateHandler(
         {
             var message = update.Message ?? update.CallbackQuery!.Message;
 
-            await sender.ReplyAsync(message.Chat, "Please signup to proceed.",
+            await sender.ReplyAsync(message!.Chat, "Please signup to proceed.",
                 $"UnauthorizedAccessException: {e.Message}. User message: {message.Text}.",
                 logLevel: LogLevel.Warning,
                 cancellationToken: cancellationToken);
@@ -44,7 +44,7 @@ public class UpdateHandler(
         {
             var message = update.Message ?? update.CallbackQuery!.Message;
 
-            await sender.ReplyAsync(message.Chat, "Your message was invalid somehow. Please try something else.",
+            await sender.ReplyAsync(message!.Chat, "Your message was invalid somehow. Please try something else.",
                 $"InvalidUserInputException: {e.Message}. User message: {message.Text}.",
                 logLevel: LogLevel.Information,
                 cancellationToken: cancellationToken);
@@ -75,11 +75,10 @@ public class UpdateHandler(
 
         if (update.Message != null)
         {
-            var sentMessage = await botClient.SendMessage(
+            await botClient.SendMessage(
                 chatId: update.Message.Chat.Id,
                 text: $"I can't handle message type {update.Type}.",
                 cancellationToken: cancellationToken);
-            logger.LogInformation("Echo message sent with Id: {SentMessageId}", sentMessage.MessageId);
         }
     }
 

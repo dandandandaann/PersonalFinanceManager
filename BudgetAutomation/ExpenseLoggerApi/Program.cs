@@ -1,44 +1,55 @@
 using System.Threading.RateLimiting;
-using ExpenseLoggerApi;
-using ExpenseLoggerApi.Model;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using ExpenseLoggerApi.AotTypes;
 using ExpenseLoggerApi.Interface;
 using ExpenseLoggerApi.Service;
 using Google.Apis.Sheets.v4;
 using SharedLibrary;
+using Microsoft.Extensions.Options;
+using SharedLibrary.Settings;
+using SharedLibrary.Validator;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-var googleApiKey = builder.Configuration["googleApiKey"];
-if (googleApiKey is null)
-    throw new InvalidOperationException($"{nameof(googleApiKey)} not found in configuration");
+var isLocalDev = builder.Environment.IsDevelopment() ? "dev-" : "";
 
-var googleCredentials = builder.Configuration["credentials"];
-if (googleCredentials is null)
-    throw new InvalidOperationException($"{nameof(googleCredentials)} not found in configuration");
+// Configure AWS Parameter Store
+builder.Configuration.AddSystemsManager($"/{isLocalDev}{BudgetAutomationSettings.Configuration}/");
 
-var spreadsheetId = builder.Configuration["spreadsheetId"];
-if (spreadsheetId is null)
-    throw new InvalidOperationException($"{nameof(spreadsheetId)} not found in configuration");
+builder.Services.Configure<ExpenseLoggerSettings>(builder.Configuration.GetSection(ExpenseLoggerSettings.Configuration));
 
-var categories = builder.Configuration.GetSection("Categories").Get<Category[]>();
-if (categories is null || categories.Length == 0)
-    throw new InvalidOperationException("Categories not found in configuration");
-
-var maxDailyRequest = builder.Configuration["maxDailyRequest"] ?? "20";
+// builder.Services.Configure<BudgetAutomationSettings>(builder.Configuration.GetSection(BudgetAutomationSettings.Configuration)); // Removed old binding
+builder.Services.AddSingleton<IValidateOptions<ExpenseLoggerSettings>, ExpenseLoggerSettingsValidator>();
 
 // Add Rate Limiting
 builder.Services.AddRateLimiter(options =>
 {
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            googleApiKey,
+    {
+        // Get settings via IOptions within the rate limiter setup
+        var settings = httpContext.RequestServices.GetRequiredService<IOptions<ExpenseLoggerSettings>>().Value;
+
+        if (!int.TryParse(settings.maxDailyRequest, out var rateLimit))
+        {
+            rateLimit = 20; // Default if parsing fails
+        }
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            settings.googleApiKey,
             _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = int.Parse(maxDailyRequest), // Allow X requests
-                Window = TimeSpan.FromDays(1), // Per day
-            }));
+                PermitLimit = rateLimit,
+                Window = TimeSpan.FromDays(1),
+            });
+    });
+    // Added OnRejected handler for better debugging
+    options.OnRejected = (context, _) =>
+    {
+        context.HttpContext.Response.StatusCode = 429; // Too Many Requests
+        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogWarning("Rate limit reached for request to {Path}.", context.HttpContext.Request.Path);
+        return new ValueTask();
+    };
 });
 
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -56,33 +67,39 @@ builder.Services.AddSingleton<GoogleSheetsClientFactory>();
 builder.Services.AddSingleton<SheetsService>(sp =>
 {
     var factory = sp.GetRequiredService<GoogleSheetsClientFactory>();
-    var credentials = sp.GetRequiredService<IConfiguration>()["credentials"];
-    return factory.CreateSheetsService(credentials!);
+    var settings = sp.GetRequiredService<IOptions<ExpenseLoggerSettings>>().Value;
+
+    return factory.CreateSheetsService(settings.credentials);
 });
 
 builder.Services.AddSingleton<ISheetsDataAccessor, GoogleSheetsDataAccessor>();
 
 builder.Services.AddScoped<ExpenseLoggerService>(sp =>
-    new ExpenseLoggerService(
+{
+    var settings = sp.GetRequiredService<IOptions<ExpenseLoggerSettings>>().Value;
+
+    return new ExpenseLoggerService(
         sp.GetRequiredService<ISheetsDataAccessor>(),
-        categories,
-        spreadsheetId,
+        settings.Categories,
+        settings.spreadsheetId,
         sp.GetRequiredService<ILogger<ExpenseLoggerService>>()
-    )
-);
+    );
+});
 
 var app = builder.Build();
 
 app.Use(async (context, next) =>
 {
-    if (!context.Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != googleApiKey)
+    var settings = context.RequestServices.GetRequiredService<IOptions<ExpenseLoggerSettings>>().Value;
+
+    if (!context.Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != settings.googleApiKey)
     {
         context.Response.StatusCode = 401;
         await context.Response.WriteAsync("Unauthorized");
         return;
     }
 
-    await next();
+    await next(context);
 });
 
 app.UseRateLimiter();
@@ -97,10 +114,15 @@ app.MapPut("/log-expense",
             var expense = await sheetsLogger.LogExpense(description, amount, category);
             return Results.Ok(new LogExpenseResponse { Success = true, expense = expense });
         }
+        catch (ArgumentException ex) when (ex.ParamName == "amount")
+        {
+            app.Logger.LogWarning("Invalid amount format provided: {Amount}", amount);
+            return Results.Ok(new LogExpenseResponse { Success = false });
+        }
         catch (Exception ex)
         {
-            app.Logger.LogError("Failed to log expense. Exception: {ExceptionMessage}", ex.Message);
-            return Results.Ok(new LogExpenseResponse { Success = false });
+            app.Logger.LogError(ex, "Failed to log expense for description: {Description}", description);
+            return Results.Problem(detail: "An error occurred while logging the expense.", statusCode: 500);
         }
     });
 
