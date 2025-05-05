@@ -19,7 +19,7 @@ public class MessageHandler(
         // long.TryParse(message.From?.Id, out long fromUserId);
 
         long fromUserId = message.From?.Id ?? 0; // Use nullable long for safety
-        long botId = BotSettings.BotId;
+        long botId = BotSettings.Id;
 
         if (message.Text is not { } messageText)
         {

@@ -15,8 +15,9 @@ public class ConfigureWebhook(
     {
         using var scope = serviceProvider.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
+        var bot = botOptions.Value;
 
-        var webhookAddress = $"{botOptions.Value.HostAddress.TrimEnd('/')}/webhook?token={botOptions.Value.WebhookToken}";
+        var webhookAddress = $"{bot.HostAddress.TrimEnd('/')}/webhook?token={bot.WebhookToken}";
         logger.LogInformation("Setting webhook: {WebhookAddress}", webhookAddress);
 
         try
@@ -34,7 +35,8 @@ public class ConfigureWebhook(
 
             try
             {
-                await GetBotId();
+                if (BotSettings.Id == 0)
+                    await GetBotId();
             }
             catch (Exception e)
             {
@@ -51,7 +53,7 @@ public class ConfigureWebhook(
         async Task GetBotId()
         {
             User me = await botClient.GetMe(cancellationToken: cancellationToken);
-            BotSettings.BotId = me.Id;
+            BotSettings.Id = me.Id;
         }
     }
 

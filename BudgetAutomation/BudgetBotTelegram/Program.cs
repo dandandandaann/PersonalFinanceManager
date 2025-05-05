@@ -4,6 +4,7 @@ using Amazon.DynamoDBv2.DataModel;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using BudgetBotTelegram;
 using BudgetBotTelegram.ApiClient;
+using BudgetBotTelegram.AtoTypes;
 using BudgetBotTelegram.Handler;
 using BudgetBotTelegram.Handler.Command;
 using BudgetBotTelegram.Interface;
@@ -15,7 +16,6 @@ using SharedLibrary.Settings;
 using SharedLibrary.Validator;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using AppJsonSerializerContext = BudgetBotTelegram.AtoTypes.AppJsonSerializerContext;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
