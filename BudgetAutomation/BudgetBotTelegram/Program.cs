@@ -117,4 +117,25 @@ app.MapPost("/webhook", ([FromQuery] string? token, [FromBody] Update update,
 
 app.MapGet("/", () => "Telegram Bot Webhook receiver is running!");
 
+app.MapPost("/telegram/message", async ([FromQuery] string? token, [FromBody] Update update,
+    [FromServices] IOptions<BotSettings> botOptions,
+    [FromServices] ILogger<Program> logger,
+    [FromServices] IUpdateHandler updateHandler,
+    CancellationToken cancellationToken = default) =>
+{
+    if (update == null!)
+    {
+        logger.LogError("Received null update payload.");
+        return Task.FromResult(Results.BadRequest());
+    }
+
+    if (token != botOptions.Value.WebhookToken)
+        return Task.FromResult(Results.Unauthorized());
+    await updateHandler.HandleUpdateAsync(update, cancellationToken);
+
+    // Return OK to Telegram quickly before it retries
+    return Task.FromResult(Results.Ok());
+});
+
+
 app.Run();

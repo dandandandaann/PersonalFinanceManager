@@ -1,0 +1,9 @@
+﻿Resources:
+  MyLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: TelegramListener::TelegramListener.Functions_Webhook_Generated::Webhook
+      Runtime: dotnet8
+      Environment:
+        Variables:
+          ASPNETCORE_ENVIRONMENT: Development # For local, override in deployment

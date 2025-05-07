@@ -1,3 +1,6 @@
 ﻿Write-Host "Starting to build serverless template..."
-Set-Location UserManagerApi
+
+if ((Split-Path -Leaf (Get-Location)) -ne "UserManagerApi") {
+    Set-Location UserManagerApi
+}
 sam build -t serverless.template

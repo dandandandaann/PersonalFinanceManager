@@ -8,7 +8,7 @@
   "profile": "",
   "region": "us-east-2",
   "configuration": "Release",
-  "s3-prefix": "UserManagerApi/",
+  "s3-prefix": "TelegramListener/",
   "template": "serverless.template",
   "template-parameters": "",
   "docker-host-build-output-dir": "./bin/Release/lambda-publish"
