@@ -1,17 +1,24 @@
 ﻿using System.Diagnostics;
 
-namespace BudgetBotTelegram.Other;
+namespace TelegramListener.Other;
 
 public static class LocalDev
 {
-    public static void CheckNgrok(WebApplicationBuilder webApplicationBuilder)
+    public static bool IsLocalDev()
+    {
+        var isLocalDev = (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production")
+            .Equals("Development", StringComparison.OrdinalIgnoreCase);
+        return isLocalDev;
+    }
+
+    public static void CheckNgrok(bool isDevelopment)
     {
 #if DEBUG // Only run this check in Debug configuration
         const string ngrokProcessName = "ngrok";
 
-        if (webApplicationBuilder.Environment.IsDevelopment())
+        if (isDevelopment)
         {
-            var isNgrokRunning = Process.GetProcessesByName(ngrokProcessName).Length > 0;
+            bool isNgrokRunning = Process.GetProcessesByName(ngrokProcessName).Length > 0;
             if (!isNgrokRunning)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -24,7 +31,7 @@ public static class LocalDev
 
                 // throw new InvalidOperationException("ngrok is required but not running.");
             }
-            else if (isNgrokRunning && webApplicationBuilder.Environment.IsDevelopment())
+            else if (isNgrokRunning && isDevelopment)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(">>> ngrok process detected.");
