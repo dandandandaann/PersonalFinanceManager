@@ -126,15 +126,15 @@ app.MapPost("/telegram/message", async ([FromQuery] string? token, [FromBody] Up
     if (update == null!)
     {
         logger.LogError("Received null update payload.");
-        return Task.FromResult(Results.BadRequest());
+        return Results.BadRequest();
     }
 
     if (token != botOptions.Value.WebhookToken)
-        return Task.FromResult(Results.Unauthorized());
+        return Results.Unauthorized();
     await updateHandler.HandleUpdateAsync(update, cancellationToken);
 
     // Return OK to Telegram quickly before it retries
-    return Task.FromResult(Results.Ok());
+    return Results.Ok();
 });
 
 
