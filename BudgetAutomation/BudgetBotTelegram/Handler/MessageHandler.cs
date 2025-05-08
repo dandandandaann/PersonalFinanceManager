@@ -29,7 +29,7 @@ public class MessageHandler(
 
         if (message.Chat.Type != ChatType.Private)
         {
-            logger.LogWarning("Received message from a {ChatType} in chat {ChatId}.", message.Chat.Type.ToString(), chatId);
+            logger.LogWarning("Received message from a Chat Type {ChatType} in chat {ChatId}.", message.Chat.Type.ToString(), chatId);
             return;
         }
 

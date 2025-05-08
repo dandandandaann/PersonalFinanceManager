@@ -1,5 +1,3 @@
-using Amazon.SimpleSystemsManagement;
-using Amazon.SimpleSystemsManagement.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -13,15 +11,12 @@ namespace TelegramListener;
 [Amazon.Lambda.Annotations.LambdaStartup]
 public class Startup
 {
-    public async Task ConfigureServices(IServiceCollection services)
+    public void ConfigureServices(IServiceCollection services)
     {
         var isLocalDev = LocalDev.IsLocalDev();
 
         LocalDev.CheckNgrok(isLocalDev);
         var devPrefix = isLocalDev ? "dev-" : "";
-
-        // Serialize Options for AOT
-        services.ConfigureTelegramBot<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt => opt.SerializerOptions);
 
         var configBuilder = new ConfigurationBuilder();
 
