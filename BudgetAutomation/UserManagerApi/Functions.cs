@@ -4,8 +4,8 @@ using Amazon.Lambda.Annotations.APIGateway;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.APIGatewayEvents;
+using SharedLibrary.Dto;
 using SharedLibrary.UserClasses;
-using UserManagerApi.Common;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 

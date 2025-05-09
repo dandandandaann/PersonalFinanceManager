@@ -11,15 +11,15 @@ namespace TelegramListener;
 public class ConfigureWebhook(
     // ILogger<ConfigureWebhook> logger,
     IServiceProvider serviceProvider,
-    IOptions<BotSettings> botOptions) : IHostedService
+    IOptions<TelegramListenerSettings> listenerOptions,
+    IOptions<TelegramBotSettings> telegramBotOptions) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
         using var scope = serviceProvider.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
-        var bot = botOptions.Value;
 
-        var webhookAddress = $"{bot.HostAddress.TrimEnd('/')}/webhook?token={bot.WebhookToken}";
+        var webhookAddress = $"{listenerOptions.Value.HostAddress.TrimEnd('/')}/webhook?token={telegramBotOptions.Value.WebhookToken}";
         // logger.LogInformation("Setting webhook: {WebhookAddress}", webhookAddress);
 
         try
