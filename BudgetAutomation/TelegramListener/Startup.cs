@@ -1,9 +1,12 @@
+using Amazon.Lambda.Serialization.SystemTextJson;
+using Amazon.SQS;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;
 using SharedLibrary.Validator;
 using Telegram.Bot;
+using TelegramListener.AotTypes;
 using TelegramListener.Other;
 
 namespace TelegramListener;
@@ -13,32 +16,45 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        var isLocalDev = LocalDev.IsLocalDev();
+        var configBuilder = new ConfigurationBuilder();
 
-        LocalDev.CheckNgrok(isLocalDev);
+        // Local development settings
+        var isLocalDev = LocalDev.IsLocalDev();
+        LocalDev.CheckNgrok();
         var devPrefix = isLocalDev ? "dev-" : "";
 
-        var configBuilder = new ConfigurationBuilder();
+        // #pragma warning disable IL2026
+        services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,
+            options => { options.Serializer = new SourceGeneratorLambdaJsonSerializer<AppJsonSerializerContext>(); });
+        // #pragma warning restore IL2026
 
         // Configure AWS Parameter Store
         configBuilder.AddSystemsManager($"/{devPrefix}{BudgetAutomationSettings.Configuration}/");
         var config = configBuilder.Build();
 
-        // Bind Bot configuration
-        services.Configure<BotSettings>(config.GetSection(BotSettings.Configuration));
-        services.AddSingleton<IValidateOptions<BotSettings>, BotSettingsValidator>();
+        // Configure AWS SQS
+        services.AddAWSService<IAmazonSQS>();
+
+        // Bind configurations
+        services.Configure<TelegramListenerSettings>(config.GetSection(TelegramListenerSettings.Configuration));
+        services.AddSingleton<IValidateOptions<TelegramListenerSettings>, TelegramListenerSettingsValidator>();
+
+        var settingsSection = config.GetSection(TelegramBotSettings.Configuration);
+        var settings = settingsSection.Get<TelegramBotSettings>() ??
+                       throw new ArgumentNullException(nameof(TelegramBotSettings.Configuration));
+
+        services.Configure<TelegramBotSettings>(settingsSection);
+        services.AddSingleton<IValidateOptions<TelegramBotSettings>, TelegramBotSettingsValidator>();
 
         // Register typed HttpClient directly (optional, but good practice if you need custom HttpClient settings)
-        services.AddHttpClient("telegram_bot_client")
-            .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
+        services.AddHttpClient(settings.Handle)
+            .AddTypedClient<ITelegramBotClient>(httpClient =>
             {
-                var botConfig = sp.GetRequiredService<IOptions<BotSettings>>().Value;
-                TelegramBotClientOptions options = new(botConfig.Token);
-                return new TelegramBotClient(options, httpClient);
+                TelegramBotClientOptions clientOptions = new(
+                    settings.Token);
+                return new TelegramBotClient(clientOptions, httpClient);
             });
 
-
         services.AddHostedService<ConfigureWebhook>();
-
     }
 }

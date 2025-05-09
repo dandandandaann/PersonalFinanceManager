@@ -59,7 +59,7 @@
         "Timeout": 15,
         "Policies": [
           "AWSLambdaBasicExecutionRole",
-          "arn:aws:iam::795287297286:policy/Configurations_Read"
+          "arn:aws:iam::795287297286:policy/Configurations_Readarn:aws:iam::795287297286:policy/SQS_CRUD"
         ],
         "PackageType": "Zip",
         "Handler": "TelegramListener::TelegramListener.Functions_Webhook_Generated::Webhook",

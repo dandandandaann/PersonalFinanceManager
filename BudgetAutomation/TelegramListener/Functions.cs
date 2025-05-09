@@ -1,9 +1,13 @@
+using System.Net;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Annotations;
 using Amazon.Lambda.Annotations.APIGateway;
 using Amazon.Lambda.APIGatewayEvents;
+using Amazon.SQS;
+using Amazon.SQS.Model;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;
+using SharedLibrary.Dto;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -17,9 +21,7 @@ public class Functions
     /// <summary>
     /// Default constructor.
     /// </summary>
-    public Functions()
-    {
-    }
+    public Functions() { }
 
     [LambdaFunction]
     [HttpApi(LambdaHttpMethod.Get, "/")]
@@ -30,66 +32,78 @@ public class Functions
 
     [LambdaFunction(
         Policies = "AWSLambdaBasicExecutionRole, " +
-                   "arn:aws:iam::795287297286:policy/Configurations_Read", // TODO: add SQS policy
+                   "arn:aws:iam::795287297286:policy/Configurations_Read" +
+                   "arn:aws:iam::795287297286:policy/SQS_CRUD",
         MemorySize = 128,
         Timeout = 15)]
-    // [HttpApi(LambdaHttpMethod.Post, "/webhook?token={token}")]
     [HttpApi(LambdaHttpMethod.Post, "/webhook")]
-    public string Webhook([FromQuery] string token, APIGatewayHttpApiV2ProxyRequest lambdaRequest,
-        [FromServices] IOptions<BotSettings> botOptions, [FromServices] HttpClient httpClient, ILambdaContext context)
+    public async Task<APIGatewayHttpApiV2ProxyResponse> Webhook([FromQuery] string token,
+        APIGatewayHttpApiV2ProxyRequest lambdaRequest,
+        [FromServices] IOptions<TelegramListenerSettings> listenerOptions,
+        [FromServices] IOptions<TelegramBotSettings> telegramBotOptions,
+        ILambdaContext context, [FromServices] IAmazonSQS sqsClient)
     {
+
+        var logger = context.Logger;
+
+        if (token != telegramBotOptions.Value.WebhookToken)
+        {
+            logger.LogWarning("Unauthorized webhook attempt with invalid token: {SuppliedToken}", token);
+            return ApiResponse.Unauthorized("Unauthorized");
+        }
+
+        var requestBody = lambdaRequest.Body;
+
+        if (string.IsNullOrEmpty(requestBody))
+        {
+            logger.LogError("Received empty payload body from Telegram.");
+            return ApiResponse.BadRequest("Request body cannot be empty.");
+        }
+
         try
         {
-            // No need to deserialize here, this function just forwards the payload
-            var requestBody = lambdaRequest.Body;
-
-            if (string.IsNullOrEmpty(requestBody))
+            var queueUrl = listenerOptions.Value.TelegramUpdateQueue;
+            var sendMessageRequest = new SendMessageRequest
             {
-                context.Logger.LogError("Received empty payload body.");
-                return "Task.FromResult(Results.BadRequest())";
+                QueueUrl = queueUrl,
+                MessageBody = requestBody
+            };
+
+            logger.LogInformation("Attempting to send the Telegram Update to SQS queue: {QueueUrl}",
+                 queueUrl.Substring(queueUrl.LastIndexOf('/') + 1));
+
+            // Send the message to SQS
+            var sendMessageResponse = await sqsClient.SendMessageAsync(sendMessageRequest, GenerateCancellationToken());
+
+            if (sendMessageResponse.HttpStatusCode != HttpStatusCode.OK)
+            {
+                logger.LogError(
+                    "SQS did not accept message for Update. SQS Response Status: {SqsStatus}, SQS Message ID (if any): {SqsMessageId}",
+                    sendMessageResponse.HttpStatusCode, sendMessageResponse.MessageId);
+                return ApiResponse.InternalServerError("Failed to queue message.");
             }
 
+            logger.LogInformation("Successfully queued Update to SQS. SQS Message ID: {SqsMessageId}",
+                sendMessageResponse.MessageId);
 
-            if (token != botOptions.Value.WebhookToken)
-                return "Task.FromResult(Results.Unauthorized())" + botOptions.Value.WebhookToken;
-
-
-            // ---
-
-            // context.Logger.LogInformation("Starting request to BudgetBot get.");
-            // // Configure HttpClient base address and default headers
-            // httpClient.BaseAddress = new Uri("host.docker.internal:6001/"); // TODO: leave constant because it will be replaced by SQS
-            // var request2 = new HttpRequestMessage(HttpMethod.Get, httpClient.BaseAddress);
-            //
-            // request2.Content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
-            //
-            // var response2 = httpClient.SendAsync(request2).GetAwaiter().GetResult(); // TODO: make it async
-            //
-            // if (!response2.IsSuccessStatusCode)
-            //     context.Logger.LogInformation($"Request to BudgetBot get was successful. Response code: {response2.StatusCode}.");
-            //
-            // context.Logger.LogInformation("Finished BudgetBot get request.");
-            // return "finished BudgetBot get request.";
-            // ---
-            // Configure HttpClient base address and default headers
-
-            context.Logger.LogInformation("Starting BudgetBot request.");
-
-            httpClient.BaseAddress = new Uri("http://host.docker.internal:6001"); // TODO: leave constant because it will be replaced by SQS
-            var requestUri = new Uri(httpClient.BaseAddress, $"/telegram/message?token={botOptions.Value.WebhookToken}");
-            var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
-
-            request.Content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
-
-            var response = httpClient.SendAsync(request).GetAwaiter().GetResult(); // TODO: make it async
-
-            if (!response.IsSuccessStatusCode)
-                context.Logger.LogInformation($"Received a message.");
+            // Return OK to Telegram immediately AFTER successfully queuing
+            return ApiResponse.Ok();
+        }
+        catch (AmazonSQSException sqsEx)
+        {
+            logger.LogError(sqsEx, "AWS SQS Exception while sending Update to queue.");
+            return ApiResponse.InternalServerError("Error communicating with SQS.");
         }
         catch (Exception e)
         {
-            return e.ToString(); // TODO: fix catch
+            logger.LogError(e, "Generic failure while processing webhook and sending Update to SQS.");
+            return ApiResponse.InternalServerError("An unexpected error occurred.");
         }
-        return "Task.FromResult(Results.Ok());"; // TODO: fix return type (copy UserManager)
+
+        CancellationToken GenerateCancellationToken()
+        {
+            var gracefulStopTimeLimit = TimeSpan.FromSeconds(1);
+            return new CancellationTokenSource(context.RemainingTime.Subtract(gracefulStopTimeLimit)).Token;
+        }
     }
 }
