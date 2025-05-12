@@ -12,6 +12,10 @@ public partial class Update
     /// <summary><em>Optional</em>. New incoming message of any kind - text, photo, sticker, etc.</summary>
     public Message? Message { get; set; }
 
+    /// <summary><em>Optional</em>. New incoming callback query</summary>
+    [JsonPropertyName("callback_query")]
+    public CallbackQuery? CallbackQuery { get; set; }
+
     /// <summary>Gets the <see cref="UpdateType">type</see> of the <see cref="Update"/></summary>
     /// <value>The <see cref="UpdateType">type</see> of the <see cref="Update"/></value>
     public UpdateType Type;

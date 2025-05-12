@@ -1,21 +1,22 @@
-﻿using Telegram.Bot;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
+﻿using SharedLibrary.Telegram;
+// using Telegram.Bot;
+// using Telegram.Bot.Types;
+// using Telegram.Bot.Types.Enums;
+// using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BudgetBotTelegram.Service;
 
 public interface ISenderGateway
 {
     Task<Message> ReplyAsync(
-        ChatId chatId,
+        Chat chatId,
         string text,
         string logMessage = "",
         LogLevel logLevel = LogLevel.Information,
-        ParseMode parseMode = default,
-        ReplyParameters? replyParameters = default,
-        ReplyMarkup? replyMarkup = default,
-        LinkPreviewOptions? linkPreviewOptions = default,
+        string ParseModeparseMode = default,
+        string ReplyParametersQreplyParameters = default,
+        string ReplyMarkupQreplyMarkup = default,
+        string LinkPreviewOptionsQlinkPreviewOptions = default,
         int? messageThreadId = default,
         IEnumerable<MessageEntity>? entities = default,
         bool disableNotification = default,
@@ -26,17 +27,17 @@ public interface ISenderGateway
         CancellationToken cancellationToken = default);
 }
 
-public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> logger) : ISenderGateway
+public class SenderGateway(string ITelegramBotClientbotClient, ILogger<SenderGateway> logger) : ISenderGateway
 {
     public async Task<Message> ReplyAsync(
-        ChatId chatId,
+        Chat chatId,
         string text,
         string logMessage = "",
         LogLevel logLevel = LogLevel.Information,
-        ParseMode parseMode = default,
-        ReplyParameters? replyParameters = default,
-        ReplyMarkup? replyMarkup = default,
-        LinkPreviewOptions? linkPreviewOptions = default,
+        string ParseModeparseMode = default,
+        string ReplyParametersQreplyParameters = default,
+        string ReplyMarkupQreplyMarkup = default,
+        string LinkPreviewOptionsQlinkPreviewOptions = default,
         int? messageThreadId = default,
         IEnumerable<MessageEntity>? entities = default,
         bool disableNotification = default,
@@ -46,27 +47,27 @@ public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> 
         bool allowPaidBroadcast = default,
         CancellationToken cancellationToken = default)
     {
-        var sentMessage = await botClient.SendMessage(
-            chatId: chatId,
-            text: text,
-            parseMode: parseMode,
-            replyParameters: replyParameters,
-            replyMarkup: replyMarkup,
-            linkPreviewOptions: linkPreviewOptions,
-            messageThreadId: messageThreadId,
-            entities: entities,
-            disableNotification: disableNotification,
-            protectContent: protectContent,
-            messageEffectId: messageEffectId,
-            businessConnectionId: businessConnectionId,
-            allowPaidBroadcast: allowPaidBroadcast,
-            cancellationToken: cancellationToken
-        );
+        // var sentMessage = await botClient.SendMessage(
+        //     chatId: chatId,
+        //     text: text,
+        //     parseMode: parseMode,
+        //     replyParameters: replyParameters,
+        //     replyMarkup: replyMarkup,
+        //     linkPreviewOptions: linkPreviewOptions,
+        //     messageThreadId: messageThreadId,
+        //     entities: entities,
+        //     disableNotification: disableNotification,
+        //     protectContent: protectContent,
+        //     messageEffectId: messageEffectId,
+        //     businessConnectionId: businessConnectionId,
+        //     allowPaidBroadcast: allowPaidBroadcast,
+        //     cancellationToken: cancellationToken
+        // );
 
         const string logDefault = "ChatId: {ChatId}. Username: {Username}.";
         logMessage = string.IsNullOrWhiteSpace(logMessage) ? $"Sent message. {logDefault}" : $"Sent. {logMessage} {logDefault}";
-        logger.Log(logLevel, logMessage, chatId, chatId.Username);
+        logger.Log(logLevel, logMessage, chatId.Username);
 
-        return sentMessage;
+        return new Message();//sentMessage;
     }
 }
