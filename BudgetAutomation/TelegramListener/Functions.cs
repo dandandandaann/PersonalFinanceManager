@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Annotations;
 using Amazon.Lambda.Annotations.APIGateway;
@@ -8,6 +9,8 @@ using Amazon.SQS.Model;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;
 using SharedLibrary.Dto;
+using Telegram.Bot.Types;
+using TelegramListener.AotTypes;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -21,7 +24,9 @@ public class Functions
     /// <summary>
     /// Default constructor.
     /// </summary>
-    public Functions() { }
+    public Functions()
+    {
+    }
 
     [LambdaFunction]
     [HttpApi(LambdaHttpMethod.Get, "/")]
@@ -31,19 +36,40 @@ public class Functions
     }
 
     [LambdaFunction(
+        Policies = "AWSLambdaBasicExecutionRole",
+        MemorySize = 128,
+        Timeout = 10)]
+    [HttpApi(LambdaHttpMethod.Get, "/setupWebhook")]
+    public async Task<APIGatewayHttpApiV2ProxyResponse> SetupWebhook(
+        [FromServices] ConfigureWebhook configureWebhook, ILambdaContext context)
+    {
+        try
+        {
+            await configureWebhook.StartAsync(context.Logger);
+        }
+        catch (Exception e)
+        {
+            context.Logger.LogError(e.ToString());
+            return ApiResponse.InternalServerError();
+        }
+
+        return ApiResponse.Ok("Webhook setup complete");
+    }
+
+    [LambdaFunction(
         Policies = "AWSLambdaBasicExecutionRole, " +
                    "arn:aws:iam::795287297286:policy/Configurations_Read" +
                    "arn:aws:iam::795287297286:policy/SQS_CRUD",
         MemorySize = 128,
         Timeout = 15)]
     [HttpApi(LambdaHttpMethod.Post, "/webhook")]
-    public async Task<APIGatewayHttpApiV2ProxyResponse> Webhook([FromQuery] string token,
+    public async Task<APIGatewayHttpApiV2ProxyResponse> Webhook(
+        [FromQuery] string token, [FromBody] Update update,
         APIGatewayHttpApiV2ProxyRequest lambdaRequest,
         [FromServices] IOptions<TelegramListenerSettings> listenerOptions,
         [FromServices] IOptions<TelegramBotSettings> telegramBotOptions,
         ILambdaContext context, [FromServices] IAmazonSQS sqsClient)
     {
-
         var logger = context.Logger;
 
         if (token != telegramBotOptions.Value.WebhookToken)
@@ -52,13 +78,13 @@ public class Functions
             return ApiResponse.Unauthorized("Unauthorized");
         }
 
-        var requestBody = lambdaRequest.Body;
-
-        if (string.IsNullOrEmpty(requestBody))
+        if (update == null!)
         {
-            logger.LogError("Received empty payload body from Telegram.");
-            return ApiResponse.BadRequest("Request body cannot be empty.");
+            logger.LogError("Received null update payload.");
+            return ApiResponse.BadRequest();
         }
+
+        var simplifiedUpdate = TelegramUpdateConverter.ConvertUpdate(update);
 
         try
         {
@@ -66,11 +92,12 @@ public class Functions
             var sendMessageRequest = new SendMessageRequest
             {
                 QueueUrl = queueUrl,
-                MessageBody = requestBody
+                MessageBody = JsonSerializer.Serialize(simplifiedUpdate, AppJsonSerializerContext.Default.Update)
+
             };
 
             logger.LogInformation("Attempting to send the Telegram Update to SQS queue: {QueueUrl}",
-                 queueUrl.Substring(queueUrl.LastIndexOf('/') + 1));
+                queueUrl.Substring(queueUrl.LastIndexOf('/') + 1));
 
             // Send the message to SQS
             var sendMessageResponse = await sqsClient.SendMessageAsync(sendMessageRequest, GenerateCancellationToken());
@@ -100,7 +127,7 @@ public class Functions
             return ApiResponse.InternalServerError("An unexpected error occurred.");
         }
 
-        CancellationToken GenerateCancellationToken()
+        CancellationToken GenerateCancellationToken() // TODO: share this method because it's replicated in other services
         {
             var gracefulStopTimeLimit = TimeSpan.FromSeconds(1);
             return new CancellationTokenSource(context.RemainingTime.Subtract(gracefulStopTimeLimit)).Token;

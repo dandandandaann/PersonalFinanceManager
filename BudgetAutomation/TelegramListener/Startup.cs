@@ -28,6 +28,9 @@ public class Startup
             options => { options.Serializer = new SourceGeneratorLambdaJsonSerializer<AppJsonSerializerContext>(); });
         // #pragma warning restore IL2026
 
+        // Serialize Options for AOT
+        services.ConfigureTelegramBot<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt => opt.SerializerOptions);
+
         // Configure AWS Parameter Store
         configBuilder.AddSystemsManager($"/{devPrefix}{BudgetAutomationSettings.Configuration}/");
         var config = configBuilder.Build();
@@ -55,6 +58,6 @@ public class Startup
                 return new TelegramBotClient(clientOptions, httpClient);
             });
 
-        services.AddHostedService<ConfigureWebhook>();
+        services.AddSingleton<ConfigureWebhook>();
     }
 }
