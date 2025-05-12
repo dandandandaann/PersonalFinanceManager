@@ -220,15 +220,15 @@ public class FunctionsTests
         // Act
         var response = await _functions.GetUserByTelegramIdAsync(telegramIdString, _mockLambdaContext.Object);
 
+
         // Assert
         response.ShouldNotBeNull();
         response.StatusCode.ShouldBe(200); // OK
 
-        var responseBody = DeserializeBody<UserResponse>(response);
+        var responseBody = DeserializeBody<UserExistsResponse>(response);
+        responseBody.ShouldBeOfType<UserExistsResponse>();
         responseBody.Success.ShouldBeTrue();
-        responseBody.User.ShouldNotBeNull();
-        responseBody.User.UserId.ShouldBe(ExistingUserId);
-        responseBody.User.TelegramId.ShouldBe(DefaultTelegramId);
+        responseBody.UserId.ShouldBe(ExistingUserId);
 
         _mockSearch.Verify(s => s.GetNextSetAsync(It.IsAny<CancellationToken>()), Times.Once);
 
@@ -251,9 +251,10 @@ public class FunctionsTests
         response.ShouldNotBeNull();
         response.StatusCode.ShouldBe(200); // OK
 
-        var responseBody = DeserializeBody<UserResponse>(response);
+        var responseBody = DeserializeBody<UserExistsResponse>(response);
+        responseBody.ShouldBeOfType<UserExistsResponse>();
         responseBody.Success.ShouldBeFalse();
-        responseBody.User.ShouldBeNull();
+        responseBody.UserId.ShouldNotBe(ExistingUserId);
 
         _mockSearch.Verify(s => s.GetNextSetAsync(It.IsAny<CancellationToken>()), Times.Once);
 
