@@ -3,8 +3,7 @@ using System.Text.RegularExpressions;
 using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Service;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
+using SharedLibrary.Telegram;
 
 namespace BudgetBotTelegram.Handler.Command;
 
@@ -69,7 +68,7 @@ public partial class SignupCommand(
             return await sender.ReplyAsync(message.Chat,
                 welcomeMessage.ToString(),
                 "User signup successful.",
-                parseMode: ParseMode.MarkdownV2,
+                // parseMode: ParseMode.MarkdownV2,
                 cancellationToken: cancellationToken);
         }
         catch (Exception e)

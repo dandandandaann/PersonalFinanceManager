@@ -1,15 +1,11 @@
 ﻿using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Service;
-using Telegram.Bot;
-using Telegram.Bot.Exceptions;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
+using SharedLibrary.Telegram;
 
 namespace BudgetBotTelegram.Handler;
 
 public class UpdateHandler(
-    ITelegramBotClient botClient,
     ISenderGateway sender,
     IMessageHandler messageHandler,
     ILogger<UpdateHandler> logger) : IUpdateHandler
@@ -60,10 +56,10 @@ public class UpdateHandler(
         logger.LogInformation("Received callback query with data: {CallbackData}", callbackQuery.Data);
 
         // Acknowledge the callback query is required
-        await botClient.AnswerCallbackQuery( // TODO: implement this method in SenderGateway
-            callbackQueryId: callbackQuery.Id,
-            text: $"Received {callbackQuery.Data}",
-            cancellationToken: cancellationToken);
+        // await botClient.AnswerCallbackQuery( // TODO: implement this method in SenderGateway
+        //     callbackQueryId: callbackQuery.Id,
+        //     text: $"Received {callbackQuery.Data}",
+        //     cancellationToken: cancellationToken);
 
         // Add logic to handle the callback query data
         // Example: Modify the message or perform an action based on callbackQuery.Data
@@ -75,8 +71,8 @@ public class UpdateHandler(
 
         if (update.Message != null)
         {
-            await botClient.SendMessage(
-                chatId: update.Message.Chat.Id,
+            await sender.ReplyAsync(
+                chatId: update.Message.Chat,
                 text: $"I can't handle message type {update.Type}.",
                 cancellationToken: cancellationToken);
         }
@@ -84,14 +80,15 @@ public class UpdateHandler(
 
     private void HandlePollingErrorAsync(Exception exception)
     {
-        var errorMessage = exception switch
-        {
-            // Handle specific Telegram API exceptions if needed
-            ApiRequestException apiRequestException
-                => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
-            _ => exception.ToString()
-        };
+        // TODO: handle error appropriately
+        // var errorMessage = exception switch
+        // {
+        //     // Handle specific Telegram API exceptions if needed
+        //     ApiRequestException apiRequestException
+        //         => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{Message}",
+        //     _ => exception.ToString()
+        // };
 
-        logger.LogError("Error handling update: {ErrorMessage}", errorMessage);
+        logger.LogError("Error handling update: {ErrorMessage}", exception.Message);
     }
 }

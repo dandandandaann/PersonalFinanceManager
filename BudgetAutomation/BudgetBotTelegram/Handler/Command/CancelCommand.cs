@@ -1,6 +1,7 @@
 ﻿using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Service;
-using Telegram.Bot.Types;
+using SharedLibrary.Telegram;
+
 
 namespace BudgetBotTelegram.Handler.Command;
 

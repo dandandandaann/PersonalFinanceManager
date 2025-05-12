@@ -2,7 +2,7 @@
 using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Service;
-using Telegram.Bot.Types;
+using SharedLibrary.Telegram;
 
 namespace BudgetBotTelegram.Handler;
 

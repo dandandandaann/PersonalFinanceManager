@@ -11,6 +11,9 @@ namespace BudgetBotTelegram.AtoTypes;
 [JsonSerializable(typeof(UserExistsResponse))]
 [JsonSerializable(typeof(APIGatewayHttpApiV2ProxyRequest))]
 [JsonSerializable(typeof(APIGatewayHttpApiV2ProxyResponse))]
+
+[JsonSerializable(typeof(SharedLibrary.Telegram.Update))]
+
 public partial class AppJsonSerializerContext : JsonSerializerContext
 {
 }
