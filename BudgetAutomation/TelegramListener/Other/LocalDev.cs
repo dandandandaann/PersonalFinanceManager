@@ -9,6 +9,7 @@ public static class LocalDev
     public static void CheckNgrok()
     {
 #if DEBUG // Only run this check in Debug configuration
+        Console.WriteLine("Started checking Ngrok");
         const string ngrokProcessName = "ngrok";
 
         if (!IsLocalDev()) return;
