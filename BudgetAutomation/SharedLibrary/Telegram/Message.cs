@@ -1,9 +1,10 @@
 ﻿using System.Text.Json.Serialization;
+using SharedLibrary.Telegram.Enums;
 
 namespace SharedLibrary.Telegram;
 
 /// <summary>This object represents a message.</summary>
-public partial class Message
+public class Message
 {
     /// <summary>Unique message identifier inside this chat. In specific instances (e.g., message containing a video sent to a big chat), the server might automatically schedule a message instead of sending it immediately. In such cases, this field will be 0 and the relevant message will be unusable until it is actually sent</summary>
     [JsonPropertyName("message_id")]
@@ -29,5 +30,6 @@ public partial class Message
 
     /// <summary>Gets the <see cref="MessageType">type</see> of the <see cref="Message"/></summary>
     /// <value>The <see cref="MessageType">type</see> of the <see cref="Message"/></value>
-    public MessageType Type;
+    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+    public MessageType Type  { get; set; }
 }

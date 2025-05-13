@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using SharedLibrary.Telegram.Enums;
 
 namespace SharedLibrary.Telegram;
 

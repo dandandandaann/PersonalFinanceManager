@@ -1,9 +1,10 @@
 ﻿using System.Text.Json.Serialization;
+using SharedLibrary.Telegram.Enums;
 
 namespace SharedLibrary.Telegram;
 
 /// <summary>This object represents a chat.</summary>
-public partial class Chat
+public class Chat
 {
     /// <summary>Unique identifier for this chat.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.Never)]

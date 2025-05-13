@@ -1,4 +1,4 @@
-﻿namespace SharedLibrary.Telegram;
+﻿namespace SharedLibrary.Telegram.Enums;
 
 /// <summary>Type of the <see cref="Chat"/>, from which the inline query was sent</summary>
 public enum ChatType

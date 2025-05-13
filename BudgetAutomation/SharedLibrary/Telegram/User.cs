@@ -3,7 +3,7 @@
 namespace SharedLibrary.Telegram;
 
 /// <summary>This object represents a Telegram user or bot.</summary>
-public partial class User
+public class User
 {
     /// <summary>Unique identifier for this user or bot.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
