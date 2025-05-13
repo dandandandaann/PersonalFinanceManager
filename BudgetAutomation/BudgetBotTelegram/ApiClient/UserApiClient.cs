@@ -20,14 +20,8 @@ public class UserApiClient : IUserApiClient
         _httpClient = httpClient;
         _logger = logger;
 
-        if (options.Value is not { } apiOptions ||
-            string.IsNullOrEmpty(apiOptions.Url) ||
-            string.IsNullOrEmpty(apiOptions.Key))
-            throw new ArgumentNullException(nameof(apiOptions));
-
-        // Configure HttpClient base address and default headers
-        _httpClient.BaseAddress = new Uri(apiOptions.Url);
-        _httpClient.DefaultRequestHeaders.Add("x-api-key", apiOptions.Key);
+        _httpClient.BaseAddress = new Uri(options.Value.Url);
+        _httpClient.DefaultRequestHeaders.Add("x-api-key", options.Value.Key);
     }
 
     public async Task<UserResponse> SignupUserAsync(

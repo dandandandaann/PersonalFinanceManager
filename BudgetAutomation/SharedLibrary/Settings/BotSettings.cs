@@ -5,10 +5,10 @@ public class BotSettings
     public const string Configuration = "BotConfiguration";
 
     public string Token { get; set; } = string.Empty;
-    public long StaticId
+    public string StaticId
     {
-        set => Id = value;
+        set => Id = long.Parse(value);
     }
 
-    public static long Id { get; set; } = 0;
+    public static long Id { get; set; }
 }

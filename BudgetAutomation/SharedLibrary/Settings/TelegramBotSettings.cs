@@ -13,5 +13,5 @@ public class TelegramBotSettings
         set => Id = value;
     }
 
-    public static long Id { get; set; } = 0;
+    public static long Id { get; set; }
 }
