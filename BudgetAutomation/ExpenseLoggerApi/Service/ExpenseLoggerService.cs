@@ -32,7 +32,7 @@ public class ExpenseLoggerService(
         doubleAmount = Math.Round(doubleAmount, 2);
 
         // Parse amount manually to pt-BR
-        expense.Amount = doubleAmount.ToString("F2").Replace(",", "").Replace(".", ",");
+        expense.Amount = doubleAmount.ToString("0.00", CultureInfo.InvariantCulture).Replace(",", "").Replace(".", ",");
 
         var sheetName = DateTime.Now.ToString("MM-yyyy");
         logger.LogInformation("Starting expense logging process for sheet '{SheetName}' in spreadsheet '{SpreadsheetId}'.",
