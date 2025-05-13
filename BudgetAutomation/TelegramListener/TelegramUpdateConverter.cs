@@ -1,9 +1,10 @@
 ﻿using SharedLibrary.Telegram;
+using SharedLibrary.Telegram.Enums;
 
 namespace TelegramListener;
 
 /// <summary>
-/// This class and method were created as a workaround for the fact that I was not able to serialize the Update object
+/// This class and method were created as a workaround since I was not able to serialize the whole Telegram Update object
 /// on my aot service to send it as a SQS message and deserialize it in the message consumer
 /// </summary>
 public class TelegramUpdateConverter
@@ -58,9 +59,9 @@ public class TelegramUpdateConverter
                 },
                 Text = telegramUpdate.Message.Text,
                 Entities = convertedMessageEntities,
-                Type = MessageType.Unknown
+                Type = (MessageType)(int)telegramUpdate.Message.Type
             },
-            Type = UpdateType.Unknown
+            Type = (UpdateType)(int)telegramUpdate.Type
         };
 
         return simplifiedUpdate;

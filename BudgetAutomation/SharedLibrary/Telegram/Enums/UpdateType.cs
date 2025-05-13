@@ -1,4 +1,4 @@
-﻿namespace SharedLibrary.Telegram;
+﻿namespace SharedLibrary.Telegram.Enums;
 
 public enum UpdateType
 {

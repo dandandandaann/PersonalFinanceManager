@@ -1,4 +1,4 @@
-﻿namespace SharedLibrary.Telegram;
+﻿namespace SharedLibrary.Telegram.Enums;
 
 /// <summary>Type of <see cref="MessageEntity"/></summary>
 public enum MessageEntityType

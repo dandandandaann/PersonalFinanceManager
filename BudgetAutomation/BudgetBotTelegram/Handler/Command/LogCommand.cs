@@ -44,6 +44,8 @@ public partial class LogCommand(
 
     public async Task<Message> HandleLogAsync(Message message, ChatState chatState, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrEmpty(message.Text);
+
         await chatStateService.ClearState(message.Chat.Id);
 
         if (chatState.State == ChatStateService.StateEnum.AwaitingLogArguments.ToString())

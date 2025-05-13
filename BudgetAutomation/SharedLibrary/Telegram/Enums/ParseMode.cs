@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace SharedLibrary.Telegram;
+namespace SharedLibrary.Telegram.Enums;
 
 /// <summary>Text parsing mode. See <a href="https://core.telegram.org/bots/api#formatting-options"/>
 /// <para>The Bot API supports basic formatting for messages. You can use bold, italic, underlined, strikethrough,

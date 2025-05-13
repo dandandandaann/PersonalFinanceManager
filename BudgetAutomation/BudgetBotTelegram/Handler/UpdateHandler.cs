@@ -2,6 +2,7 @@
 using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Service;
 using SharedLibrary.Telegram;
+using SharedLibrary.Telegram.Enums;
 
 namespace BudgetBotTelegram.Handler;
 
@@ -45,9 +46,9 @@ public class UpdateHandler(
                 logLevel: LogLevel.Information,
                 cancellationToken: cancellationToken);
         }
-        catch (Exception exception)
+        catch (Exception ex)
         {
-            HandlePollingErrorAsync(exception);
+            HandlePollingErrorAsync(ex);
         }
     }
 
@@ -78,7 +79,7 @@ public class UpdateHandler(
         }
     }
 
-    private void HandlePollingErrorAsync(Exception exception)
+    private void HandlePollingErrorAsync(Exception ex)
     {
         // TODO: handle error appropriately
         // var errorMessage = exception switch
@@ -89,6 +90,7 @@ public class UpdateHandler(
         //     _ => exception.ToString()
         // };
 
-        logger.LogError("Error handling update: {ErrorMessage}", exception.Message);
+        logger.LogError("Error handling update: {ErrorMessage}", ex.Message);
+        throw ex;
     }
 }

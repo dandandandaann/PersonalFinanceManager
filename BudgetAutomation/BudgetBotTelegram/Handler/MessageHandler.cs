@@ -1,6 +1,7 @@
 ﻿using BudgetBotTelegram.Interface;
 using SharedLibrary.Settings;
 using SharedLibrary.Telegram;
+using SharedLibrary.Telegram.Enums;
 
 namespace BudgetBotTelegram.Handler;
 
