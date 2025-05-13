@@ -1,23 +1,24 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Amazon.Lambda.Core;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace BudgetBotTelegram;
+namespace TelegramListener;
 
 public class ConfigureWebhook(
-    ILogger<ConfigureWebhook> logger,
     IServiceProvider serviceProvider,
-    IOptions<BotSettings> botOptions) : IHostedService
+    IOptions<TelegramListenerSettings> listenerOptions,
+    IOptions<TelegramBotSettings> telegramBotOptions)
 {
-    public async Task StartAsync(CancellationToken cancellationToken = default)
+    public async Task StartAsync(ILambdaLogger logger, CancellationToken cancellationToken = default)
     {
         using var scope = serviceProvider.CreateScope();
         var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
-        var bot = botOptions.Value;
 
-        var webhookAddress = $"{bot.HostAddress.TrimEnd('/')}/webhook?token={bot.WebhookToken}";
+        var webhookAddress = $"{listenerOptions.Value.HostAddress.TrimEnd('/')}/webhook?token={telegramBotOptions.Value.WebhookToken}";
         logger.LogInformation("Setting webhook: {WebhookAddress}", webhookAddress);
 
         try
@@ -30,8 +31,7 @@ public class ConfigureWebhook(
 
             // You can optionally get webhook info to confirm
             var webhookInfo = await botClient.GetWebhookInfo(cancellationToken);
-            logger.LogInformation("Webhook info: Pending updates = {PendingUpdates}, Last error date = {LastErrorDate}",
-                webhookInfo.PendingUpdateCount, webhookInfo.LastErrorDate);
+            logger.LogInformation("Webhook info: Pending updates = {PendingUpdates}, Last error date = {LastErrorDate}", webhookInfo.PendingUpdateCount, webhookInfo.LastErrorDate);
 
             try
             {
@@ -57,7 +57,7 @@ public class ConfigureWebhook(
         }
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken = default)
+    public async Task StopAsync(ILambdaLogger logger, CancellationToken cancellationToken = default)
     {
         // Clean up the webhook when the application stops
         using var scope = serviceProvider.CreateScope();

@@ -14,6 +14,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserManagerApi", "UserManag
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserManagerApi.Tests", "UserManagerApi.Tests\UserManagerApi.Tests.csproj", "{FAA0271F-6E86-4254-B8A0-28CDFB11618A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramListener", "TelegramListener\TelegramListener.csproj", "{CC892B0A-3D46-4432-A388-FDB2AF564926}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramListener.Tests", "TelegramListener.Tests\TelegramListener.Tests.csproj", "{17457825-9AA1-42FB-A913-B56B5F90F169}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +52,13 @@ Global
 		{FAA0271F-6E86-4254-B8A0-28CDFB11618A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAA0271F-6E86-4254-B8A0-28CDFB11618A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAA0271F-6E86-4254-B8A0-28CDFB11618A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC892B0A-3D46-4432-A388-FDB2AF564926}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC892B0A-3D46-4432-A388-FDB2AF564926}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC892B0A-3D46-4432-A388-FDB2AF564926}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC892B0A-3D46-4432-A388-FDB2AF564926}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17457825-9AA1-42FB-A913-B56B5F90F169}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17457825-9AA1-42FB-A913-B56B5F90F169}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17457825-9AA1-42FB-A913-B56B5F90F169}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17457825-9AA1-42FB-A913-B56B5F90F169}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

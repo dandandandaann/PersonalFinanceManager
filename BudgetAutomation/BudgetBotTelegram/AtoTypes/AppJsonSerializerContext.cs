@@ -11,6 +11,14 @@ namespace BudgetBotTelegram.AtoTypes;
 [JsonSerializable(typeof(UserExistsResponse))]
 [JsonSerializable(typeof(APIGatewayHttpApiV2ProxyRequest))]
 [JsonSerializable(typeof(APIGatewayHttpApiV2ProxyResponse))]
+
+[JsonSerializable(typeof(SharedLibrary.Telegram.Update))]
+[JsonSerializable(typeof(SharedLibrary.Telegram.Chat))]
+[JsonSerializable(typeof(SharedLibrary.Telegram.Message))]
+[JsonSerializable(typeof(SharedLibrary.Telegram.MessageEntity))]
+[JsonSerializable(typeof(SharedLibrary.Telegram.User))]
+[JsonSerializable(typeof(SharedLibrary.Telegram.CallbackQuery))]
+
 public partial class AppJsonSerializerContext : JsonSerializerContext
 {
 }

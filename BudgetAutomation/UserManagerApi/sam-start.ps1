@@ -7,6 +7,12 @@ if ($proc5011) {
     Write-Host "No process found."
 }
 
+if ((Split-Path -Leaf (Get-Location)) -ne "UserManagerApi") {
+    Set-Location UserManagerApi
+}
+
+Write-Host "Starting to build serverless template..."
+sam build -t serverless.template
+
 Write-Host "Starting SAM Local API on port 5011..."
- Set-Location UserManagerApi
 sam local start-api -p 5011

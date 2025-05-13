@@ -2,7 +2,7 @@
 using System.Text.Json;
 using Amazon.Lambda.APIGatewayEvents;
 
-namespace UserManagerApi.Common;
+namespace SharedLibrary.Dto;
 
 public static class ApiResponse
 {

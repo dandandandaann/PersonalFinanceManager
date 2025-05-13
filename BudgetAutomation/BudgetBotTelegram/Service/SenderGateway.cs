@@ -1,23 +1,21 @@
 ﻿using Telegram.Bot;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
+using Message = SharedLibrary.Telegram.Message;
 
 namespace BudgetBotTelegram.Service;
 
 public interface ISenderGateway
 {
     Task<Message> ReplyAsync(
-        ChatId chatId,
+        SharedLibrary.Telegram.Chat chatId,
         string text,
         string logMessage = "",
         LogLevel logLevel = LogLevel.Information,
-        ParseMode parseMode = default,
-        ReplyParameters? replyParameters = default,
-        ReplyMarkup? replyMarkup = default,
-        LinkPreviewOptions? linkPreviewOptions = default,
+        string ParseModeparseMode = default,
+        string ReplyParametersQreplyParameters = default,
+        string ReplyMarkupQreplyMarkup = default,
+        string LinkPreviewOptionsQlinkPreviewOptions = default,
         int? messageThreadId = default,
-        IEnumerable<MessageEntity>? entities = default,
+        IEnumerable<SharedLibrary.Telegram.MessageEntity>? entities = default,
         bool disableNotification = default,
         bool protectContent = default,
         string? messageEffectId = default,
@@ -29,16 +27,16 @@ public interface ISenderGateway
 public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> logger) : ISenderGateway
 {
     public async Task<Message> ReplyAsync(
-        ChatId chatId,
+        SharedLibrary.Telegram.Chat chatId,
         string text,
         string logMessage = "",
         LogLevel logLevel = LogLevel.Information,
-        ParseMode parseMode = default,
-        ReplyParameters? replyParameters = default,
-        ReplyMarkup? replyMarkup = default,
-        LinkPreviewOptions? linkPreviewOptions = default,
+        string ParseModeparseMode = default,
+        string ReplyParametersQreplyParameters = default,
+        string ReplyMarkupQreplyMarkup = default,
+        string LinkPreviewOptionsQlinkPreviewOptions = default,
         int? messageThreadId = default,
-        IEnumerable<MessageEntity>? entities = default,
+        IEnumerable<SharedLibrary.Telegram.MessageEntity>? entities = default,
         bool disableNotification = default,
         bool protectContent = default,
         string? messageEffectId = default,
@@ -47,14 +45,14 @@ public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> 
         CancellationToken cancellationToken = default)
     {
         var sentMessage = await botClient.SendMessage(
-            chatId: chatId,
+            chatId: chatId.Id,
             text: text,
-            parseMode: parseMode,
-            replyParameters: replyParameters,
-            replyMarkup: replyMarkup,
-            linkPreviewOptions: linkPreviewOptions,
+            // parseMode: parseMode, // TODO: fix these parameters on the new reply service
+            // replyParameters: replyParameters,
+            // replyMarkup: replyMarkup,
+            // linkPreviewOptions: linkPreviewOptions,
             messageThreadId: messageThreadId,
-            entities: entities,
+            // entities: entities,
             disableNotification: disableNotification,
             protectContent: protectContent,
             messageEffectId: messageEffectId,
@@ -67,6 +65,6 @@ public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> 
         logMessage = string.IsNullOrWhiteSpace(logMessage) ? $"Sent message. {logDefault}" : $"Sent. {logMessage} {logDefault}";
         logger.Log(logLevel, logMessage, chatId, chatId.Username);
 
-        return sentMessage;
+        return new Message();// sentMessage;
     }
 }

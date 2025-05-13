@@ -3,7 +3,7 @@ using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Service;
 using SharedLibrary;
-using Telegram.Bot.Types;
+using SharedLibrary.Telegram;
 
 namespace BudgetBotTelegram.Handler.Command;
 
@@ -44,6 +44,8 @@ public partial class LogCommand(
 
     public async Task<Message> HandleLogAsync(Message message, ChatState chatState, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrEmpty(message.Text);
+
         await chatStateService.ClearState(message.Chat.Id);
 
         if (chatState.State == ChatStateService.StateEnum.AwaitingLogArguments.ToString())
@@ -51,14 +53,14 @@ public partial class LogCommand(
             return await LogExpenseAsync(message.Chat, message.Text, cancellationToken);
         }
 
-        return await sender.ReplyAsync(message.Chat.Id, $"Log state {chatState.State} not implemented.",
+        return await sender.ReplyAsync(message.Chat, $"Log state {chatState.State} not implemented.",
             $"Log state {chatState} not implemented.",
             logLevel: LogLevel.Error,
             cancellationToken: cancellationToken
         );
     }
 
-    private async Task<Message> LogExpenseAsync(ChatId chatId, string expenseArguments,
+    private async Task<Message> LogExpenseAsync(Chat chatId, string expenseArguments,
         CancellationToken cancellationToken = default)
     {
         var expense = ParseExpenseArguments(expenseArguments);

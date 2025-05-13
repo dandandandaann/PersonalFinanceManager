@@ -20,26 +20,6 @@ public class BotSettingsValidator : IValidateOptions<BotSettings>
             failures.Add($"{nameof(options.Token)} is missing or empty.");
         }
 
-        if (string.IsNullOrWhiteSpace(options.HostAddress))
-        {
-            failures.Add($"{nameof(options.HostAddress)} is missing or empty.");
-        }
-
-        if (string.IsNullOrWhiteSpace(options.Name))
-        {
-            failures.Add($"{nameof(options.Name)} is missing or empty.");
-        }
-
-        if (string.IsNullOrWhiteSpace(options.Handle))
-        {
-            failures.Add($"{nameof(options.Handle)} is missing or empty.");
-        }
-
-        if (string.IsNullOrWhiteSpace(options.WebhookToken))
-        {
-            failures.Add($"{nameof(options.WebhookToken)} is missing or empty.");
-        }
-
         return failures.Count > 0 ? ValidateOptionsResult.Fail(failures) : ValidateOptionsResult.Success;
     }
 }
