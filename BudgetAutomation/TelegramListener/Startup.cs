@@ -7,7 +7,7 @@ using SharedLibrary.Settings;
 using SharedLibrary.Validator;
 using Telegram.Bot;
 using TelegramListener.AotTypes;
-using TelegramListener.Other;
+using TelegramListener.Service;
 
 namespace TelegramListener;
 
@@ -19,21 +19,25 @@ public class Startup
         var configBuilder = new ConfigurationBuilder();
 
         // Local development settings
-        var isLocalDev = LocalDev.IsLocalDev();
-        LocalDev.CheckNgrok();
+        var isLocalDev = SharedLibrary.LocalDevelopment.SamStart.IsLocalDev();
         var devPrefix = isLocalDev ? "dev-" : "";
 
+        // Configure AWS Parameter Store
+        configBuilder.AddSystemsManager($"/{devPrefix}{BudgetAutomationSettings.Configuration}/");
+
+        if (isLocalDev)
+        {
+            configBuilder.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+        }
+
+        var config = configBuilder.Build();
+
+        // Serialize Options for AOT
+        services.ConfigureTelegramBot<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt => opt.SerializerOptions);
         // #pragma warning disable IL2026
         services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,
             options => { options.Serializer = new SourceGeneratorLambdaJsonSerializer<AppJsonSerializerContext>(); });
         // #pragma warning restore IL2026
-
-        // Serialize Options for AOT
-        services.ConfigureTelegramBot<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt => opt.SerializerOptions);
-
-        // Configure AWS Parameter Store
-        configBuilder.AddSystemsManager($"/{devPrefix}{BudgetAutomationSettings.Configuration}/");
-        var config = configBuilder.Build();
 
         // Configure AWS SQS
         services.AddAWSService<IAmazonSQS>();
@@ -56,6 +60,10 @@ public class Startup
                 TelegramBotClientOptions clientOptions = new(settings.Token);
                 return new TelegramBotClient(clientOptions, httpClient);
             });
+
+        // Register services
+        services.AddSingleton<IAuthenticationService, AuthenticationService>();
+        services.AddSingleton<ITelegramUpdateProcessor, TelegramUpdateProcessor>();
 
         services.AddSingleton<ConfigureWebhook>();
     }

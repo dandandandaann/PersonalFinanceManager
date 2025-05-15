@@ -8,11 +8,11 @@ public class CallbackQuery
 {
     /// <summary>Unique identifier for this query</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
-    public string Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>Sender</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
-    public User From { get; set; }
+    public User From { get; set; } = null!;
 
     /// <summary><em>Optional</em>. Message sent by the bot with the callback button that originated the query</summary>
     public Message? Message { get; set; }
@@ -24,7 +24,7 @@ public class CallbackQuery
     /// <summary>Global identifier, uniquely corresponding to the chat to which the message with the callback button was sent. Useful for high scores in <a href="https://core.telegram.org/bots/api#games">games</a>.</summary>
     [JsonPropertyName("chat_instance")]
     [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
-    public string ChatInstance { get; set; }
+    public string ChatInstance { get; set; } = null!;
 
     /// <summary><em>Optional</em>. Data associated with the callback button. Be aware that the message originated the query can contain no callback buttons with this data.</summary>
     public string? Data { get; set; }

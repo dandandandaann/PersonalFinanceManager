@@ -1,16 +1,10 @@
-using System.Net;
-using System.Text.Json;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Annotations;
 using Amazon.Lambda.Annotations.APIGateway;
 using Amazon.Lambda.APIGatewayEvents;
-using Amazon.SQS;
-using Amazon.SQS.Model;
-using Microsoft.Extensions.Options;
-using SharedLibrary.Settings;
 using SharedLibrary.Dto;
 using Telegram.Bot.Types;
-using TelegramListener.AotTypes;
+using TelegramListener.Service;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -64,15 +58,13 @@ public class Functions
         Timeout = 15)]
     [HttpApi(LambdaHttpMethod.Post, "/webhook")]
     public async Task<APIGatewayHttpApiV2ProxyResponse> Webhook(
-        [FromQuery] string token, [FromBody] Update update,
-        APIGatewayHttpApiV2ProxyRequest lambdaRequest,
-        [FromServices] IOptions<TelegramListenerSettings> listenerOptions,
-        [FromServices] IOptions<TelegramBotSettings> telegramBotOptions,
-        ILambdaContext context, [FromServices] IAmazonSQS sqsClient)
+        [FromQuery] string token, [FromBody] Update update, ILambdaContext context,
+        [FromServices] IAuthenticationService authenticator,
+        [FromServices] ITelegramUpdateProcessor updateProcessor)
     {
         var logger = context.Logger;
 
-        if (token != telegramBotOptions.Value.WebhookToken)
+        if (!authenticator.IsAuthorized(token))
         {
             logger.LogWarning("Unauthorized webhook attempt with invalid token: {SuppliedToken}", token);
             return ApiResponse.Unauthorized("Unauthorized");
@@ -84,53 +76,23 @@ public class Functions
             return ApiResponse.BadRequest();
         }
 
-        var simplifiedUpdate = TelegramUpdateConverter.ConvertUpdate(update);
-
         try
         {
-            var queueUrl = listenerOptions.Value.TelegramUpdateQueue;
-            var sendMessageRequest = new SendMessageRequest
+            var result = await updateProcessor.ProcessUpdateAsync(update, context);
+
+            if (!result.IsSuccess)
             {
-                QueueUrl = queueUrl,
-                MessageBody = JsonSerializer.Serialize(simplifiedUpdate, AppJsonSerializerContext.Default.Update)
-
-            };
-
-            logger.LogInformation("Attempting to send the Telegram Update to SQS queue: {QueueUrl}",
-                queueUrl.Substring(queueUrl.LastIndexOf('/') + 1));
-
-            // Send the message to SQS
-            var sendMessageResponse = await sqsClient.SendMessageAsync(sendMessageRequest, GenerateCancellationToken());
-
-            if (sendMessageResponse.HttpStatusCode != HttpStatusCode.OK)
-            {
-                logger.LogError(
-                    "SQS did not accept message for Update. SQS Response Status: {SqsStatus}, SQS Message ID (if any): {SqsMessageId}",
-                    sendMessageResponse.HttpStatusCode, sendMessageResponse.MessageId);
-                return ApiResponse.InternalServerError("Failed to queue message.");
+                logger.LogError("Failed to process update: {Status} - {ErrorMessage}", result.Status, result.ErrorMessage);
+                return ApiResponse.InternalServerError(result.ErrorMessage ?? "Failed to process update.");
             }
-
-            logger.LogInformation("Successfully queued Update to SQS. SQS Message ID: {SqsMessageId}",
-                sendMessageResponse.MessageId);
-
-            // Return OK to Telegram immediately AFTER successfully queuing
-            return ApiResponse.Ok();
-        }
-        catch (AmazonSQSException sqsEx)
-        {
-            logger.LogError(sqsEx, "AWS SQS Exception while sending Update to queue.");
-            return ApiResponse.InternalServerError("Error communicating with SQS.");
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Generic failure while processing webhook and sending Update to SQS.");
+            logger.LogError(e, "Unexpected error invoking TelegramUpdateProcessor.");
             return ApiResponse.InternalServerError("An unexpected error occurred.");
         }
 
-        CancellationToken GenerateCancellationToken() // TODO: share this method because it's replicated in other services
-        {
-            var gracefulStopTimeLimit = TimeSpan.FromSeconds(1);
-            return new CancellationTokenSource(context.RemainingTime.Subtract(gracefulStopTimeLimit)).Token;
-        }
+        // Return OK to Telegram immediately AFTER successfully queuing
+        return ApiResponse.Ok();
     }
 }

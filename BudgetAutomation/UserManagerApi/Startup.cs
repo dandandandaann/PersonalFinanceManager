@@ -2,8 +2,11 @@ using Amazon;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.Lambda.Serialization.SystemTextJson;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SharedLibrary.Settings;
 using UserManagerApi.AotTypes;
+using UserManagerApi.Service;
 
 namespace UserManagerApi;
 
@@ -20,6 +23,16 @@ public class Startup
     /// </summary>
     public void ConfigureServices(IServiceCollection services)
     {
+        var configBuilder = new ConfigurationBuilder();
+
+        // Local development settings
+        var isLocalDev = SharedLibrary.LocalDevelopment.SamStart.IsLocalDev();
+        var devPrefix = isLocalDev ? "dev-" : "";
+
+        // Configure AWS Parameter Store
+        configBuilder.AddSystemsManager($"/{devPrefix}{BudgetAutomationSettings.Configuration}/");
+        var config = configBuilder.Build();
+
         // #pragma warning disable IL2026
         services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,
             options => { options.Serializer = new SourceGeneratorLambdaJsonSerializer<AppJsonSerializerContext>(); });
@@ -35,5 +48,8 @@ public class Startup
             // contextBuilder = contextBuilder.WithTableNamePrefix("DEV_");
             return contextBuilder.Build();
         });
+
+        // Register services
+        services.AddSingleton<IUserService, UserService>();
     }
 }
