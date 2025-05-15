@@ -9,4 +9,7 @@ public class UserExistsResponse
 
     [JsonPropertyName("userId")]
     public string? UserId { get; set; }
+
+    [JsonPropertyName("message")]
+    public string? Message { get; set; }
 }

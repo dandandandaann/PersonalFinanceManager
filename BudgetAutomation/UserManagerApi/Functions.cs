@@ -1,11 +1,10 @@
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Annotations;
 using Amazon.Lambda.Annotations.APIGateway;
-using Amazon.DynamoDBv2.DataModel;
-using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.APIGatewayEvents;
 using SharedLibrary.Dto;
 using SharedLibrary.UserClasses;
+using UserManagerApi.Service;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -14,7 +13,8 @@ namespace UserManagerApi;
 /// <summary>
 /// Handles User management operations.
 /// </summary>
-public class Functions(IDynamoDBContext dbContext)
+/// <param name="userService">User service from injection dependency.</param>
+public class Functions(IUserService userService)
 {
     private const string TelegramIdIndexName = "telegramId-index";
 
@@ -32,37 +32,49 @@ public class Functions(IDynamoDBContext dbContext)
         Timeout = 10)]
     [HttpApi(LambdaHttpMethod.Post, "/user/signup")]
     public async Task<APIGatewayHttpApiV2ProxyResponse> SignupUserAsync(
-        [FromBody] UserSignupRequest request,
-        ILambdaContext context)
+        [FromBody] UserSignupRequest request, ILambdaContext context)
     {
-        context.Logger.LogInformation($"Signup attempt for TelegramId: {request.TelegramId}");
+        var logger = context.Logger;
+        logger.LogInformation("SignupUserAsync: Received signup request for TelegramId: {TelegramId}", request.TelegramId);
+
+        if (request.TelegramId <= 0) // Basic validation
+        {
+            logger.LogWarning("SignupUserAsync: Invalid TelegramId received: {TelegramId}", request.TelegramId);
+            return ApiResponse.BadRequest("Invalid TelegramId.");
+        }
 
         try
         {
-            var existingUser = await FindUserByTelegramIdAsync(request.TelegramId, context);
+            var existingUser = await userService.FindUserByTelegramIdAsync(request.TelegramId, logger);
 
             if (existingUser != null)
             {
-                context.Logger.LogInformation($"User already exists with UserId: {existingUser.UserId}");
-                return ApiResponse.Ok(new UserExistsResponse { Success = false, UserId = existingUser.UserId });
+                logger.LogInformation("SignupUserAsync: User already exists with " +
+                                      "UserId: {ExistingUserId} for TelegramId: {TelegramId}",
+                    existingUser.UserId, request.TelegramId);
+                return ApiResponse.Ok(new UserResponse { Success = true, Message = "User already exists.", User = existingUser });
             }
 
-            context.Logger.LogInformation("User not found. Creating new user.");
-            var newUser = await CreateNewUserAsync(request.TelegramId, request.Username, context);
+            logger.LogInformation("SignupUserAsync: User not found for TelegramId: {TelegramId}. Creating new user.",
+                request.TelegramId);
+            var newUser = await userService.CreateUserAsync(request.TelegramId, request.Username, logger);
 
+            logger.LogInformation("SignupUserAsync: Successfully created new user with UserId: {NewUserId}",
+                newUser.UserId);
             return ApiResponse.Created(
-                $"/user/{newUser.UserId}",
-                new UserResponse
+                $"/user/{newUser.UserId}", // Location header
+                new UserResponse // Payload
                 {
                     Success = true,
-                    User = newUser
+                    User = newUser,
+                    Message = "User created successfully."
                 });
         }
         catch (Exception ex)
         {
-            context.Logger.LogError("Error retrieving user by TelegramId {TelegramId}: {ExceptionMessage}",
-                request.TelegramId, ex.Message);
-            return ApiResponse.InternalServerError("An error occurred while retrieving the user.");
+            logger.LogError(ex, "SignupUserAsync: Error during signup for TelegramId {TelegramId}.",
+                request.TelegramId);
+            return ApiResponse.InternalServerError("An error occurred during the signup process.");
         }
     }
 
@@ -80,106 +92,38 @@ public class Functions(IDynamoDBContext dbContext)
         Timeout = 10)]
     [HttpApi(LambdaHttpMethod.Get, "/user/telegram/{telegramId}")]
     public async Task<APIGatewayHttpApiV2ProxyResponse> GetUserByTelegramIdAsync(
-        string telegramId,
-        ILambdaContext context)
+        string telegramId, ILambdaContext context)
     {
-        if (!long.TryParse(telegramId, out var telegramIdNumber))
-        {
-            context.Logger.LogWarning("Invalid or missing telegramId: {TelegramId}", telegramId);
-            return ApiResponse.BadRequest("Invalid or missing TelegramId in path.");
-        }
+        var logger = context.Logger;
+        logger.LogInformation("GetUserByTelegramIdAsync: Received request for TelegramId: {TelegramId}", telegramId);
 
-        context.Logger.LogInformation($"Attempting to find user by TelegramId: {telegramIdNumber}");
+        if (!long.TryParse(telegramId, out var telegramIdNumber) || telegramIdNumber <= 0)
+        {
+            logger.LogWarning("GetUserByTelegramIdAsync: Invalid TelegramId format or value in path: {TelegramId}", telegramId);
+            return ApiResponse.BadRequest("Invalid TelegramId format or value provided.");
+        }
 
         try
         {
-            var user = await FindUserByTelegramIdAsync(telegramIdNumber, context);
+            var user = await userService.FindUserByTelegramIdAsync(telegramIdNumber, logger);
 
             if (user == null)
             {
-                context.Logger.LogInformation($"User not found for TelegramId: {telegramIdNumber}");
-                return ApiResponse.Ok(
-                    new UserExistsResponse
-                    {
-                        Success = false
-                    });
+                logger.LogInformation("GetUserByTelegramIdAsync: User not found for TelegramId: {telegramIdNumber}", telegramId);
+                // For a GET, returning 404 Not Found is often more idiomatic than 200 OK with a "success: false" body.
+                return ApiResponse.Ok(new UserExistsResponse { Success = false, Message = "User not found." });
+                // return ApiResponse.NotFound("User not found.");
             }
 
-            context.Logger.LogInformation($"Found user with UserId: {user.UserId} for TelegramId: {telegramIdNumber}");
-            return ApiResponse.Ok(
-                new UserExistsResponse
-                {
-                    Success = true,
-                    UserId = user.UserId
-                });
+            logger.LogInformation("GetUserByTelegramIdAsync: Found user with UserId: {UserId} for TelegramId: {TelegramId}",
+                user.UserId, telegramIdNumber);
+            return ApiResponse.Ok(new UserExistsResponse { Success = true, UserId = user.UserId, Message = "User found." });
         }
         catch (Exception ex)
         {
-            context.Logger.LogError("Error retrieving user by TelegramId {TelegramId}: {ExceptionMessage}",
-                telegramIdNumber, ex.Message);
+            logger.LogError(ex, "GetUserByTelegramIdAsync: Error retrieving user by TelegramId {TelegramId}.",
+                telegramIdNumber);
             return ApiResponse.InternalServerError("An error occurred while retrieving the user.");
-        }
-    }
-
-    private async Task<User?> FindUserByTelegramIdAsync(long telegramId, ILambdaContext context)
-    {
-        try
-        {
-            var queryOperationConfig = new QueryOperationConfig
-            {
-                IndexName = TelegramIdIndexName,
-                KeyExpression = new Expression
-                {
-                    ExpressionStatement = "telegramId = :v_telegramId",
-                    ExpressionAttributeValues = new Dictionary<string, DynamoDBEntry>
-                    {
-                        { ":v_telegramId", telegramId }
-                    }
-                },
-                Limit = 1
-            };
-
-            var search = dbContext.FromQueryAsync<User>(queryOperationConfig);
-
-            var user = (await search.GetNextSetAsync())?.FirstOrDefault();
-
-            if (user != null)
-            {
-                context.Logger.LogInformation($"Found user for TelegramId: {telegramId}. UserId: {user.UserId}");
-                return user;
-            }
-
-            context.Logger.LogInformation($"No user found for TelegramId: {telegramId}");
-            return null;
-        }
-        catch (Exception ex)
-        {
-            context.Logger.LogError($"Error querying DynamoDB by TelegramId {telegramId}: {ex.Message}");
-            throw;
-        }
-    }
-
-    private async Task<User> CreateNewUserAsync(long telegramId, string? username, ILambdaContext context)
-    {
-        var newUser = new User
-        {
-            UserId = Guid.NewGuid().ToString(),
-            TelegramId = telegramId,
-            Username = username,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        try
-        {
-            context.Logger.LogInformation($"Saving new user item with UserId: {newUser.UserId}");
-            await dbContext.SaveAsync(newUser);
-            context.Logger.LogInformation($"Successfully created user with UserId: {newUser.UserId}");
-            return newUser;
-        }
-        catch (Exception ex)
-        {
-            context.Logger.LogError($"Error saving user to DynamoDB using DynamoDBContext: {ex.Message}");
-            throw;
         }
     }
 }

@@ -1,16 +1,9 @@
-using System.Net;
-using System.Text.Json;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Annotations;
 using Amazon.Lambda.Annotations.APIGateway;
 using Amazon.Lambda.APIGatewayEvents;
-using Amazon.SQS;
-using Amazon.SQS.Model;
-using Microsoft.Extensions.Options;
-using SharedLibrary.Settings;
 using SharedLibrary.Dto;
 using Telegram.Bot.Types;
-using TelegramListener.AotTypes;
 using TelegramListener.Service;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]

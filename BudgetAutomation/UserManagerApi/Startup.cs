@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SharedLibrary.Settings;
 using UserManagerApi.AotTypes;
+using UserManagerApi.Service;
 
 namespace UserManagerApi;
 
@@ -47,5 +48,8 @@ public class Startup
             // contextBuilder = contextBuilder.WithTableNamePrefix("DEV_");
             return contextBuilder.Build();
         });
+
+        // Register services
+        services.AddSingleton<IUserService, UserService>();
     }
 }
