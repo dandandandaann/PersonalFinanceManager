@@ -52,7 +52,7 @@ public class Functions(IUserService userService)
                 logger.LogInformation("SignupUserAsync: User already exists with " +
                                       "UserId: {ExistingUserId} for TelegramId: {TelegramId}",
                     existingUser.UserId, request.TelegramId);
-                return ApiResponse.Ok(new UserResponse { Success = true, Message = "User already exists.", User = existingUser });
+                return ApiResponse.Ok(new UserResponse { Success = false, Message = "User already exists.", User = existingUser });
             }
 
             logger.LogInformation("SignupUserAsync: User not found for TelegramId: {TelegramId}. Creating new user.",
