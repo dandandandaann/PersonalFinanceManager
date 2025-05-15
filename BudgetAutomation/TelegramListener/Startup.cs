@@ -7,6 +7,7 @@ using SharedLibrary.Settings;
 using SharedLibrary.Validator;
 using Telegram.Bot;
 using TelegramListener.AotTypes;
+using TelegramListener.Service;
 
 namespace TelegramListener;
 
@@ -23,15 +24,15 @@ public class Startup
 
         // Configure AWS Parameter Store
         configBuilder.AddSystemsManager($"/{devPrefix}{BudgetAutomationSettings.Configuration}/");
+
         var config = configBuilder.Build();
 
+        // Serialize Options for AOT
+        services.ConfigureTelegramBot<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt => opt.SerializerOptions);
         // #pragma warning disable IL2026
         services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,
             options => { options.Serializer = new SourceGeneratorLambdaJsonSerializer<AppJsonSerializerContext>(); });
         // #pragma warning restore IL2026
-
-        // Serialize Options for AOT
-        services.ConfigureTelegramBot<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt => opt.SerializerOptions);
 
         // Configure AWS SQS
         services.AddAWSService<IAmazonSQS>();
@@ -54,6 +55,10 @@ public class Startup
                 TelegramBotClientOptions clientOptions = new(settings.Token);
                 return new TelegramBotClient(clientOptions, httpClient);
             });
+
+        // Register services
+        services.AddSingleton<IAuthenticationService, AuthenticationService>();
+        services.AddSingleton<ITelegramUpdateProcessor, TelegramUpdateProcessor>();
 
         services.AddSingleton<ConfigureWebhook>();
     }
