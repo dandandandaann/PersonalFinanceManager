@@ -25,6 +25,11 @@ public class Startup
         // Configure AWS Parameter Store
         configBuilder.AddSystemsManager($"/{devPrefix}{BudgetAutomationSettings.Configuration}/");
 
+        if (isLocalDev)
+        {
+            configBuilder.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+        }
+
         var config = configBuilder.Build();
 
         // Serialize Options for AOT
