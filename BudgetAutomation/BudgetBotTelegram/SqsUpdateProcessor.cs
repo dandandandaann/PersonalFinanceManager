@@ -70,7 +70,7 @@ public class SqsUpdateProcessor(IServiceProvider serviceProvider, ILogger<SqsUpd
         Update? update;
         try
         {
-            update = JsonSerializer.Deserialize(sqsMessage.Body, AppJsonSerializerContext.Default.Update);
+            update = JsonSerializer.Deserialize(sqsMessage.Body, AppTelegramJsonSerializerContext.Default.Update);
         }
         catch (JsonException ex)
         {
