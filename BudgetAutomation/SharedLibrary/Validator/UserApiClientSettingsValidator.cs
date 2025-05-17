@@ -3,9 +3,9 @@ using SharedLibrary.Settings;
 
 namespace SharedLibrary.Validator;
 
-public class BotSettingsValidator : IValidateOptions<BotSettings>
+public class UserApiClientSettingsValidator : IValidateOptions<UserApiClientSettings>
 {
-    public ValidateOptionsResult Validate(string? name, BotSettings options)
+    public ValidateOptionsResult Validate(string? name, UserApiClientSettings options)
     {
         var failures = new List<string>();
 
@@ -15,9 +15,14 @@ public class BotSettingsValidator : IValidateOptions<BotSettings>
             return ValidateOptionsResult.Fail(failures);
         }
 
-        if (string.IsNullOrWhiteSpace(options.Token))
+        if (string.IsNullOrWhiteSpace(options.Key))
         {
-            failures.Add($"{nameof(options.Token)} is missing or empty.");
+            failures.Add($"{nameof(options.Key)} is missing or empty.");
+        }
+
+        if (string.IsNullOrWhiteSpace(options.Url))
+        {
+            failures.Add($"{nameof(options.Url)} is missing or empty.");
         }
 
         return failures.Count > 0 ? ValidateOptionsResult.Fail(failures) : ValidateOptionsResult.Success;

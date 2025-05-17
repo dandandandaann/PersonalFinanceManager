@@ -35,7 +35,7 @@ public class ConfigureWebhook(
 
             try
             {
-                if (BotSettings.Id == 0)
+                if (TelegramBotSettings.Id == 0)
                     await GetBotId();
             }
             catch (Exception e)
@@ -53,7 +53,7 @@ public class ConfigureWebhook(
         async Task GetBotId()
         {
             User me = await botClient.GetMe(cancellationToken: cancellationToken);
-            BotSettings.Id = me.Id;
+            TelegramBotSettings.Id = me.Id;
         }
     }
 

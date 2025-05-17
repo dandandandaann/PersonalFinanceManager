@@ -26,15 +26,15 @@ var isLocalDev = builder.Environment.IsDevelopment() ? "dev-" : "";
 config.AddSystemsManager($"/{isLocalDev}{BudgetAutomationSettings.Configuration}/");
 
 // Bind Bot configuration
-services.Configure<BotSettings>(config.GetSection(BotSettings.Configuration));
-services.AddSingleton<IValidateOptions<BotSettings>, BotSettingsValidator>();
+services.Configure<TelegramBotSettings>(config.GetSection(TelegramBotSettings.Configuration));
+services.AddSingleton<IValidateOptions<TelegramBotSettings>, TelegramBotSettingsValidator>();
 
-builder.Services.Configure<BotSettings>(config.GetSection(BotSettings.Configuration));
+builder.Services.Configure<TelegramBotSettings>(config.GetSection(TelegramBotSettings.Configuration));
 // Register typed HttpClient directly (optional, but good practice if you need custom HttpClient settings)
 builder.Services.AddHttpClient("telegram_bot_client")
     .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
     {
-        var botConfig = sp.GetRequiredService<IOptions<BotSettings>>().Value;
+        var botConfig = sp.GetRequiredService<IOptions<TelegramBotSettings>>().Value;
         TelegramBotClientOptions options = new(botConfig.Token);
         return new TelegramBotClient(options, httpClient);
     });
