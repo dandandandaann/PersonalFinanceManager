@@ -1,8 +1,5 @@
 ﻿using SharedLibrary.Utility;
 using TelegramListener.Mapper;
-
-namespace TelegramListener.Service;
-
 using System.Net;
 using System.Text.Json;
 using Amazon.Lambda.Core;
@@ -11,9 +8,9 @@ using Amazon.SQS.Model;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;
 using Telegram.Bot.Types;
-using AotTypes;
-using System;
-using System.Threading.Tasks;
+using TelegramListener.AotTypes;
+
+namespace TelegramListener.Service;
 
 public interface ITelegramUpdateProcessor
 {
@@ -61,10 +58,13 @@ public class TelegramUpdateProcessor(
         try
         {
             var queueUrl = _listenerSettings.TelegramUpdateQueue;
+            var messageGroupId = simplifiedUpdate.Message?.Chat.Id.ToString() ?? "default";
             var sendMessageRequest = new SendMessageRequest
             {
                 QueueUrl = queueUrl,
-                MessageBody = JsonSerializer.Serialize(simplifiedUpdate, AppJsonSerializerContext.Default.Update)
+                MessageBody = JsonSerializer.Serialize(simplifiedUpdate, AppJsonSerializerContext.Default.Update),
+                MessageGroupId = messageGroupId,
+                MessageDeduplicationId = simplifiedUpdate.Id.ToString()
             };
 
             logger.LogInformation("Attempting to send the Telegram Update to SQS queue: {QueueUrl}",

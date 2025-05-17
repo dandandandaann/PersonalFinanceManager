@@ -31,7 +31,6 @@ public class Startup
 
         // Configure AWS Parameter Store
         configBuilder.AddSystemsManager($"/{devPrefix}{BudgetAutomationSettings.Configuration}/");
-        var config = configBuilder.Build();
 
         // #pragma warning disable IL2026
         services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,

@@ -115,8 +115,6 @@ public class Functions(IUserService userService)
                 // return ApiResponse.NotFound("User not found.");
             }
 
-            logger.LogInformation("GetUserByTelegramIdAsync: Found user with UserId: {UserId} for TelegramId: {TelegramId}",
-                user.UserId, telegramIdNumber);
             return ApiResponse.Ok(new UserExistsResponse { Success = true, UserId = user.UserId, Message = "User found." });
         }
         catch (Exception ex)

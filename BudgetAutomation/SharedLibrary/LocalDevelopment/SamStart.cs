@@ -2,8 +2,8 @@
 
 public static class SamStart
 {
-    public static bool IsLocalDev() => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("AWS_LAMBDA_RUNTIME_API"));
-
+    public static bool IsLocalDev() =>
+        (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development";
 
 //     /// <summary>
 //     /// This method doesn't work when running with 'sam local start-api' because it runs on docker,

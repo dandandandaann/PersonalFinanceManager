@@ -22,7 +22,10 @@ public class Functions
     {
     }
 
-    [LambdaFunction]
+    [LambdaFunction(
+        Policies = "AWSLambdaBasicExecutionRole",
+        MemorySize = 128,
+        Timeout = 10)]
     [HttpApi(LambdaHttpMethod.Get, "/")]
     public string Default()
     {
@@ -30,7 +33,8 @@ public class Functions
     }
 
     [LambdaFunction(
-        Policies = "AWSLambdaBasicExecutionRole",
+        Policies = "AWSLambdaBasicExecutionRole, " +
+                   "arn:aws:iam::795287297286:policy/Configurations_Read",
         MemorySize = 128,
         Timeout = 10)]
     [HttpApi(LambdaHttpMethod.Get, "/setupWebhook")]
@@ -52,7 +56,7 @@ public class Functions
 
     [LambdaFunction(
         Policies = "AWSLambdaBasicExecutionRole, " +
-                   "arn:aws:iam::795287297286:policy/Configurations_Read" +
+                   "arn:aws:iam::795287297286:policy/Configurations_Read, " +
                    "arn:aws:iam::795287297286:policy/SQS_CRUD",
         MemorySize = 128,
         Timeout = 15)]

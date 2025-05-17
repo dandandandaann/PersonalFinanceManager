@@ -1,9 +1,8 @@
-﻿if ((Split-Path -Leaf (Get-Location)) -ne "UserManagerApi") {
-    Set-Location UserManagerApi
+﻿if ((Split-Path -Leaf (Get-Location)) -ne "TelegramListener") {
+    Set-Location TelegramListener
 }
 
 Write-Host "Starting build..."
-#Set-Location UserManagerApi
 sam build -t serverless.template
 
 Write-Host "Starting deploy..."

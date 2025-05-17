@@ -91,18 +91,16 @@ public class SqsListenerForTestingService(
             catch (AmazonSQSException sqsEx)
             {
                 logger.LogError(sqsEx, "SQS Exception during polling or processing.");
-                // Implement backoff delay if needed, especially for throttling exceptions
-                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken); // Basic delay
+                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 logger.LogInformation("SQS Listener Service stopping.");
-                break; // Exit loop if cancellation requested
+                break;
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Unhandled exception in SQS Listener Service loop.");
-                // Implement backoff delay before retrying
                 await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
             }
 
@@ -115,7 +113,7 @@ public class SqsListenerForTestingService(
     private List<SQSEvent.SQSMessage> ConvertToSqsMessages(List<Message> messages)
     {
         // Initialize the list for the SQSEvent records
-        var eventRecords = new List<SQSEvent.SQSMessage>(messages.Count); // Pre-size list
+        var eventRecords = new List<SQSEvent.SQSMessage>(messages.Count);
 
         // Pre-calculate parts that are the same for all messages in the batch if possible
         // Ensure _sqsClient and _options are accessible instance fields/properties

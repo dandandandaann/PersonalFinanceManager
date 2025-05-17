@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using Amazon.Lambda.APIGatewayEvents;
 using SharedLibrary;
 
 namespace BudgetBotTelegram.AtoTypes;
@@ -9,8 +8,6 @@ namespace BudgetBotTelegram.AtoTypes;
 [JsonSerializable(typeof(SharedLibrary.UserClasses.User))]
 [JsonSerializable(typeof(SharedLibrary.UserClasses.UserSignupRequest))]
 [JsonSerializable(typeof(SharedLibrary.UserClasses.UserExistsResponse))]
-[JsonSerializable(typeof(APIGatewayHttpApiV2ProxyRequest))]
-[JsonSerializable(typeof(APIGatewayHttpApiV2ProxyResponse))]
 public partial class AppJsonSerializerContext : JsonSerializerContext
 {
 }
