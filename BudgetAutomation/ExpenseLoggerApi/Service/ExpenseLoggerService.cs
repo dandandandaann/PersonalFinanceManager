@@ -16,7 +16,7 @@ public class ExpenseLoggerService(
         var expense = new Expense
         {
             Description = description,
-            Category = DecideCategory(categoryInput)
+            Category = DecideCategory(categoryInput, description)
         };
 
         const int startRow = 15; // Starting row for expenses
@@ -76,30 +76,49 @@ public class ExpenseLoggerService(
         }
     }
 
+
+
     // Simple static helper to wrap value in the required list structure
     private static List<IList<object>> Value(object value) => [[value]];
 
-    private string DecideCategory(string userCategory)
+    private string DecideCategory(string userCategory, string description)
     {
+        description = description.Trim().Normalize();
+
+        if (string.IsNullOrEmpty(userCategory))
+        {
+            foreach (var category in categories)
+            {
+                if (category.Alias == null)
+                    continue;
+
+                if (category.Alias.Any(alias =>
+                description.Contains(alias, StringComparison.OrdinalIgnoreCase)))
+                {
+
+                    return category.Name;
+                }
+            }
+            return "";
+        }
+
         foreach (var category in categories)
         {
-            if (category.Name.Equals(userCategory, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(userCategory))
             {
-                return category.Name;
-            }
+                if (category.Name.Equals(userCategory, StringComparison.OrdinalIgnoreCase))
+                {
+                    return category.Name;
+                }
 
-            if (category.Alias == null)
-                continue;
-
-            foreach (var alias in category.Alias)
-            {
-                if (alias.Equals(userCategory, StringComparison.OrdinalIgnoreCase))
+                if (category.Alias != null && category.Alias.Any(alias =>
+                    alias.Equals(userCategory, StringComparison.OrdinalIgnoreCase)))
                 {
                     return category.Name;
                 }
             }
         }
-
         return ""; // Return empty string if no match found
     }
 }
+
