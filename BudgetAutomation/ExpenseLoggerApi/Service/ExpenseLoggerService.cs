@@ -84,31 +84,41 @@ public class ExpenseLoggerService(
     private string DecideCategory(string userCategory, string description)
     {
         description = description.Trim().Normalize();
+
+        if (string.IsNullOrEmpty(userCategory))
+        {
+            foreach (var category in categories)
+            {
+                if (category.Alias == null)
+                    continue;
+
+                if (category.Alias.Any(alias =>
+                description.Contains(alias, StringComparison.OrdinalIgnoreCase)))
+                {
+
+                    return category.Name;
+                }
+            }
+            return "";
+        }
+
         foreach (var category in categories)
         {
-            if (category.Name.Equals(userCategory, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(userCategory))
             {
-                return category.Name;
-            }
-
-            if (category.Alias == null)
-                continue;
-
-            foreach (var alias in category.Alias)
-            {
-                if (alias.Equals(userCategory, StringComparison.OrdinalIgnoreCase))
+                if (category.Name.Equals(userCategory, StringComparison.OrdinalIgnoreCase))
                 {
                     return category.Name;
                 }
 
-                if (description.Contains(alias, StringComparison.OrdinalIgnoreCase))
+                if (category.Alias != null && category.Alias.Any(alias =>
+                    alias.Equals(userCategory, StringComparison.OrdinalIgnoreCase)))
                 {
                     return category.Name;
                 }
             }
         }
-
         return ""; // Return empty string if no match found
-
     }
 }
+
