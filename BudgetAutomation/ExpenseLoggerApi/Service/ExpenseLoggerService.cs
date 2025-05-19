@@ -16,7 +16,7 @@ public class ExpenseLoggerService(
         var expense = new Expense
         {
             Description = description,
-            Category = DecideCategory(categoryInput)
+            Category = DecideCategory(categoryInput, description)
         };
 
         const int startRow = 15; // Starting row for expenses
@@ -76,11 +76,14 @@ public class ExpenseLoggerService(
         }
     }
 
+
+
     // Simple static helper to wrap value in the required list structure
     private static List<IList<object>> Value(object value) => [[value]];
 
-    private string DecideCategory(string userCategory)
+    private string DecideCategory(string userCategory, string description)
     {
+        description = description.Trim().Normalize();
         foreach (var category in categories)
         {
             if (category.Name.Equals(userCategory, StringComparison.OrdinalIgnoreCase))
@@ -97,9 +100,15 @@ public class ExpenseLoggerService(
                 {
                     return category.Name;
                 }
+
+                if (description.Contains(alias, StringComparison.OrdinalIgnoreCase))
+                {
+                    return category.Name;
+                }
             }
         }
 
         return ""; // Return empty string if no match found
+
     }
 }
