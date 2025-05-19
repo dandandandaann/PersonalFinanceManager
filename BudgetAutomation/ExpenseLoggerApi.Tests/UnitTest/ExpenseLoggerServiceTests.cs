@@ -215,6 +215,83 @@ public class ExpenseLoggerServiceTests : IDisposable
         _mockSheetsAccessor.Verify(s => s.BatchUpdateValuesAsync(It.IsAny<string>(), It.IsAny<BatchUpdateValuesRequest>()),
             Times.Never);
     }
+
+    [Fact]
+    public async Task DecideCategory_ShouldReturnUserCategory_EvenIfDescriptionMentionsAlias()
+    {
+        List<Category> customCategories = new()
+    {
+        new Category
+        {
+            Name = "Locomoção",
+            Alias = new[] { "uber", "ônibus", "metro" }
+        },
+        new Category
+        {
+            Name = "Outros",
+            Alias = new [] { "outros", "outro" }
+        }
+
+    };
+        var description = "log Uber 12,50 outros";
+        var userCategory = "outros";
+        var amount = "12.50";
+        var expectedCategory = "Outros";
+        var expectedRow = 40;
+
+        var customService = new ExpenseLoggerService(
+            _mockSheetsAccessor.Object,
+            customCategories,
+            SpreadsheetId,
+            _mockLogger.Object
+        );
+
+        SetupSuccessfulSheetsApiFlow(expectedRow);
+
+        // Act
+        var result = await customService.LogExpense(description, amount, userCategory);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.Category.ShouldBe(expectedCategory);
+
+        _mockSheetsAccessor.Verify(s => s.BatchUpdateValuesAsync(
+            SpreadsheetId,
+            It.Is<BatchUpdateValuesRequest>(req =>
+                (string)req.Data[1].Values[0][0] == expectedCategory
+            )
+        ), Times.Once);
+    }
+
+    [Fact]
+    public void DecideCategory_InvalidUserCategory_ShouldReturnEmptyString()
+    {
+        // Arrange
+        var categories = new List<Category>
+    {
+        new() { Name = "Groceries", Alias = new[] { "food", "supermarket" } },
+        new() { Name = "Utilities", Alias = new[] { "bills" } }
+    };
+
+        var service = new ExpenseLoggerService(
+            _mockSheetsAccessor.Object,
+            categories,
+            SpreadsheetId,
+            _mockLogger.Object
+        );
+
+        var userCategory = "Entertainment";
+        var description = "Movie ticket";
+
+        // Act
+        var result = typeof(ExpenseLoggerService)
+            .GetMethod("DecideCategory", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+            ?.Invoke(service, new object[] { userCategory, description });
+
+        // Assert
+        result.ShouldBe("");
+    }
+
     // Add more tests for exceptions thrown by other SheetsAccessor methods if needed
     // e.g., FindFirstEmptyRowAsync, InsertRowAsync, BatchUpdateValuesAsync throwing
 }
