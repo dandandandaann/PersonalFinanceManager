@@ -74,7 +74,7 @@ public class FunctionsTests
     public async Task SignupUserAsync_WhenUserExists_ShouldReturnOkAndExistingUserId()
     {
         // Arrange
-        var request = new UserSignupRequest { TelegramId = DefaultTelegramId, Username = DefaultUsername };
+        var request = new UserSignupRequest( DefaultTelegramId, DefaultUsername );
         var existingUser = new User { UserId = ExistingUserId, TelegramId = DefaultTelegramId, Username = "oldUsername" };
         var usersFound = new List<User> { existingUser };
 
@@ -103,7 +103,7 @@ public class FunctionsTests
     public async Task SignupUserAsync_WhenUserDoesNotExist_ShouldCreateUserAndReturnCreated()
     {
         // Arrange
-        var request = new UserSignupRequest { TelegramId = DefaultTelegramId, Username = DefaultUsername };
+        var request = new UserSignupRequest( DefaultTelegramId, DefaultUsername );
 
         // --- Configure the mock search for this specific test ---
         // The default setup in the constructor already returns an empty list,
@@ -141,7 +141,7 @@ public class FunctionsTests
     public async Task SignupUserAsync_WhenDbQueryThrows_ShouldReturnInternalServerError()
     {
         // Arrange
-        var request = new UserSignupRequest { TelegramId = DefaultTelegramId };
+        var request = new UserSignupRequest( DefaultTelegramId );
         var dbException = new InvalidOperationException("DynamoDB query failed"); // Use a specific exception type
 
         // --- Configure the mock search to throw ---
@@ -165,7 +165,7 @@ public class FunctionsTests
     public async Task SignupUserAsync_WhenDbSaveThrows_ShouldReturnInternalServerError()
     {
         // Arrange
-        var request = new UserSignupRequest { TelegramId = DefaultTelegramId, Username = DefaultUsername };
+        var request = new UserSignupRequest(DefaultTelegramId, DefaultUsername );
         var dbException = new InvalidOperationException("DynamoDB save failed"); // Use a specific exception type
 
         // User not found initially

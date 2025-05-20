@@ -90,5 +90,6 @@ public class Startup
         services.AddScoped<ICommand, LogCommand>();
         services.AddScoped<ICommand, CancelCommand>();
         services.AddScoped<ICommand, SignupCommand>();
+        services.AddScoped<ICommand, SpreadsheetCommand>();
     }
 }

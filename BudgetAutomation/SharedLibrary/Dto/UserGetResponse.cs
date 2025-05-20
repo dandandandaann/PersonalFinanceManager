@@ -1,19 +1,12 @@
 ﻿using System.Text.Json.Serialization;
-using SharedLibrary.Interface;
 
 namespace SharedLibrary.Dto;
 
-public class UserGetResponse : IApiResponse
+public class UserGetResponse : ApiResponse
 {
-    [JsonPropertyName("success")]
-    public bool Success { get; set; }
-
-    [JsonPropertyName("userId")]
+    [JsonPropertyName("user_id")]
     public string? UserId { get; set; }
 
-    [JsonPropertyName("message")]
-    public string? Message { get; set; }
-
-    [JsonPropertyName("userConfiguration")]
-    public UserConfigurationResponse userConfiguration { get; set; }
+    [JsonPropertyName("user_configuration")]
+    public UserConfigurationResponse? userConfiguration { get; set; }
 }

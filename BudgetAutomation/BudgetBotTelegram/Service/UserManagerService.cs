@@ -6,7 +6,6 @@ namespace BudgetBotTelegram.Service;
 public class UserManagerService(IUserApiClient userApiClient) : IUserManagerService
 {
     private static readonly AsyncLocal<User> CurrentUser = new();
-    private static readonly AsyncLocal<UserConfiguration> UserConfiguration = new();
 
     private static User? Current
     {
@@ -15,12 +14,15 @@ public class UserManagerService(IUserApiClient userApiClient) : IUserManagerServ
     }
     public static bool UserLoggedIn => !string.IsNullOrWhiteSpace(Current?.UserId);
 
-    public static UserConfiguration Configuration
-    {
-        get => UserConfiguration.Value!;
-        set => UserConfiguration.Value = value;
-    }
+    public static UserConfiguration Configuration => Current?.Configuration ?? new UserConfiguration();
 
+    /// <summary>
+    /// Method that authenticates user with UserApi.
+    /// This method cannot be asynchronous, because it must run in the same thread as caller to set AsyncLocal CurrentUser.
+    /// </summary>
+    /// <param name="telegramId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>True if authentication was successful.</returns>
     public bool AuthenticateUser(long telegramId, CancellationToken cancellationToken = default)
     {
         var registeredUser = userApiClient.FindUserByTelegramIdAsync(telegramId, cancellationToken).GetAwaiter().GetResult();
@@ -31,13 +33,23 @@ public class UserManagerService(IUserApiClient userApiClient) : IUserManagerServ
             return false;
         }
 
-        Current = new(registeredUser.UserId, telegramId: telegramId);
-        Configuration = new UserConfiguration
-        {
-            SpreadsheetId = registeredUser.userConfiguration.SpreadsheetId,
-        };
+        Current = new User(registeredUser.UserId, telegramId: telegramId);
+
+        Current.Configuration ??= new UserConfiguration();
 
         return true;
+    }
 
+    public bool ConfigureSpreadsheet(string spreadsheetId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(Current?.UserId))
+            throw new UnauthorizedAccessException();
+
+        Current.Configuration ??= new UserConfiguration();
+
+        Current.Configuration.SpreadsheetId = spreadsheetId;
+
+        return userApiClient.UpdateUserConfigurationAsync(Current.UserId, Current.Configuration, cancellationToken)
+            .GetAwaiter().GetResult();
     }
 }

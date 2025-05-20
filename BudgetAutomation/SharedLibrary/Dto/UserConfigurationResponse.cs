@@ -4,7 +4,6 @@ namespace SharedLibrary.Dto;
 
 public class UserConfigurationResponse
 {
-
-    [JsonPropertyName("spreadsheetId")]
+    [JsonPropertyName("spreadsheet_id")]
     public string SpreadsheetId { get; set; }
 }

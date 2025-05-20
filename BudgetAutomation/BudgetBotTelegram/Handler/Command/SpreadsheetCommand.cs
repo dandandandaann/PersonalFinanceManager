@@ -1,0 +1,69 @@
+﻿using System.Text.RegularExpressions;
+using BudgetBotTelegram.Interface;
+using BudgetBotTelegram.Misc;
+using BudgetBotTelegram.Model;
+using BudgetBotTelegram.Service;
+using SharedLibrary.Telegram;
+
+namespace BudgetBotTelegram.Handler.Command;
+
+public partial class SpreadsheetCommand(
+    ISenderGateway sender,
+    IUserManagerService userManagerService) : ICommand
+{
+    public string CommandName => "planilha";
+
+    public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(message.Text);
+
+        try
+        {
+            if (
+                !Utility.TryExtractCommandArguments(message.Text, CommandName, SpreadsheetIdRegex, out var commandArguments) ||
+                string.IsNullOrWhiteSpace(commandArguments))
+            {
+                return await sender.ReplyAsync(message.Chat,
+                    "Por favor envie o ID da sua planilha com esse comando.",
+                    $"User tried configuring spreadsheet id with bad arguments: '{commandArguments}'.",
+                    logLevel: LogLevel.Information,
+                    cancellationToken: cancellationToken);
+            }
+
+            var success = userManagerService.ConfigureSpreadsheet(commandArguments, cancellationToken);
+
+            if (!success)
+            {
+                return await sender.ReplyAsync(message.Chat,
+                    "Não foi possível configurar a sua planilha. Por favor tente novamente.",
+                    "SpreadsheetId configuration failed.",
+                    logLevel: LogLevel.Warning,
+                    cancellationToken: cancellationToken);
+            }
+
+            return await sender.ReplyAsync(message.Chat,
+                "Configuração da realizada planilha com sucesso!.",
+                "SpreadsheetId configuration successful.",
+                cancellationToken: cancellationToken);
+        }
+        catch (Exception e)
+        {
+            if (e is InvalidUserInputException or UnauthorizedAccessException)
+                throw;
+
+            return await sender.ReplyAsync(message.Chat,
+                "Um erro ocorreu ao tentar configurar a planilha. Tente novamente mais tarde.",
+                $"Exception during spreadsheet command: {e.Message}",
+                logLevel: LogLevel.Error,
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    public Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
+    [GeneratedRegex("^[a-zA-Z0-9]+$")]
+    private static partial Regex SpreadsheetIdRegex();
+}

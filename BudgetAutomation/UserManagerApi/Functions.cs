@@ -6,6 +6,7 @@ using SharedLibrary.Dto;
 using SharedLibrary.Model;
 using SharedLibrary.Utility;
 using UserManagerApi.Service;
+using ApiResponse = SharedLibrary.Utility.ApiResponse;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 

@@ -5,7 +5,7 @@ using Amazon.SQS.Model;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;
 
-namespace BudgetBotTelegram.Other;
+namespace BudgetBotTelegram.Misc;
 
 public class SqsListenerForTestingService(
     ILogger<SqsListenerForTestingService> logger,

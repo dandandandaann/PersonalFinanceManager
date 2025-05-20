@@ -1,17 +1,12 @@
+using System.Text.Json.Serialization;
+
 namespace SharedLibrary.Dto;
 
-public class UserSignupRequest
+public class UserSignupRequest(long telegramId, string? username = null)
 {
-    public long TelegramId { get; set; }
+    [JsonPropertyName("telegram_id")]
+    public long TelegramId { get; set; } = telegramId;
 
-    public string? Username { get; set; }
-
-    // Parameterless constructor might be needed by the serializer
-    public UserSignupRequest() { }
-
-    public UserSignupRequest(long telegramId, string? username = null)
-    {
-        TelegramId = telegramId;
-        Username = username;
-    }
+    [JsonPropertyName("username")]
+    public string? Username { get; set; } = username;
 }

@@ -1,4 +1,5 @@
 using SharedLibrary.Dto;
+using SharedLibrary.Model;
 
 namespace BudgetBotTelegram.Interface;
 
@@ -18,4 +19,6 @@ public interface IUserApiClient
     Task<UserSignupResponse> SignupUserAsync(long telegramId, string? username, string? email, CancellationToken cancellationToken = default);
 
     Task<UserGetResponse> FindUserByTelegramIdAsync(long telegramId, CancellationToken cancellationToken = default);
+
+    Task<bool> UpdateUserConfigurationAsync(string userId, UserConfiguration userConfiguration, CancellationToken cancellationToken);
 }

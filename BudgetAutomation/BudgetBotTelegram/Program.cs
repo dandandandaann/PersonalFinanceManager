@@ -9,7 +9,7 @@ using BudgetBotTelegram.AtoTypes;
 using BudgetBotTelegram.Handler;
 using BudgetBotTelegram.Handler.Command;
 using BudgetBotTelegram.Interface;
-using BudgetBotTelegram.Other;
+using BudgetBotTelegram.Misc;
 using BudgetBotTelegram.Service;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;

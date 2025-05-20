@@ -11,7 +11,8 @@ namespace BudgetBotTelegram.Handler.Command;
 public partial class LogCommand(
     ISenderGateway sender,
     IExpenseLoggerApiClient expenseApiClient,
-    IChatStateService chatStateService) : ICommand
+    IChatStateService chatStateService,
+    SpreadsheetCommand spreadsheetCommand) : ICommand
 {
     public string CommandName => "log";
 
@@ -23,7 +24,7 @@ public partial class LogCommand(
         if (!UserManagerService.UserLoggedIn)
             throw new UnauthorizedAccessException();
 
-        if (!TryParseCommandArguments(message.Text, CommandName, out string expenseArguments))
+        if (!TryExtractCommandArguments(message.Text, CommandName, out string expenseArguments))
         {
             throw new InvalidUserInputException($"Message text doesn't start with {CommandName} command.");
         }
@@ -43,6 +44,17 @@ public partial class LogCommand(
 
     public async Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken = default)
     {
+        if (!UserManagerService.UserLoggedIn)
+            throw new UnauthorizedAccessException();
+
+        if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
+        {
+            return await sender.ReplyAsync(message.Chat,
+                $"Por favor configure sua planilha com o commando /{spreadsheetCommand.CommandName} antes de " +
+                $"usar o comando /{CommandName}.",
+                cancellationToken: cancellationToken);
+        }
+
         ArgumentException.ThrowIfNullOrEmpty(message.Text);
 
         await chatStateService.ClearState(message.Chat.Id);
@@ -59,29 +71,40 @@ public partial class LogCommand(
         );
     }
 
-    private async Task<Message> LogExpenseAsync(Chat chatId, string spreadsheetId, string expenseArguments,
+    private async Task<Message> LogExpenseAsync(Chat chat, string spreadsheetId, string expenseArguments,
         CancellationToken cancellationToken = default)
     {
-        var expense = ParseExpenseArguments(expenseArguments);
+        if (!UserManagerService.UserLoggedIn)
+            throw new UnauthorizedAccessException();
+
+        if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
+        {
+            return await sender.ReplyAsync(chat,
+                $"Por favor configure sua planilha com o commando /{spreadsheetCommand.CommandName} antes de " +
+                $"usar o comando /{CommandName}.",
+                cancellationToken: cancellationToken);
+        }
+
+        var expense = MapExpenseArguments(expenseArguments);
 
         try
         {
             expense = await expenseApiClient.LogExpenseAsync(spreadsheetId, expense, cancellationToken);
 
-            return await sender.ReplyAsync(chatId,
+            return await sender.ReplyAsync(chat,
                 $"Logged Expense\n{expense}",
                 "Logged expense.",
                 cancellationToken: cancellationToken);
         }
         catch (ArgumentException e)
         {
-            return await sender.ReplyAsync(chatId,
+            return await sender.ReplyAsync(chat,
                 "Failed to log expense.", e.Message, logLevel: LogLevel.Error,
                 cancellationToken: cancellationToken);
         }
     }
 
-    private static Expense ParseExpenseArguments(string expenseArguments)
+    private static Expense MapExpenseArguments(string expenseArguments)
     {
         var expense = new Expense();
         var match = ExpenseArgumentsRegex().Match(expenseArguments);
@@ -112,7 +135,8 @@ public partial class LogCommand(
         return expense;
     }
 
-    private static bool TryParseCommandArguments(string text, string commandName, out string arguments)
+    // TODO: join this method with Utility.TryExtractCommandArguments
+    private static bool TryExtractCommandArguments(string text, string commandName, out string arguments)
     {
         arguments = "";
         string commandWithSlash = "/" + commandName;
@@ -150,7 +174,6 @@ public partial class LogCommand(
             return true;
         }
 
-        // It's something else (e.g., "/logfoobar" or "logfoobar") - invalid command invocation
         return false;
     }
 

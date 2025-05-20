@@ -1,4 +1,4 @@
-﻿namespace BudgetBotTelegram.Other;
+﻿namespace BudgetBotTelegram.Misc;
 
 // Partial class used for UnitTests to have access to Program
 public partial class Program { }

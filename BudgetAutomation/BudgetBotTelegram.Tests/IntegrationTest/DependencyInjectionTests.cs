@@ -8,8 +8,8 @@ using Xunit.Abstractions;
 
 namespace BudgetBotTelegram.Tests.IntegrationTest;
 
-public class DependencyInjectionTests(MockedApplicationFactory<Other.Program> factory, ITestOutputHelper output)
-    : IClassFixture<MockedApplicationFactory<Other.Program>>
+public class DependencyInjectionTests(MockedApplicationFactory<Misc.Program> factory, ITestOutputHelper output)
+    : IClassFixture<MockedApplicationFactory<Misc.Program>>
 {
     [Fact]
     public void ShouldResolve_IMessageHandler_FromScopedProvider()
