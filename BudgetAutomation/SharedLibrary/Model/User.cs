@@ -1,6 +1,6 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 
-namespace SharedLibrary.UserClasses;
+namespace SharedLibrary.Model;
 
 [DynamoDBTable("user")]
 public class User
@@ -42,6 +42,9 @@ public class User
 
     [DynamoDBProperty("createdAt")]
     public DateTime CreatedAt { get; set; }
+
+    [DynamoDBProperty("configuration")]
+    public UserConfiguration? Configuration { get; set; }
 
     // Parameterless constructor required by DynamoDBContext
     public User() { }

@@ -3,6 +3,7 @@ using Amazon.Lambda.Annotations;
 using Amazon.Lambda.Annotations.APIGateway;
 using Amazon.Lambda.APIGatewayEvents;
 using SharedLibrary.Dto;
+using SharedLibrary.Utility;
 using Telegram.Bot.Types;
 using TelegramListener.Service;
 

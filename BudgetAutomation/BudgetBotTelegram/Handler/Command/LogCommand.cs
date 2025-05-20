@@ -2,7 +2,7 @@
 using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Service;
-using SharedLibrary;
+using SharedLibrary.Model;
 using SharedLibrary.Telegram;
 
 namespace BudgetBotTelegram.Handler.Command;
@@ -19,7 +19,6 @@ public partial class LogCommand(
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(message.Text);
 
-        // TODO: is it possible to make a virtual class with this verification? Is it worth it?
         if (!UserManagerService.UserLoggedIn)
             throw new UnauthorizedAccessException();
 
@@ -39,7 +38,7 @@ public partial class LogCommand(
                 cancellationToken: cancellationToken);
         }
 
-        return await LogExpenseAsync(message.Chat, expenseArguments, cancellationToken);
+        return await LogExpenseAsync(message.Chat, UserManagerService.Configuration.SpreadsheetId, expenseArguments, cancellationToken);
     }
 
     public async Task<Message> HandleLogAsync(Message message, ChatState chatState, CancellationToken cancellationToken = default)
@@ -50,7 +49,7 @@ public partial class LogCommand(
 
         if (chatState.State == ChatStateService.StateEnum.AwaitingLogArguments.ToString())
         {
-            return await LogExpenseAsync(message.Chat, message.Text, cancellationToken);
+            return await LogExpenseAsync(message.Chat, UserManagerService.Configuration.SpreadsheetId, message.Text, cancellationToken);
         }
 
         return await sender.ReplyAsync(message.Chat, $"Log state {chatState.State} not implemented.",
@@ -60,14 +59,14 @@ public partial class LogCommand(
         );
     }
 
-    private async Task<Message> LogExpenseAsync(Chat chatId, string expenseArguments,
+    private async Task<Message> LogExpenseAsync(Chat chatId, string spreadsheetId, string expenseArguments,
         CancellationToken cancellationToken = default)
     {
         var expense = ParseExpenseArguments(expenseArguments);
 
         try
         {
-            expense = await expenseApiClient.LogExpenseAsync(expense, cancellationToken);
+            expense = await expenseApiClient.LogExpenseAsync(spreadsheetId, expense, cancellationToken);
 
             return await sender.ReplyAsync(chatId,
                 $"Logged Expense\n{expense}",

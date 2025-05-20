@@ -3,7 +3,8 @@ using Amazon.Lambda.Annotations;
 using Amazon.Lambda.Annotations.APIGateway;
 using Amazon.Lambda.APIGatewayEvents;
 using SharedLibrary.Dto;
-using SharedLibrary.UserClasses;
+using SharedLibrary.Model;
+using SharedLibrary.Utility;
 using UserManagerApi.Service;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -52,7 +53,7 @@ public class Functions(IUserService userService)
                 logger.LogInformation("SignupUserAsync: User already exists with " +
                                       "UserId: {ExistingUserId} for TelegramId: {TelegramId}",
                     existingUser.UserId, request.TelegramId);
-                return ApiResponse.Ok(new UserResponse { Success = false, Message = "User already exists.", User = existingUser });
+                return ApiResponse.Ok(new UserSignupResponse { Success = false, Message = "User already exists.", User = existingUser });
             }
 
             logger.LogInformation("SignupUserAsync: User not found for TelegramId: {TelegramId}. Creating new user.",
@@ -62,8 +63,8 @@ public class Functions(IUserService userService)
             logger.LogInformation("SignupUserAsync: Successfully created new user with UserId: {NewUserId}",
                 newUser.UserId);
             return ApiResponse.Created(
-                $"/user/{newUser.UserId}", // Location header
-                new UserResponse // Payload
+                $"/user/{newUser.UserId}",
+                new UserSignupResponse
                 {
                     Success = true,
                     User = newUser,
@@ -111,11 +112,23 @@ public class Functions(IUserService userService)
             {
                 logger.LogInformation("GetUserByTelegramIdAsync: User not found for TelegramId: {telegramIdNumber}", telegramId);
                 // For a GET, returning 404 Not Found is often more idiomatic than 200 OK with a "success: false" body.
-                return ApiResponse.Ok(new UserExistsResponse { Success = false, Message = "User not found." });
+                return ApiResponse.Ok(new UserGetResponse { Success = false, Message = "User not found." });
                 // return ApiResponse.NotFound("User not found.");
             }
 
-            return ApiResponse.Ok(new UserExistsResponse { Success = true, UserId = user.UserId, Message = "User found." });
+            // TODO: create a data mapper
+            var userConfiguration = new UserConfigurationResponse();
+            if (!string.IsNullOrEmpty(user.Configuration?.SpreadsheetId))
+                userConfiguration.SpreadsheetId = user.Configuration.SpreadsheetId;
+
+            return ApiResponse.Ok(new UserGetResponse
+                {
+                    Success = true,
+                    UserId = user.UserId,
+                    Message = "User found.",
+                    userConfiguration = userConfiguration
+                }
+            );
         }
         catch (Exception ex)
         {

@@ -1,7 +1,7 @@
 using BudgetBotTelegram.AtoTypes;
 using BudgetBotTelegram.Interface;
 using Microsoft.Extensions.Options;
-using SharedLibrary;
+using SharedLibrary.Model;
 using SharedLibrary.Settings;
 
 namespace BudgetBotTelegram.ApiClient;
@@ -23,13 +23,14 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
         _httpClient.DefaultRequestHeaders.Add("x-api-key", options.Value.Key);
     }
 
-    public async Task<Expense> LogExpenseAsync(Expense expense, CancellationToken cancellationToken = default)
+    public async Task<Expense> LogExpenseAsync(string spreadsheetId, Expense expense, CancellationToken cancellationToken = default)
     {
         // Construct the URL with query parameters
         var uriBuilder = new UriBuilder(_httpClient.BaseAddress!)
         {
             Path = "/log-expense",
             Query =
+                $"spreadsheetId={Uri.EscapeDataString(spreadsheetId)}" +
                 $"description={Uri.EscapeDataString(expense.Description)}" +
                 $"&amount={Uri.EscapeDataString(expense.Amount)}" +
                 $"&category={Uri.EscapeDataString(expense.Category)}"

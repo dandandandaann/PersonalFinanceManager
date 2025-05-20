@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace SharedLibrary
+namespace SharedLibrary.Model
 {
     public class Expense
     {

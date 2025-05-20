@@ -2,16 +2,16 @@
 using ExpenseLoggerApi.Interface;
 using Google.Apis.Sheets.v4.Data;
 using SharedLibrary;
+using SharedLibrary.Model;
 
 namespace ExpenseLoggerApi.Service;
 
 public class ExpenseLoggerService(
     ISheetsDataAccessor sheetsAccessor,
     IEnumerable<Category> categories,
-    string spreadsheetId,
     ILogger<ExpenseLoggerService> logger)
 {
-    public async Task<Expense> LogExpense(string description, string amount, string categoryInput)
+    public async Task<Expense> LogExpense(string spreadsheetId, string description, string amount, string categoryInput)
     {
         var expense = new Expense
         {

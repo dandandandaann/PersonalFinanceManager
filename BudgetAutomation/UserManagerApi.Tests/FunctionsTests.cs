@@ -4,7 +4,8 @@ using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Moq;
-using SharedLibrary.UserClasses;
+using SharedLibrary.Dto;
+using SharedLibrary.Model;
 using Shouldly;
 using Xunit;
 
@@ -88,7 +89,7 @@ public class FunctionsTests
         response.ShouldNotBeNull();
         response.StatusCode.ShouldBe(200); // OK
 
-        var responseBody = DeserializeBody<UserExistsResponse>(response);
+        var responseBody = DeserializeBody<UserGetResponse>(response);
         responseBody.Success.ShouldBeFalse();
         responseBody.UserId.ShouldBe(ExistingUserId);
 
@@ -123,7 +124,7 @@ public class FunctionsTests
         response.Headers.ShouldContainKey("Location");
         response.Headers["Location"].ShouldStartWith("/user/");
 
-        var responseBody = DeserializeBody<UserResponse>(response);
+        var responseBody = DeserializeBody<UserSignupResponse>(response);
         responseBody.Success.ShouldBeTrue();
         responseBody.User.ShouldNotBeNull();
         responseBody.User.TelegramId.ShouldBe(DefaultTelegramId);
@@ -227,8 +228,8 @@ public class FunctionsTests
         response.ShouldNotBeNull();
         response.StatusCode.ShouldBe(200); // OK
 
-        var responseBody = DeserializeBody<UserExistsResponse>(response);
-        responseBody.ShouldBeOfType<UserExistsResponse>();
+        var responseBody = DeserializeBody<UserGetResponse>(response);
+        responseBody.ShouldBeOfType<UserGetResponse>();
         responseBody.Success.ShouldBeTrue();
         responseBody.UserId.ShouldBe(ExistingUserId);
 
@@ -253,8 +254,8 @@ public class FunctionsTests
         response.ShouldNotBeNull();
         response.StatusCode.ShouldBe(200); // OK
 
-        var responseBody = DeserializeBody<UserExistsResponse>(response);
-        responseBody.ShouldBeOfType<UserExistsResponse>();
+        var responseBody = DeserializeBody<UserGetResponse>(response);
+        responseBody.ShouldBeOfType<UserGetResponse>();
         responseBody.Success.ShouldBeFalse();
         responseBody.UserId.ShouldNotBe(ExistingUserId);
 

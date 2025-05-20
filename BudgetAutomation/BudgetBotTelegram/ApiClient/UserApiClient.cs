@@ -3,8 +3,8 @@ using System.Text.Json;
 using BudgetBotTelegram.AtoTypes;
 using BudgetBotTelegram.Interface;
 using Microsoft.Extensions.Options;
+using SharedLibrary.Dto;
 using SharedLibrary.Settings;
-using SharedLibrary.UserClasses;
 
 namespace BudgetBotTelegram.ApiClient;
 
@@ -24,7 +24,7 @@ public class UserApiClient : IUserApiClient
         _httpClient.DefaultRequestHeaders.Add("x-api-key", options.Value.Key);
     }
 
-    public async Task<UserResponse> SignupUserAsync(
+    public async Task<UserSignupResponse> SignupUserAsync(
         long telegramId, string? username, string? email,
         CancellationToken cancellationToken = default)
     {
@@ -47,11 +47,11 @@ public class UserApiClient : IUserApiClient
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("Failed to create user for TelegramId {TelegramId}", telegramId);
-                return new UserResponse { Success = false };
+                return new UserSignupResponse { Success = false };
             }
 
             var userResponse = await response.Content.ReadFromJsonAsync(
-                jsonTypeInfo: AppJsonSerializerContext.Default.UserResponse,
+                jsonTypeInfo: AppJsonSerializerContext.Default.UserSignupResponse,
                 cancellationToken: cancellationToken);
 
             if (userResponse is not { Success: true, User: not null })
@@ -59,7 +59,7 @@ public class UserApiClient : IUserApiClient
                 _logger.LogError(
                     "Received success status code but failed to deserialize UserResponse for TelegramId {TelegramId}",
                     telegramId);
-                return new UserResponse { Success = false };
+                return new UserSignupResponse { Success = false };
             }
 
             // --
@@ -85,7 +85,7 @@ public class UserApiClient : IUserApiClient
         }
     }
 
-    public async Task<UserExistsResponse> CheckUserAsync(long telegramId, CancellationToken cancellationToken = default)
+    public async Task<UserGetResponse> FindUserByTelegramIdAsync(long telegramId, CancellationToken cancellationToken = default)
     {
         var requestUri = new Uri(_httpClient.BaseAddress!, $"/user/telegram/{telegramId}");
 
@@ -102,24 +102,24 @@ public class UserApiClient : IUserApiClient
             {
                 if (response.StatusCode == HttpStatusCode.NotFound)
                     _logger.LogError("Failed to check user for TelegramId {TelegramId}", telegramId);
-                return new UserExistsResponse { Success = false };
+                return new UserGetResponse { Success = false };
             }
 
-            var userExistsResponse = await response.Content.ReadFromJsonAsync(
-                jsonTypeInfo: AppJsonSerializerContext.Default.UserExistsResponse,
+            var userGetResponse = await response.Content.ReadFromJsonAsync(
+                jsonTypeInfo: AppJsonSerializerContext.Default.UserGetResponse,
                 cancellationToken: cancellationToken);
 
-            if (userExistsResponse is not { Success: true })
+            if (userGetResponse is not { Success: true })
             {
                 _logger.LogError(
                     "Received success status code but failed to deserialize UserExistsResponse for TelegramId {TelegramId}",
                     telegramId);
-                return new UserExistsResponse { Success = false };
+                return new UserGetResponse { Success = false };
             }
 
             _logger.LogInformation("Signup successful for TelegramId {TelegramId}. User ID: {UserId}",
-                telegramId, userExistsResponse.UserId);
-            return userExistsResponse;
+                telegramId, userGetResponse.UserId);
+            return userGetResponse;
         }
         catch (HttpRequestException ex)
         {

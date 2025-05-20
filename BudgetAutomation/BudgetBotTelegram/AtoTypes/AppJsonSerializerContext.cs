@@ -1,13 +1,15 @@
 ﻿using System.Text.Json.Serialization;
-using SharedLibrary;
+using SharedLibrary.Dto;
+using SharedLibrary.Model;
 
 namespace BudgetBotTelegram.AtoTypes;
 
 [JsonSerializable(typeof(LogExpenseResponse))]
-[JsonSerializable(typeof(SharedLibrary.UserClasses.UserResponse))]
-[JsonSerializable(typeof(SharedLibrary.UserClasses.User))]
-[JsonSerializable(typeof(SharedLibrary.UserClasses.UserSignupRequest))]
-[JsonSerializable(typeof(SharedLibrary.UserClasses.UserExistsResponse))]
+[JsonSerializable(typeof(UserSignupResponse))]
+[JsonSerializable(typeof(User))]
+[JsonSerializable(typeof(UserSignupRequest))]
+[JsonSerializable(typeof(UserGetResponse))]
+[JsonSerializable(typeof(UserConfiguration))]
 public partial class AppJsonSerializerContext : JsonSerializerContext
 {
 }

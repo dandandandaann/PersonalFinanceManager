@@ -1,7 +1,7 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.Core;
-using SharedLibrary.UserClasses;
+using SharedLibrary.Model;
 
 namespace UserManagerApi.Service;
 
@@ -47,8 +47,7 @@ public class UserService(IDynamoDBContext dbContext) : IUserService
         }
         catch (Exception ex)
         {
-            logger.LogError("UserService: Error querying DynamoDB by TelegramId {TelegramId}: {ExceptionMessage} {StackTrace}",
-                telegramId, ex.Message, ex.StackTrace);
+            logger.LogError("UserService: Error querying DynamoDB by TelegramId {TelegramId}: {Exception}", telegramId, ex.ToString());
             throw;
         }
     }
@@ -76,8 +75,7 @@ public class UserService(IDynamoDBContext dbContext) : IUserService
         {
             logger.LogError(
                 "UserService: Error saving user to DynamoDB. UserId: {NewUserId}, TelegramId: {TelegramId}. " +
-                "Exception: {ExceptionMessage} {ExceptionStackTrace}",
-                newUser.UserId, telegramId, ex.Message, ex.StackTrace);
+                "Exception: {Exception}", newUser.UserId, telegramId, ex.ToString());
             throw;
         }
     }

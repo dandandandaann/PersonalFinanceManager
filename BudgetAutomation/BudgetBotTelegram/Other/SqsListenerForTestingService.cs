@@ -66,7 +66,7 @@ public class SqsListenerForTestingService(
 
                             // If the processor completed WITHOUT exception, delete the messages from SQS.
                             logger.LogInformation(
-                                "Message {Current} of {Total} processed successfully by SqsUpdateProcessor. Deleting message.", messageIndex,
+                                "Message {Current} of {Total} processed successfully by SqsUpdateProcessor. Deleting message.", messageIndex + 1,
                                 sqsEventMessages.Count);
                             await DeleteMessageAsync(sqsEventMessages[messageIndex].ReceiptHandle, cancellationToken);
                         }

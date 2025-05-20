@@ -1,4 +1,6 @@
-﻿namespace SharedLibrary.Settings;
+﻿using SharedLibrary.Model;
+
+namespace SharedLibrary.Settings;
 
 public class ExpenseLoggerSettings
 {

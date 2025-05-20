@@ -1,8 +1,9 @@
 ﻿using System.Text.Json.Serialization;
+using SharedLibrary.Interface;
 
-namespace SharedLibrary.UserClasses;
+namespace SharedLibrary.Dto;
 
-public class UserExistsResponse
+public class UserGetResponse : IApiResponse
 {
     [JsonPropertyName("success")]
     public bool Success { get; set; }
@@ -12,4 +13,7 @@ public class UserExistsResponse
 
     [JsonPropertyName("message")]
     public string? Message { get; set; }
+
+    [JsonPropertyName("userConfiguration")]
+    public UserConfigurationResponse userConfiguration { get; set; }
 }

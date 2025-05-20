@@ -1,4 +1,4 @@
-namespace SharedLibrary.UserClasses;
+namespace SharedLibrary.Dto;
 
 public class UserSignupRequest
 {
