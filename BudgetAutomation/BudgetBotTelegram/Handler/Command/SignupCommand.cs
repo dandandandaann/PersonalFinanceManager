@@ -35,6 +35,17 @@ public partial class SignupCommand(
                 throw new InvalidUserInputException($"Message text doesn't start with {CommandName} command.");
             }
 
+            var existingId = await userApiClient.CheckUserAsync(telegramId);
+
+            if (existingId.Success)
+            {
+                return await sender.ReplyAsync(message.Chat,
+                   "Signup failed. You might already be registered.",
+                   "User signup failed (already exists or API error).",
+                   logLevel: LogLevel.Warning,
+                   cancellationToken: cancellationToken);
+            }
+
             if (string.IsNullOrWhiteSpace(signupArguments) ||
                 !EmailRegex().IsMatch(signupArguments))
             {
