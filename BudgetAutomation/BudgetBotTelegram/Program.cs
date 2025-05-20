@@ -22,10 +22,10 @@ var config = builder.Configuration;
 
 var isLocalDev = builder.Environment.IsDevelopment() ? "dev-" : "";
 
-// Configure AWS Parameter Store
+// Configure AWS Parameter Store ---
 config.AddSystemsManager($"/{isLocalDev}{BudgetAutomationSettings.Configuration}/");
 
-// Bind Bot configuration
+// Bind Bot configuration ---
 services.Configure<TelegramBotSettings>(config.GetSection(TelegramBotSettings.Configuration));
 services.AddSingleton<IValidateOptions<TelegramBotSettings>, TelegramBotSettingsValidator>();
 
@@ -47,7 +47,7 @@ services.AddHttpClient<IExpenseLoggerApiClient, ExpenseLoggerApiClient>();
 services.Configure<UserApiClientSettings>(config.GetSection(UserApiClientSettings.Configuration));
 services.AddHttpClient<IUserApiClient, UserApiClient>();
 
-// Register AWS Services
+// Register AWS Services ---
 services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(RegionEndpoint.USEast2));
 services.AddScoped<IDynamoDBContext>(sp =>
 {
@@ -64,13 +64,13 @@ services.AddScoped<IUserManagerService, UserManagerService>();
 
 services.AddSingleton<ISenderGateway, SenderGateway>();
 
-// Register handlers
+// Register handlers ---
 services.AddScoped<IUpdateHandler, UpdateHandler>();
 services.AddScoped<IMessageHandler, MessageHandler>();
 services.AddScoped<ITextMessageHandler, TextMessageHandler>();
 services.AddScoped<ICommandHandler, CommandHandler>();
 
-// Register commands
+// Register commands ---
 services.AddScoped<ICommand, LogCommand>();
 services.AddScoped<ICommand, CancelCommand>();
 services.AddScoped<ICommand, SignupCommand>();
@@ -83,7 +83,7 @@ services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,
 #pragma warning restore IL2026
 
 #if DEBUG
-    // Bind configurations
+    // Bind test configurations
     services.Configure<TelegramListenerSettings>(config.GetSection(TelegramListenerSettings.Configuration));
     services.AddSingleton<IValidateOptions<TelegramListenerSettings>, TelegramListenerSettingsValidator>();
     services.AddHostedService<SqsListenerForTestingService>();
