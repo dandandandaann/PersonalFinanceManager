@@ -1,4 +1,5 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
+using BudgetBotTelegram.Enum;
 using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 
@@ -6,19 +7,9 @@ namespace BudgetBotTelegram.Service
 {
     public class ChatStateService(IDynamoDBContext dbContext, ILogger<ChatStateService> logger) : IChatStateService
     {
-        public enum StateEnum
-        {
-            AwaitingLogArguments
-        }
-
-        /// <summary>
-        /// Checks if a chat state exists for the given chatId and retrieves it.
-        /// </summary>
-        /// <param name="chatId">The Telegram chat ID.</param>
-        /// <returns>A tuple indicating if state exists and the ChatState object (null if not found).</returns>
         public async Task<(bool hasState, ChatState? chatState)> HasState(long chatId)
         {
-            string chatIdStr = chatId.ToString();
+            var chatIdStr = chatId.ToString();
             // Table name is inferred from the [DynamoDBTable] attribute on ChatState
             logger.LogInformation("Checking state for chatId {ChatId}.", chatIdStr);
 
@@ -42,11 +33,6 @@ namespace BudgetBotTelegram.Service
             }
         }
 
-        /// <summary>
-        /// Clears the chat state for the given chatId by deleting the item.
-        /// </summary>
-        /// <param name="chatId">The Telegram chat ID.</param>
-        /// <returns>The ChatState object that was deleted, or null if no state existed.</returns>
         public async Task<ChatState?> ClearState(long chatId)
         {
             string chatIdStr = chatId.ToString();
@@ -78,21 +64,16 @@ namespace BudgetBotTelegram.Service
             }
         }
 
-        /// <summary>
-        /// Sets (creates or updates) the chat state for the given chatId.
-        /// </summary>
-        /// <param name="chatId">The Telegram chat ID.</param>
-        /// <param name="stateValue">The new state value.</param>
-        /// <returns>The newly created or updated ChatState object.</returns>
-        public async Task<ChatState> SetStateAsync(long chatId, string stateValue)
+        public async Task<ChatState> SetStateAsync(long chatId, ChatStateEnum chatState, string commandName)
         {
             string chatIdStr = chatId.ToString();
-             logger.LogInformation("Setting state for chatId {ChatId} to '{State}'.", chatIdStr, stateValue);
+             logger.LogInformation("Setting state for chatId {ChatId} to '{State}'.", chatIdStr, chatState);
 
             var newState = new ChatState
             {
                 ChatId = chatIdStr,
-                State = stateValue,
+                State = chatState.ToString(),
+                ActiveCommand = commandName,
                 Timestamp = DateTime.UtcNow
             };
 

@@ -9,11 +9,11 @@ namespace BudgetBotTelegram.Handler.Command;
 
 public partial class SignupCommand(
     ISenderGateway sender,
-    IUserApiClient userApiClient) : ISignupCommand
+    IUserApiClient userApiClient) : ICommand
 {
-    public const string CommandName = "signup";
+    public string CommandName => "signup";
 
-    public async Task<Message> HandleSignupAsync(Message message, CancellationToken cancellationToken = default)
+    public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(message.From, nameof(message.From));
@@ -83,6 +83,11 @@ public partial class SignupCommand(
                 logLevel: LogLevel.Error,
                 cancellationToken: cancellationToken);
         }
+    }
+
+    public Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 
     // TODO: unify this method with LogCommand's

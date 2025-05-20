@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using BudgetBotTelegram.Enum;
 using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Service;
@@ -10,11 +11,11 @@ namespace BudgetBotTelegram.Handler.Command;
 public partial class LogCommand(
     ISenderGateway sender,
     IExpenseLoggerApiClient expenseApiClient,
-    IChatStateService chatStateService) : ILogCommand
+    IChatStateService chatStateService) : ICommand
 {
-    public const string CommandName = "log";
+    public string CommandName => "log";
 
-    public async Task<Message> HandleLogAsync(Message message, CancellationToken cancellationToken = default)
+    public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(message.Text);
@@ -29,25 +30,24 @@ public partial class LogCommand(
 
         if (String.IsNullOrEmpty(expenseArguments))
         {
-            var chatState = ChatStateService.StateEnum.AwaitingLogArguments.ToString();
-            await chatStateService.SetStateAsync(message.Chat.Id, chatState); // TODO: create enum for chat states
+            await chatStateService.SetStateAsync(message.Chat.Id, ChatStateEnum.AwaitingArguments, CommandName);
 
             return await sender.ReplyAsync(message.Chat,
                 "Okay, please enter the details for your expense. e.g. 'Café 5,50 Comida'",
-                $"Chat state: {chatState}.",
+                $"Chat state: {ChatStateEnum.AwaitingArguments}.",
                 cancellationToken: cancellationToken);
         }
 
         return await LogExpenseAsync(message.Chat, UserManagerService.Configuration.SpreadsheetId, expenseArguments, cancellationToken);
     }
 
-    public async Task<Message> HandleLogAsync(Message message, ChatState chatState, CancellationToken cancellationToken = default)
+    public async Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(message.Text);
 
         await chatStateService.ClearState(message.Chat.Id);
 
-        if (chatState.State == ChatStateService.StateEnum.AwaitingLogArguments.ToString())
+        if (chatState.State == ChatStateEnum.AwaitingArguments.ToString())
         {
             return await LogExpenseAsync(message.Chat, UserManagerService.Configuration.SpreadsheetId, message.Text, cancellationToken);
         }
