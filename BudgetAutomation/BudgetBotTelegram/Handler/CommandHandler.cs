@@ -1,5 +1,4 @@
-﻿using BudgetBotTelegram.Handler.Command;
-using BudgetBotTelegram.Interface;
+﻿using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Service;
 using SharedLibrary.Telegram;
 
@@ -7,9 +6,7 @@ namespace BudgetBotTelegram.Handler;
 
 public class CommandHandler(
     ISenderGateway sender,
-    ILogCommand logCommand,
-    ISignupCommand signupCommand,
-    ICancelCommand cancelCommand
+    IEnumerable<ICommand> commandImplementations
 ) : ICommandHandler
 {
     public async Task<Message> HandleCommandAsync(Message message, CancellationToken cancellationToken = default)
@@ -23,24 +20,26 @@ public class CommandHandler(
         // Ensure the command is at the beginning of the message
         if (commandEntity.Offset != 0)
         {
-            return await sender.ReplyAsync(message.Chat, "Commands should be on the first position of the message.", cancellationToken: cancellationToken);
+            return await sender.ReplyAsync(message.Chat, "Commands should be on the first position of the message.",
+                cancellationToken: cancellationToken);
         }
 
         // Extract the command using the entity's length
-        var command = message.Text.Substring(0, commandEntity.Length).Split('@')[0];
+        var commandFromMessage = message.Text.Substring(0, commandEntity.Length).Split('@')[0].ToLowerInvariant();
 
-        if (command.Equals($"/{LogCommand.CommandName}", StringComparison.OrdinalIgnoreCase))
-            return await logCommand.HandleLogAsync(message, cancellationToken);
+        var commands = commandImplementations.ToDictionary(
+            cmd => $"/{cmd.CommandName}".ToLowerInvariant(),
+            cmd => cmd
+        );
 
-        if (command.Equals($"/{SignupCommand.CommandName}", StringComparison.OrdinalIgnoreCase))
-            return await signupCommand.HandleSignupAsync(message, cancellationToken);
-
-        if (command.Equals($"/{CancelCommand.CommandName}", StringComparison.OrdinalIgnoreCase))
-            return await cancelCommand.HandleCancelAsync(message, cancellationToken);
+        if (commands.TryGetValue(commandFromMessage, out var commandToExecute))
+        {
+            return await commandToExecute.HandleAsync(message, cancellationToken);
+        }
 
         return await sender.ReplyAsync(
             message.Chat,
             "Command not recognized.",
-            $"Unknown command '{command}'.", cancellationToken: cancellationToken);
+            $"Unknown command '{commandFromMessage}'.", cancellationToken: cancellationToken);
     }
 }

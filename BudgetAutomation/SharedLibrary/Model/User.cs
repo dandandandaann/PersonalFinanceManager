@@ -1,6 +1,6 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 
-namespace SharedLibrary.UserClasses;
+namespace SharedLibrary.Model;
 
 [DynamoDBTable("user")]
 public class User
@@ -43,8 +43,14 @@ public class User
     [DynamoDBProperty("createdAt")]
     public DateTime CreatedAt { get; set; }
 
+    [DynamoDBProperty("configuration")]
+    public UserConfiguration Configuration { get; set; }
+
     // Parameterless constructor required by DynamoDBContext
-    public User() { }
+    public User()
+    {
+        Configuration = new UserConfiguration();
+    }
 
     public User(string userId, string email = "", string passwordHash = "", long? telegramId = null)
     {
@@ -53,5 +59,6 @@ public class User
         PasswordHash = passwordHash;
         TelegramId = telegramId ?? 0;
         CreatedAt = DateTime.UtcNow;
+        Configuration = new UserConfiguration();
     }
 }

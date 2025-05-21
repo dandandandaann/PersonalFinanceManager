@@ -1,8 +1,9 @@
 ﻿using System.Text.RegularExpressions;
+using BudgetBotTelegram.Enum;
 using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Service;
-using SharedLibrary;
+using SharedLibrary.Model;
 using SharedLibrary.Telegram;
 
 namespace BudgetBotTelegram.Handler.Command;
@@ -10,47 +11,59 @@ namespace BudgetBotTelegram.Handler.Command;
 public partial class LogCommand(
     ISenderGateway sender,
     IExpenseLoggerApiClient expenseApiClient,
-    IChatStateService chatStateService) : ILogCommand
+    IChatStateService chatStateService)
+    : ICommand
 {
-    public const string CommandName = "log";
+    public string CommandName => "log";
 
-    public async Task<Message> HandleLogAsync(Message message, CancellationToken cancellationToken = default)
+    public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(message.Text);
 
-        // TODO: is it possible to make a virtual class with this verification? Is it worth it?
         if (!UserManagerService.UserLoggedIn)
             throw new UnauthorizedAccessException();
 
-        if (!TryParseCommandArguments(message.Text, CommandName, out string expenseArguments))
+        if (!TryExtractCommandArguments(message.Text, CommandName, out string expenseArguments))
         {
             throw new InvalidUserInputException($"Message text doesn't start with {CommandName} command.");
         }
 
         if (String.IsNullOrEmpty(expenseArguments))
         {
-            var chatState = ChatStateService.StateEnum.AwaitingLogArguments.ToString();
-            await chatStateService.SetStateAsync(message.Chat.Id, chatState); // TODO: create enum for chat states
+            await chatStateService.SetStateAsync(message.Chat.Id, ChatStateEnum.AwaitingArguments, CommandName);
 
             return await sender.ReplyAsync(message.Chat,
                 "Okay, please enter the details for your expense. e.g. 'Café 5,50 Comida'",
-                $"Chat state: {chatState}.",
+                $"Chat state: {ChatStateEnum.AwaitingArguments}.",
                 cancellationToken: cancellationToken);
         }
 
-        return await LogExpenseAsync(message.Chat, expenseArguments, cancellationToken);
+        return await LogExpenseAsync(message.Chat, UserManagerService.Configuration.SpreadsheetId, expenseArguments,
+            cancellationToken);
     }
 
-    public async Task<Message> HandleLogAsync(Message message, ChatState chatState, CancellationToken cancellationToken = default)
+    public async Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken = default)
     {
+        if (!UserManagerService.UserLoggedIn)
+            throw new UnauthorizedAccessException();
+
+        if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
+        {
+            return await sender.ReplyAsync(message.Chat,
+                $"Por favor configure sua planilha com o commando /{SpreadsheetCommand.StaticCommandName} antes de " +
+                $"usar o comando /{CommandName}.",
+                cancellationToken: cancellationToken);
+        }
+
         ArgumentException.ThrowIfNullOrEmpty(message.Text);
 
         await chatStateService.ClearState(message.Chat.Id);
 
-        if (chatState.State == ChatStateService.StateEnum.AwaitingLogArguments.ToString())
+        if (chatState.State == ChatStateEnum.AwaitingArguments.ToString())
         {
-            return await LogExpenseAsync(message.Chat, message.Text, cancellationToken);
+            return await LogExpenseAsync(message.Chat, UserManagerService.Configuration.SpreadsheetId, message.Text,
+                cancellationToken);
         }
 
         return await sender.ReplyAsync(message.Chat, $"Log state {chatState.State} not implemented.",
@@ -60,29 +73,40 @@ public partial class LogCommand(
         );
     }
 
-    private async Task<Message> LogExpenseAsync(Chat chatId, string expenseArguments,
+    private async Task<Message> LogExpenseAsync(Chat chat, string spreadsheetId, string expenseArguments,
         CancellationToken cancellationToken = default)
     {
-        var expense = ParseExpenseArguments(expenseArguments);
+        if (!UserManagerService.UserLoggedIn)
+            throw new UnauthorizedAccessException();
+
+        if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
+        {
+            return await sender.ReplyAsync(chat,
+                $"Por favor configure sua planilha com o commando /{SpreadsheetCommand.StaticCommandName} antes de " +
+                $"usar o comando /{CommandName}.",
+                cancellationToken: cancellationToken);
+        }
+
+        var expense = MapExpenseArguments(expenseArguments);
 
         try
         {
-            expense = await expenseApiClient.LogExpenseAsync(expense, cancellationToken);
+            expense = await expenseApiClient.LogExpenseAsync(spreadsheetId, expense, cancellationToken);
 
-            return await sender.ReplyAsync(chatId,
+            return await sender.ReplyAsync(chat,
                 $"Logged Expense\n{expense}",
                 "Logged expense.",
                 cancellationToken: cancellationToken);
         }
         catch (ArgumentException e)
         {
-            return await sender.ReplyAsync(chatId,
+            return await sender.ReplyAsync(chat,
                 "Failed to log expense.", e.Message, logLevel: LogLevel.Error,
                 cancellationToken: cancellationToken);
         }
     }
 
-    private static Expense ParseExpenseArguments(string expenseArguments)
+    private static Expense MapExpenseArguments(string expenseArguments)
     {
         var expense = new Expense();
         var match = ExpenseArgumentsRegex().Match(expenseArguments);
@@ -113,11 +137,12 @@ public partial class LogCommand(
         return expense;
     }
 
-    private static bool TryParseCommandArguments(string text, string commandName, out string arguments)
+    // TODO: join this method with Utility.TryExtractCommandArguments
+    private static bool TryExtractCommandArguments(string text, string commandName, out string arguments)
     {
         arguments = "";
         string commandWithSlash = "/" + commandName;
-        int prefixLength = -1;
+        int prefixLength;
 
         // Check if it starts with "/command" (case-insensitive)
         if (text.StartsWith(commandWithSlash, StringComparison.OrdinalIgnoreCase))
@@ -151,7 +176,6 @@ public partial class LogCommand(
             return true;
         }
 
-        // It's something else (e.g., "/logfoobar" or "logfoobar") - invalid command invocation
         return false;
     }
 

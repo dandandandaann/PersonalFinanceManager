@@ -87,8 +87,9 @@ public class Startup
         services.AddScoped<ICommandHandler, CommandHandler>();
 
         // Register commands
-        services.AddScoped<ILogCommand, LogCommand>();
-        services.AddScoped<ICancelCommand, CancelCommand>();
-        services.AddScoped<ISignupCommand, SignupCommand>();
+        services.AddScoped<ICommand, LogCommand>();
+        services.AddScoped<ICommand, CancelCommand>();
+        services.AddScoped<ICommand, SignupCommand>();
+        services.AddScoped<ICommand, SpreadsheetCommand>();
     }
 }

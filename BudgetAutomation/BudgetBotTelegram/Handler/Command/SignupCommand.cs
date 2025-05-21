@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using BudgetBotTelegram.Interface;
+using BudgetBotTelegram.Misc;
 using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Service;
 using SharedLibrary.Telegram;
@@ -9,11 +10,11 @@ namespace BudgetBotTelegram.Handler.Command;
 
 public partial class SignupCommand(
     ISenderGateway sender,
-    IUserApiClient userApiClient) : ISignupCommand
+    IUserApiClient userApiClient) : ICommand
 {
-    public const string CommandName = "signup";
+    public string CommandName => "signup";
 
-    public async Task<Message> HandleSignupAsync(Message message, CancellationToken cancellationToken = default)
+    public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(message.From, nameof(message.From));
@@ -30,7 +31,10 @@ public partial class SignupCommand(
 
         try
         {
-            if (!TryParseCommandArguments(message.Text, CommandName, out string signupArguments))
+            if (
+                !Utility.TryExtractCommandArguments(message.Text, CommandName, EmailRegex, out var signupArguments) ||
+                string.IsNullOrWhiteSpace(signupArguments)
+                )
             {
                 throw new InvalidUserInputException($"Message text doesn't start with {CommandName} command.");
             }
@@ -96,42 +100,9 @@ public partial class SignupCommand(
         }
     }
 
-    // TODO: unify this method with LogCommand's
-    private static bool TryParseCommandArguments(string text, string commandName, out string arguments)
+    public Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken)
     {
-        arguments = "";
-        string commandWithSlash = "/" + commandName;
-        int prefixLength = -1;
-
-        // Check if it starts with "/command" (case-insensitive)
-        if (text.StartsWith(commandWithSlash, StringComparison.OrdinalIgnoreCase))
-        {
-            prefixLength = commandWithSlash.Length;
-        }
-        else
-        {
-            // Doesn't start with the command at all
-            return false;
-        }
-
-        // Now check what follows the command prefix
-        // The message is exactly the command (e.g., "/log" or "log")
-        if (text.Length == prefixLength)
-        {
-            arguments = string.Empty;
-            return true;
-        }
-
-        // The command is followed by a space (e.g., "/log args" or "log args")
-        if (text.Length > prefixLength && text[prefixLength] == ' ')
-        {
-            // Extract arguments, trim potential whitespace around them
-            arguments = text.Substring(prefixLength + 1).Trim();
-            return true;
-        }
-
-        // It's something else (e.g., "/logfoobar" or "logfoobar") - invalid command invocation
-        return false;
+        throw new NotImplementedException();
     }
 
     [GeneratedRegex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")]

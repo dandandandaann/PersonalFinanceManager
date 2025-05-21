@@ -58,6 +58,7 @@ public class TelegramUpdateProcessor(
         try
         {
             var queueUrl = _listenerSettings.TelegramUpdateQueue;
+
             var messageGroupId = simplifiedUpdate.Message?.Chat.Id.ToString() ?? "default";
             var sendMessageRequest = new SendMessageRequest
             {

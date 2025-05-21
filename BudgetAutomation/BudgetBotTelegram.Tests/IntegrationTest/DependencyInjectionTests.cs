@@ -2,18 +2,17 @@
 using BudgetBotTelegram.Handler.Command;
 using BudgetBotTelegram.Interface;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace BudgetBotTelegram.Tests.IntegrationTest;
 
-public class DependencyInjectionTests(WebApplicationFactory<Other.Program> factory, ITestOutputHelper output)
-    : IClassFixture<WebApplicationFactory<Other.Program>>
+public class DependencyInjectionTests(MockedApplicationFactory<Misc.Program> factory, ITestOutputHelper output)
+    : IClassFixture<MockedApplicationFactory<Misc.Program>>
 {
     [Fact]
-    public void ShouldResolve_IMessageHandler_FromScopedProvider() // Renamed for clarity
+    public void ShouldResolve_IMessageHandler_FromScopedProvider()
     {
         // Arrange: Get the root service provider from the factory
         var rootProvider = factory.Services;
@@ -32,11 +31,13 @@ public class DependencyInjectionTests(WebApplicationFactory<Other.Program> facto
     }
 
     [Theory]
-    [InlineData(typeof(ILogCommand), "Command")]
+    [InlineData(typeof(ICommand), "Command")]
     [InlineData(typeof(IMessageHandler), "Handler")]
     [InlineData(typeof(IChatStateService), "Service")]
-    public void ShouldResolve_AllServicesEndingWithCommand_InApplicationAssembly_FromScopedProvider(Type interfaceExample,
-        string interfaceEnding)
+    public void ShouldResolve_AllServicesEndingWithCommand_InApplicationAssembly_FromScopedProvider(
+        Type interfaceExample,
+        string interfaceEnding
+        )
     {
         // Arrange: Get the root provider
         var rootProvider = factory.Services;
@@ -114,20 +115,20 @@ public class DependencyInjectionTests(WebApplicationFactory<Other.Program> facto
 
                     // Use GetService: returns null if the *interface* isn't registered
                     // with *any* implementation (or specifically this one)
-                    var serviceRegisteredForInterface = scopedProvider.GetService(iface);
+                    var servicesRegisteredForInterface = scopedProvider.GetServices(iface);
 
                     // If the interface IS registered, we need to check if the implementation
                     // resolved IS our handlerClassType.
-                    if (serviceRegisteredForInterface != null)
+                    foreach (var serviceRegistered in servicesRegisteredForInterface)
                     {
-                        if (serviceRegisteredForInterface.GetType() == handlerClassType)
+                        if (serviceRegistered?.GetType() == handlerClassType)
                         {
                             resolvedByInterface = true;
                             break; // Found registration via one interface, no need to check others
                         }
 
                         output.WriteLine(
-                            $"  -> Interface {iface.FullName} is registered, but with a different implementation ({serviceRegisteredForInterface.GetType().Name})");
+                            $"  -> Interface {iface.FullName} is registered, but with a different implementation ({servicesRegisteredForInterface.GetType().Name})");
                     }
                 }
 

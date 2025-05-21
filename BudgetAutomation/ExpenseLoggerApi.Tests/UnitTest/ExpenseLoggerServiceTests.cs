@@ -1,4 +1,6 @@
-﻿namespace UnitTest.UnitTest;
+﻿using SharedLibrary.Model;
+
+namespace UnitTest.UnitTest;
 
 public class ExpenseLoggerServiceTests : IDisposable
 {
@@ -28,7 +30,6 @@ public class ExpenseLoggerServiceTests : IDisposable
         _service = new ExpenseLoggerService(
             _mockSheetsAccessor.Object,
             categories,
-            SpreadsheetId,
             _mockLogger.Object
         );
     }
@@ -74,7 +75,7 @@ public class ExpenseLoggerServiceTests : IDisposable
         SetupSuccessfulSheetsApiFlow(expectedRow, expectedSheetId);
 
         // Act
-        var result = await _service.LogExpense(description, amount, categoryInput);
+        var result = await _service.LogExpense(SpreadsheetId, description, amount, categoryInput);
 
         // Assert
         result.ShouldNotBeNull();
@@ -123,7 +124,7 @@ public class ExpenseLoggerServiceTests : IDisposable
         SetupSuccessfulSheetsApiFlow(expectedRow);
 
         // Act
-        var result = await _service.LogExpense(description, amount, categoryInput);
+        var result = await _service.LogExpense(SpreadsheetId, description, amount, categoryInput);
 
         // Assert
         result.ShouldNotBeNull();
@@ -150,7 +151,7 @@ public class ExpenseLoggerServiceTests : IDisposable
         var categoryInput = "Groceries";
 
         // Act
-        async Task Action() => await _service.LogExpense(description, invalidAmount, categoryInput);
+        async Task Action() => await _service.LogExpense(SpreadsheetId, description, invalidAmount, categoryInput);
 
         // Assert
         var exception = await Should.ThrowAsync<ArgumentException>((Func<Task>)Action);
@@ -191,7 +192,7 @@ public class ExpenseLoggerServiceTests : IDisposable
             .ThrowsAsync(expectedException);
 
         // Act
-        Func<Task> action = async () => await _service.LogExpense(description, amount, categoryInput);
+        Func<Task> action = async () => await _service.LogExpense(SpreadsheetId, description, amount, categoryInput);
 
         // Assert
         var exception = await Should.ThrowAsync<Exception>(action);

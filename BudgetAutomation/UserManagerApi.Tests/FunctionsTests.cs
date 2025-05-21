@@ -4,7 +4,8 @@ using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
 using Moq;
-using SharedLibrary.UserClasses;
+using SharedLibrary.Dto;
+using SharedLibrary.Model;
 using Shouldly;
 using Xunit;
 
@@ -73,7 +74,7 @@ public class FunctionsTests
     public async Task SignupUserAsync_WhenUserExists_ShouldReturnOkAndExistingUserId()
     {
         // Arrange
-        var request = new UserSignupRequest { TelegramId = DefaultTelegramId, Username = DefaultUsername };
+        var request = new UserSignupRequest( DefaultTelegramId, DefaultUsername );
         var existingUser = new User { UserId = ExistingUserId, TelegramId = DefaultTelegramId, Username = "oldUsername" };
         var usersFound = new List<User> { existingUser };
 
@@ -88,7 +89,7 @@ public class FunctionsTests
         response.ShouldNotBeNull();
         response.StatusCode.ShouldBe(200); // OK
 
-        var responseBody = DeserializeBody<UserExistsResponse>(response);
+        var responseBody = DeserializeBody<UserGetResponse>(response);
         responseBody.Success.ShouldBeFalse();
         responseBody.UserId.ShouldBe(ExistingUserId);
 
@@ -102,7 +103,7 @@ public class FunctionsTests
     public async Task SignupUserAsync_WhenUserDoesNotExist_ShouldCreateUserAndReturnCreated()
     {
         // Arrange
-        var request = new UserSignupRequest { TelegramId = DefaultTelegramId, Username = DefaultUsername };
+        var request = new UserSignupRequest( DefaultTelegramId, DefaultUsername );
 
         // --- Configure the mock search for this specific test ---
         // The default setup in the constructor already returns an empty list,
@@ -123,7 +124,7 @@ public class FunctionsTests
         response.Headers.ShouldContainKey("Location");
         response.Headers["Location"].ShouldStartWith("/user/");
 
-        var responseBody = DeserializeBody<UserResponse>(response);
+        var responseBody = DeserializeBody<UserSignupResponse>(response);
         responseBody.Success.ShouldBeTrue();
         responseBody.User.ShouldNotBeNull();
         responseBody.User.TelegramId.ShouldBe(DefaultTelegramId);
@@ -140,7 +141,7 @@ public class FunctionsTests
     public async Task SignupUserAsync_WhenDbQueryThrows_ShouldReturnInternalServerError()
     {
         // Arrange
-        var request = new UserSignupRequest { TelegramId = DefaultTelegramId };
+        var request = new UserSignupRequest( DefaultTelegramId );
         var dbException = new InvalidOperationException("DynamoDB query failed"); // Use a specific exception type
 
         // --- Configure the mock search to throw ---
@@ -164,7 +165,7 @@ public class FunctionsTests
     public async Task SignupUserAsync_WhenDbSaveThrows_ShouldReturnInternalServerError()
     {
         // Arrange
-        var request = new UserSignupRequest { TelegramId = DefaultTelegramId, Username = DefaultUsername };
+        var request = new UserSignupRequest(DefaultTelegramId, DefaultUsername );
         var dbException = new InvalidOperationException("DynamoDB save failed"); // Use a specific exception type
 
         // User not found initially
@@ -227,8 +228,8 @@ public class FunctionsTests
         response.ShouldNotBeNull();
         response.StatusCode.ShouldBe(200); // OK
 
-        var responseBody = DeserializeBody<UserExistsResponse>(response);
-        responseBody.ShouldBeOfType<UserExistsResponse>();
+        var responseBody = DeserializeBody<UserGetResponse>(response);
+        responseBody.ShouldBeOfType<UserGetResponse>();
         responseBody.Success.ShouldBeTrue();
         responseBody.UserId.ShouldBe(ExistingUserId);
 
@@ -253,8 +254,8 @@ public class FunctionsTests
         response.ShouldNotBeNull();
         response.StatusCode.ShouldBe(200); // OK
 
-        var responseBody = DeserializeBody<UserExistsResponse>(response);
-        responseBody.ShouldBeOfType<UserExistsResponse>();
+        var responseBody = DeserializeBody<UserGetResponse>(response);
+        responseBody.ShouldBeOfType<UserGetResponse>();
         responseBody.Success.ShouldBeFalse();
         responseBody.UserId.ShouldNotBe(ExistingUserId);
 

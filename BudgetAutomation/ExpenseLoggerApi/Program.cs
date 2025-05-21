@@ -4,8 +4,10 @@ using ExpenseLoggerApi.AotTypes;
 using ExpenseLoggerApi.Interface;
 using ExpenseLoggerApi.Service;
 using Google.Apis.Sheets.v4;
+using Microsoft.AspNetCore.Mvc;
 using SharedLibrary;
 using Microsoft.Extensions.Options;
+using SharedLibrary.Dto;
 using SharedLibrary.Settings;
 using SharedLibrary.Validator;
 
@@ -17,8 +19,6 @@ var isLocalDev = builder.Environment.IsDevelopment() ? "dev-" : "";
 builder.Configuration.AddSystemsManager($"/{isLocalDev}{BudgetAutomationSettings.Configuration}/");
 
 builder.Services.Configure<ExpenseLoggerSettings>(builder.Configuration.GetSection(ExpenseLoggerSettings.Configuration));
-
-// builder.Services.Configure<BudgetAutomationSettings>(builder.Configuration.GetSection(BudgetAutomationSettings.Configuration)); // Removed old binding
 builder.Services.AddSingleton<IValidateOptions<ExpenseLoggerSettings>, ExpenseLoggerSettingsValidator>();
 
 // Add Rate Limiting
@@ -81,7 +81,6 @@ builder.Services.AddScoped<ExpenseLoggerService>(sp =>
     return new ExpenseLoggerService(
         sp.GetRequiredService<ISheetsDataAccessor>(),
         settings.Categories,
-        settings.spreadsheetId,
         sp.GetRequiredService<ILogger<ExpenseLoggerService>>()
     );
 });
@@ -104,14 +103,16 @@ app.Use(async (context, next) =>
 
 app.UseRateLimiter();
 
-app.MapGet("", () => "Hello world!");
+app.MapGet("", () => "ExpenseLogger Api is running!");
 
 app.MapPut("/log-expense",
-    async (ExpenseLoggerService sheetsLogger, string description, string amount, string category = "") =>
+    async ([FromServices] ExpenseLoggerService sheetsLogger,
+        [FromQuery] string spreadsheetId,
+        [FromQuery] string description, [FromQuery] string amount, [FromQuery] string category = "") =>
     {
         try
         {
-            var expense = await sheetsLogger.LogExpense(description, amount, category);
+            var expense = await sheetsLogger.LogExpense(spreadsheetId, description, amount, category);
             return Results.Ok(new LogExpenseResponse { Success = true, expense = expense });
         }
         catch (ArgumentException ex) when (ex.ParamName == "amount")

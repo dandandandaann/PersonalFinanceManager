@@ -1,15 +1,15 @@
 ﻿using BudgetBotTelegram.Interface;
+using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Service;
 using SharedLibrary.Telegram;
 
-
 namespace BudgetBotTelegram.Handler.Command;
 
-public class CancelCommand(ISenderGateway sender, IChatStateService chatStateService) : ICancelCommand
+public class CancelCommand(ISenderGateway sender, IChatStateService chatStateService) : ICommand
 {
-    public const string CommandName = "cancel";
+    public string CommandName => "cancel";
 
-    public async Task<Message> HandleCancelAsync(Message message, CancellationToken cancellationToken = default)
+    public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(message.Text);
@@ -21,5 +21,10 @@ public class CancelCommand(ISenderGateway sender, IChatStateService chatStateSer
 
         return await sender.ReplyAsync(message.Chat,
             "Cancel command done. \nWhat do you want to do next?", cancellationToken: cancellationToken);
+    }
+
+    public Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 }

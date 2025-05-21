@@ -1,4 +1,5 @@
-﻿using BudgetBotTelegram.Model;
+﻿using BudgetBotTelegram.Enum;
+using BudgetBotTelegram.Model;
 
 namespace BudgetBotTelegram.Interface;
 
@@ -22,7 +23,8 @@ public interface IChatStateService
     /// Sets (creates or updates) the chat state for the given chatId.
     /// </summary>
     /// <param name="chatId">The Telegram chat ID.</param>
-    /// <param name="stateValue">The new state value.</param>
+    /// <param name="chatState">The new state value.</param>
+    /// <param name="commandName">The command tha will continue handling the chat.</param>
     /// <returns>The newly created or updated ChatState object.</returns>
-    Task<ChatState> SetStateAsync(long chatId, string stateValue);
+    Task<ChatState> SetStateAsync(long chatId, ChatStateEnum chatState, string commandName);
 }

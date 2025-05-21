@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using Amazon.Lambda.APIGatewayEvents;
 using SharedLibrary;
+using SharedLibrary.Dto;
 
 namespace ExpenseLoggerApi.AotTypes;
 

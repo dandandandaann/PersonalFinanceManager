@@ -1,4 +1,5 @@
-using SharedLibrary.UserClasses;
+using SharedLibrary.Dto;
+using SharedLibrary.Model;
 
 namespace BudgetBotTelegram.Interface;
 
@@ -15,7 +16,9 @@ public interface IUserApiClient
     /// <param name="email">The user's email (optional).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A response indicating success or failure, potentially including user details.</returns>
-    Task<UserResponse> SignupUserAsync(long telegramId, string? username, string? email, CancellationToken cancellationToken = default);
+    Task<UserSignupResponse> SignupUserAsync(long telegramId, string? username, string? email, CancellationToken cancellationToken = default);
 
-    Task<UserExistsResponse> CheckUserAsync(long telegramId, CancellationToken cancellationToken = default);
+    Task<UserGetResponse> FindUserByTelegramIdAsync(long telegramId, CancellationToken cancellationToken = default);
+
+    Task<bool> UpdateUserConfigurationAsync(string userId, UserConfiguration userConfiguration, CancellationToken cancellationToken);
 }

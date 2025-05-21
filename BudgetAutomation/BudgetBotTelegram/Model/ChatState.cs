@@ -35,6 +35,12 @@ namespace BudgetBotTelegram.Model
         [DynamoDBProperty("state")]
         public string? State { get; init; }
 
+        /// <summary>
+        /// The CommandName of the ICommand that is currently awaiting further input.
+        /// </summary>
+        [DynamoDBProperty("command")]
+        public string? ActiveCommand { get; set; }
+
         [DynamoDBProperty("timestamp")]
         public DateTime Timestamp { get; set; }
 

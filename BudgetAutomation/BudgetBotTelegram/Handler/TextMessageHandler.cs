@@ -1,5 +1,4 @@
-﻿using BudgetBotTelegram.Handler.Command;
-using BudgetBotTelegram.Interface;
+﻿using BudgetBotTelegram.Interface;
 using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Service;
 using SharedLibrary.Telegram;
@@ -10,9 +9,7 @@ public class TextMessageHandler(
     ILogger<MessageHandler> logger,
     ISenderGateway sender,
     IChatStateService chatStateService,
-    ILogCommand logCommand,
-    ISignupCommand signupCommand,
-    ICancelCommand cancelCommand) : ITextMessageHandler
+    IEnumerable<ICommand> commandImplementations) : ITextMessageHandler
 {
     public async Task<Message> HandleTextMessageAsync(Message message, CancellationToken cancellationToken = default)
     {
@@ -20,25 +17,44 @@ public class TextMessageHandler(
         ArgumentNullException.ThrowIfNull(message.Text);
         var messageText = message.Text;
 
-        if (messageText.StartsWith($"{LogCommand.CommandName} ", StringComparison.CurrentCultureIgnoreCase) ||
-            messageText.Equals(LogCommand.CommandName, StringComparison.CurrentCultureIgnoreCase))
-            return await logCommand.HandleLogAsync(message, cancellationToken);
+        // TODO: this is odd, try to change it
+        string[] parts = messageText.Split([' '], 2, StringSplitOptions.RemoveEmptyEntries);
 
-        if (messageText.Equals(SignupCommand.CommandName, StringComparison.CurrentCultureIgnoreCase))
-            return await signupCommand.HandleSignupAsync(message, cancellationToken);
+        var commandsByName = commandImplementations.ToDictionary(
+            cmd => cmd.CommandName.ToLowerInvariant(),
+            cmd => cmd
+        );
 
-        if (messageText.Equals(CancelCommand.CommandName, StringComparison.CurrentCultureIgnoreCase))
-            return await cancelCommand.HandleCancelAsync(message, cancellationToken);
+        if (parts.Length > 0)
+        {
+            var potentialCommandName = parts[0].ToLowerInvariant();
+            commandsByName.TryGetValue(potentialCommandName, out var commandToExecute);
+
+            // If a command is identified directly from the text
+            if (commandToExecute != null)
+            {
+                logger.LogInformation("Handling text as direct command: {CommandName}", commandToExecute.CommandName);
+                return await commandToExecute.HandleAsync(message, cancellationToken);
+            }
+        }
 
         if (!UserManagerService.UserLoggedIn)
             throw new UnauthorizedAccessException();
 
         (bool hasState, ChatState? chatState) = await chatStateService.HasState(message.Chat.Id);
+
         if (!hasState) // Default message
             return await sender.ReplyAsync(message.Chat, "You said:\n" + messageText, cancellationToken: cancellationToken);
 
-        if (chatState?.State == ChatStateService.StateEnum.AwaitingLogArguments.ToString())
-            return await logCommand.HandleLogAsync(message, chatState, cancellationToken);
+        if (chatState?.ActiveCommand != null)
+        {
+            if (commandsByName.TryGetValue(chatState.ActiveCommand.ToLowerInvariant(), out var statefulCommand))
+            {
+                logger.LogInformation("Handling text as continuation for command: {CommandName}, State: {State}",
+                    statefulCommand.CommandName, chatState.State);
+                return await statefulCommand.HandleAsync(message, chatState, cancellationToken);
+            }
+        }
 
         // TODO: handle state
         logger.LogError("Chat state is null or not implemented: {ChatState}", chatState?.State);
