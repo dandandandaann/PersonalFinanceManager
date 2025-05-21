@@ -25,26 +25,25 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
 
     public async Task<Expense> LogExpenseAsync(string spreadsheetId, Expense expense, CancellationToken cancellationToken = default)
     {
-        // Construct the URL with query parameters
+        _logger.LogInformation("Sending request /log-expense for '{Description}'.", expense.Description);
+
         var uriBuilder = new UriBuilder(_httpClient.BaseAddress!)
         {
             Path = "/log-expense",
             Query =
                 $"spreadsheetId={Uri.EscapeDataString(spreadsheetId)}" +
-                $"description={Uri.EscapeDataString(expense.Description)}" +
+                $"&description={Uri.EscapeDataString(expense.Description)}" +
                 $"&amount={Uri.EscapeDataString(expense.Amount)}" +
                 $"&category={Uri.EscapeDataString(expense.Category)}"
         };
 
-        // Create the request message
         var request = new HttpRequestMessage(HttpMethod.Put, uriBuilder.Uri);
 
         var response = await _httpClient.SendAsync(request, cancellationToken);
 
         response.EnsureSuccessStatusCode();
 
-        _logger.LogInformation(
-            $"Log expense request sent for {expense.Description}. Response: {response.StatusCode}");
+        _logger.LogInformation("Log expense request sent. Response code: {StatusCode}", response.StatusCode);
 
         if (response.Content is { Headers.ContentType.MediaType: "application/json" })
         {
@@ -60,14 +59,13 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
             _logger.LogError(
                 "Received successful status code but failed to deserialize Expense object from response body.");
         }
-        else if
-            (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+        else if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
         {
             _logger.LogError("Request successful, no content returned.");
         }
         else
         {
-            _logger.LogError($"Received successful status code {response.StatusCode} but content was null or not JSON.");
+            _logger.LogError("Received successful status code {StatusCode} but content was null or not JSON.", response.StatusCode);
         }
 
         return new Expense();

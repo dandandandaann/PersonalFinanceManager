@@ -8,5 +8,5 @@ public class UserGetResponse : ApiResponse
     public string? UserId { get; set; }
 
     [JsonPropertyName("user_configuration")]
-    public UserConfigurationResponse? userConfiguration { get; set; }
+    public UserConfigurationDto? userConfiguration { get; set; }
 }

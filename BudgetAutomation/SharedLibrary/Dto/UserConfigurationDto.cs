@@ -2,7 +2,7 @@
 
 namespace SharedLibrary.Dto;
 
-public class UserConfigurationResponse
+public class UserConfigurationDto
 {
     [JsonPropertyName("spreadsheet_id")]
     public string SpreadsheetId { get; set; }

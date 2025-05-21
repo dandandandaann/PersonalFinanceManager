@@ -81,6 +81,56 @@ public class Functions(IUserService userService)
     }
 
     /// <summary>
+    /// Creates a new user based on their Telegram ID if they don't already exist.
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="request">The signup request containing TelegramId and optional Username.</param>
+    /// <param name="context">Lambda context.</param>
+    /// <returns>HTTP result indicating success (Created or OK).</returns>
+    [LambdaFunction(
+        Policies = "AWSLambdaBasicExecutionRole, " +
+                   "arn:aws:iam::795287297286:policy/DB_user_CRUD, " +
+                   "arn:aws:iam::795287297286:policy/Configurations_Read",
+        MemorySize = 128,
+        Timeout = 10)]
+    [HttpApi(LambdaHttpMethod.Put, "/user/{userId}/configuration")]
+    public async Task<APIGatewayHttpApiV2ProxyResponse> UpdateUserConfigurationAsync(
+         string userId, [FromBody] UserConfigurationUpdateRequest request, ILambdaContext context)
+    {
+        var logger = context.Logger;
+        logger.LogInformation("UpdateUserConfigurationAsync: Received request for UserId: {UserId}", userId);
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            logger.LogWarning("UpdateUserConfigurationAsync: Invalid UserId received: {UserId}", userId);
+            return ApiResponse.BadRequest("Invalid UserId.");
+        }
+
+        try
+        {
+            var updatedUser = await userService.UpdateUserConfigurationAsync(userId,
+                new UserConfiguration { SpreadsheetId = request.UserConfiguration.SpreadsheetId }, logger
+            );
+
+            if (updatedUser == null)
+            {
+                logger.LogInformation("UpdateUserConfigurationAsync: User not found: {UserId}", userId);
+                return ApiResponse.NotFound("User does not exist.");
+            }
+
+            logger.LogInformation("UpdateUserConfigurationAsync: User configuration updated was successful: {UserId}", userId);
+
+            return ApiResponse.Ok(new UserConfigurationUpdateResponse { Success = true, Message = "User configuration updated." });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "UpdateUserConfigurationAsync: Error during update for UserId {UserId}.", userId);
+            return ApiResponse.InternalServerError("An error occurred during the configuration update.");
+        }
+    }
+
+
+    /// <summary>
     /// Retrieves a user by their Telegram ID. Exposed as an API endpoint.
     /// </summary>
     /// <param name="telegramId">User's Telegram ID.</param>
@@ -118,7 +168,7 @@ public class Functions(IUserService userService)
             }
 
             // TODO: create a data mapper
-            var userConfiguration = new UserConfigurationResponse();
+            var userConfiguration = new UserConfigurationDto();
             if (!string.IsNullOrEmpty(user.Configuration?.SpreadsheetId))
                 userConfiguration.SpreadsheetId = user.Configuration.SpreadsheetId;
 

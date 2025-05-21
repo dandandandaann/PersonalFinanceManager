@@ -11,8 +11,8 @@ namespace BudgetBotTelegram.Handler.Command;
 public partial class LogCommand(
     ISenderGateway sender,
     IExpenseLoggerApiClient expenseApiClient,
-    IChatStateService chatStateService,
-    SpreadsheetCommand spreadsheetCommand) : ICommand
+    IChatStateService chatStateService)
+    : ICommand
 {
     public string CommandName => "log";
 
@@ -39,7 +39,8 @@ public partial class LogCommand(
                 cancellationToken: cancellationToken);
         }
 
-        return await LogExpenseAsync(message.Chat, UserManagerService.Configuration.SpreadsheetId, expenseArguments, cancellationToken);
+        return await LogExpenseAsync(message.Chat, UserManagerService.Configuration.SpreadsheetId, expenseArguments,
+            cancellationToken);
     }
 
     public async Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken = default)
@@ -50,7 +51,7 @@ public partial class LogCommand(
         if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
         {
             return await sender.ReplyAsync(message.Chat,
-                $"Por favor configure sua planilha com o commando /{spreadsheetCommand.CommandName} antes de " +
+                $"Por favor configure sua planilha com o commando /{SpreadsheetCommand.StaticCommandName} antes de " +
                 $"usar o comando /{CommandName}.",
                 cancellationToken: cancellationToken);
         }
@@ -61,7 +62,8 @@ public partial class LogCommand(
 
         if (chatState.State == ChatStateEnum.AwaitingArguments.ToString())
         {
-            return await LogExpenseAsync(message.Chat, UserManagerService.Configuration.SpreadsheetId, message.Text, cancellationToken);
+            return await LogExpenseAsync(message.Chat, UserManagerService.Configuration.SpreadsheetId, message.Text,
+                cancellationToken);
         }
 
         return await sender.ReplyAsync(message.Chat, $"Log state {chatState.State} not implemented.",
@@ -80,7 +82,7 @@ public partial class LogCommand(
         if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
         {
             return await sender.ReplyAsync(chat,
-                $"Por favor configure sua planilha com o commando /{spreadsheetCommand.CommandName} antes de " +
+                $"Por favor configure sua planilha com o commando /{SpreadsheetCommand.StaticCommandName} antes de " +
                 $"usar o comando /{CommandName}.",
                 cancellationToken: cancellationToken);
         }
@@ -140,7 +142,7 @@ public partial class LogCommand(
     {
         arguments = "";
         string commandWithSlash = "/" + commandName;
-        int prefixLength = -1;
+        int prefixLength;
 
         // Check if it starts with "/command" (case-insensitive)
         if (text.StartsWith(commandWithSlash, StringComparison.OrdinalIgnoreCase))

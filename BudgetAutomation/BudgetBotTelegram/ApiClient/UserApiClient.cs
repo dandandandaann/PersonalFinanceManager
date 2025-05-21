@@ -143,7 +143,9 @@ public class UserApiClient : IUserApiClient
         string userId, UserConfiguration userConfiguration, CancellationToken cancellationToken)
     {
         var requestUri = new Uri(_httpClient.BaseAddress!, $"/user/{userId}/configuration");
-        var configurationUpdateRequest = new UserConfigurationUpdateRequest(userId, userConfiguration);
+        var configurationUpdateRequest = new UserConfigurationUpdateRequest(
+            new UserConfigurationDto { SpreadsheetId = userConfiguration.SpreadsheetId }
+        );
 
         _logger.LogInformation("Sending Configuration Update request for UserId {UserId}", userId);
 

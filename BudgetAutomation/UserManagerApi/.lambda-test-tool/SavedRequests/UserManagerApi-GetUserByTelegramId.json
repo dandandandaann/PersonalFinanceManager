@@ -1,0 +1,40 @@
+{
+  "version": "2.0",
+  "routeKey": "$default",
+  "rawPath": "/user/telegram/943790260",
+  "rawQueryString": "",
+  "cookies": [],
+  "headers": {
+    "Host": "localhost:5011",
+    "User-Agent": "PostmanRuntime/7.32.2",
+    "Accept": "*/*"
+  },
+  "queryStringParameters": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "api-id",
+    "authentication": null,
+    "authorizer": null,
+    "domainName": "localhost",
+    "domainPrefix": "",
+    "http": {
+      "method": "GET",
+      "path": "/user/telegram/943790260",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1",
+      "userAgent": "PostmanRuntime/7.32.2"
+    },
+    "requestId": "request-id",
+    "routeId": "route-id",
+    "routeKey": "$default",
+    "stage": "$default",
+    "time": "20/May/2025:12:00:00 +0000",
+    "timeEpoch": 1747742400000
+  },
+  "body": null,
+  "pathParameters": {
+    "telegramId": "943790260"
+  },
+  "isBase64Encoded": false,
+  "stageVariables": null
+}

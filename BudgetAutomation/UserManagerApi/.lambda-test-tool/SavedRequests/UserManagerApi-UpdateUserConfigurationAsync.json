@@ -1,0 +1,41 @@
+{
+  "version": "2.0",
+  "routeKey": "$default",
+  "rawPath": "/user/30c554dc-c9b9-4ed1-a563-ef8cb24a06fb/configuration",
+  "rawQueryString": "",
+  "cookies": [],
+  "headers": {
+    "Content-Type": "application/json",
+    "Host": "localhost:5011",
+    "User-Agent": "curl/7.79.1",
+    "Accept": "*/*"
+  },
+  "queryStringParameters": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "api-id",
+    "authentication": null,
+    "authorizer": null,
+    "domainName": "localhost",
+    "domainPrefix": "",
+    "http": {
+      "method": "PUT",
+      "path": "/user/30c554dc-c9b9-4ed1-a563-ef8cb24a06fb/configuration",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1",
+      "userAgent": "curl/7.79.1"
+    },
+    "requestId": "request-id",
+    "routeId": "route-id",
+    "routeKey": "$default",
+    "stage": "$default",
+    "time": "20/May/2025:12:00:00 +0000",
+    "timeEpoch": 1747742400000
+  },
+  "body": "{\n    \"user_configuration\": {\n        \"spreadsheet_id\": \"1ynQOo4OXvZxFD0lsA1RTE8zLvtwF3wKXGQqBe5Zlgtw\"\n    }\n}",
+  "pathParameters": {
+    "userId": "30c554dc-c9b9-4ed1-a563-ef8cb24a06fb"
+  },
+  "isBase64Encoded": false,
+  "stageVariables": null
+}

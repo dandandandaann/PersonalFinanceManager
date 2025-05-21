@@ -12,6 +12,7 @@ public class UserManagerService(IUserApiClient userApiClient) : IUserManagerServ
         get => CurrentUser.Value;
         set => CurrentUser.Value = value!;
     }
+
     public static bool UserLoggedIn => !string.IsNullOrWhiteSpace(Current?.UserId);
 
     public static UserConfiguration Configuration => Current?.Configuration ?? new UserConfiguration();
@@ -35,7 +36,8 @@ public class UserManagerService(IUserApiClient userApiClient) : IUserManagerServ
 
         Current = new User(registeredUser.UserId, telegramId: telegramId);
 
-        Current.Configuration ??= new UserConfiguration();
+        if (registeredUser.userConfiguration != null)
+            Current.Configuration.SpreadsheetId = registeredUser.userConfiguration.SpreadsheetId;
 
         return true;
     }

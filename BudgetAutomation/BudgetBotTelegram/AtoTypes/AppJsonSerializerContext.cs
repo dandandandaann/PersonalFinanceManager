@@ -6,7 +6,7 @@ namespace BudgetBotTelegram.AtoTypes;
 
 [JsonSerializable(typeof(ApiResponse))]
 [JsonSerializable(typeof(LogExpenseResponse))]
-[JsonSerializable(typeof(UserConfigurationResponse))]
+[JsonSerializable(typeof(UserConfigurationDto))]
 [JsonSerializable(typeof(UserConfigurationUpdateRequest))]
 [JsonSerializable(typeof(UserConfigurationUpdateResponse))]
 [JsonSerializable(typeof(UserGetResponse))]

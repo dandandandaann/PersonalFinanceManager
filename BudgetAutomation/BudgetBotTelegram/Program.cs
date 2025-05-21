@@ -74,6 +74,7 @@ services.AddScoped<ICommandHandler, CommandHandler>();
 services.AddScoped<ICommand, LogCommand>();
 services.AddScoped<ICommand, CancelCommand>();
 services.AddScoped<ICommand, SignupCommand>();
+services.AddScoped<ICommand, SpreadsheetCommand>();
 
 services.AddTransient<SqsUpdateProcessor>();
 
