@@ -14,7 +14,30 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
         var spreadsheet = await request.ExecuteAsync();
 
         var sheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == sheetName);
-        return sheet?.Properties.SheetId ?? throw new Exception("Sheet not found!");
+
+        if(sheet == null)
+        {
+            var templateSheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == "Template");
+
+            var duplicateRequest = new DuplicateSheetRequest
+            {
+                SourceSheetId = templateSheet?.Properties.SheetId,
+                NewSheetName = sheetName
+            };
+
+            var duplicateSheetRequest = new Request { DuplicateSheet = duplicateRequest };
+            var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
+            {
+                Requests = new List<Request> { duplicateSheetRequest }
+            };
+
+            var response = await sheetsService.Spreadsheets
+                .BatchUpdate(batchUpdateRequest, spreadsheetId)
+                .ExecuteAsync();
+
+            return response.Replies.First().DuplicateSheet.Properties.SheetId.Value;
+        }
+        return sheet.Properties.SheetId.Value;
     }
 
     public async Task<int> FindFirstEmptyRowAsync(string spreadsheetId, string sheetName, string column, int startRow)
