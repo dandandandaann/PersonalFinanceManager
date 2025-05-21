@@ -113,8 +113,8 @@ public class UserApiClient : IUserApiClient
             if (userGetResponse is not { Success: true })
             {
                 _logger.LogError(
-                    "Received success status code but failed to deserialize UserExistsResponse for TelegramId {TelegramId}",
-                    telegramId);
+                    "Received success status code but failed to deserialize {ResponseObject} for TelegramId {TelegramId}",
+                    typeof(UserGetResponse), telegramId);
                 return new UserGetResponse { Success = false };
             }
 

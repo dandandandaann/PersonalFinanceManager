@@ -1,5 +1,6 @@
 using BudgetBotTelegram.AtoTypes;
 using BudgetBotTelegram.Interface;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Model;
 using SharedLibrary.Settings;
@@ -23,21 +24,26 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
         _httpClient.DefaultRequestHeaders.Add("x-api-key", options.Value.Key);
     }
 
-    public async Task<Expense> LogExpenseAsync(string spreadsheetId, Expense expense, CancellationToken cancellationToken = default)
+    public async Task<Expense> LogExpenseAsync(
+        string spreadsheetId, Expense expense, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Sending request /log-expense for '{Description}'.", expense.Description);
 
-        var uriBuilder = new UriBuilder(_httpClient.BaseAddress!)
+        var endpointUri = new Uri(_httpClient.BaseAddress!, "log-expense");
+
+        var queryParams = new Dictionary<string, string?>
         {
-            Path = "/log-expense",
-            Query =
-                $"spreadsheetId={Uri.EscapeDataString(spreadsheetId)}" +
-                $"&description={Uri.EscapeDataString(expense.Description)}" +
-                $"&amount={Uri.EscapeDataString(expense.Amount)}" +
-                $"&category={Uri.EscapeDataString(expense.Category)}"
+            ["spreadsheetId"] = spreadsheetId,
+            ["description"] = expense.Description,
+            ["amount"] = expense.Amount,
+            ["category"] = expense.Category
         };
 
-        var request = new HttpRequestMessage(HttpMethod.Put, uriBuilder.Uri);
+        var request = new HttpRequestMessage
+        (
+            HttpMethod.Put,
+            QueryHelpers.AddQueryString(endpointUri.ToString(), queryParams)
+        );
 
         var response = await _httpClient.SendAsync(request, cancellationToken);
 
@@ -65,7 +71,7 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
         }
         else
         {
-            _logger.LogError("Received successful status code {StatusCode} but content was null or not JSON.", response.StatusCode);
+            _logger.LogError("Received status code {StatusCode}, but content was null or not JSON.", response.StatusCode);
         }
 
         return new Expense();
