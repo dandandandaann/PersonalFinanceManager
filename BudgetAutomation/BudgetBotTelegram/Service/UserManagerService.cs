@@ -13,7 +13,14 @@ public class UserManagerService(IUserApiClient userApiClient) : IUserManagerServ
         set => CurrentUser.Value = value!;
     }
 
-    public static bool UserLoggedIn => !string.IsNullOrWhiteSpace(Current?.UserId);
+    public static bool UserSignedIn => !string.IsNullOrWhiteSpace(Current?.UserId);
+
+    public static void EnsureUserSignedIn()
+    {
+        if (!UserSignedIn)
+            throw new UnauthorizedAccessException();
+    }
+
 
     public static UserConfiguration Configuration => Current?.Configuration ?? new UserConfiguration();
 

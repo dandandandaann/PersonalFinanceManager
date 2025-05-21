@@ -1,6 +1,5 @@
 using Xunit;
 using Amazon.Lambda.TestUtilities;
-using Moq;
 
 
 namespace TelegramListener.Tests;

@@ -37,6 +37,8 @@ public class CommandHandler(
             return await commandToExecute.HandleAsync(message, cancellationToken);
         }
 
+        UserManagerService.EnsureUserSignedIn();
+
         return await sender.ReplyAsync(
             message.Chat,
             "Command not recognized.",

@@ -243,14 +243,13 @@ public class ExpenseLoggerServiceTests : IDisposable
         var customService = new ExpenseLoggerService(
             _mockSheetsAccessor.Object,
             customCategories,
-            SpreadsheetId,
             _mockLogger.Object
         );
 
         SetupSuccessfulSheetsApiFlow(expectedRow);
 
         // Act
-        var result = await customService.LogExpense(description, amount, userCategory);
+        var result = await customService.LogExpense(SpreadsheetId, description, amount, userCategory);
 
         // Assert
         result.ShouldNotBeNull();
@@ -277,7 +276,6 @@ public class ExpenseLoggerServiceTests : IDisposable
         var service = new ExpenseLoggerService(
             _mockSheetsAccessor.Object,
             categories,
-            SpreadsheetId,
             _mockLogger.Object
         );
 

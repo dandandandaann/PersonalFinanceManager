@@ -2,6 +2,7 @@ using BudgetBotTelegram.AtoTypes;
 using BudgetBotTelegram.Interface;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
+using SharedLibrary.Dto;
 using SharedLibrary.Model;
 using SharedLibrary.Settings;
 
@@ -62,8 +63,8 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
                 return responseExpense.expense;
             }
 
-            _logger.LogError(
-                "Received successful status code but failed to deserialize Expense object from response body.");
+            _logger.LogError("Received successful status code but failed to deserialize {ResponseObject} from response body.",
+                typeof(LogExpenseResponse));
         }
         else if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
         {

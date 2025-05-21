@@ -1,5 +1,5 @@
 ﻿using BudgetBotTelegram.Interface;
-using BudgetBotTelegram.Model;
+using BudgetBotTelegram.Misc;
 using BudgetBotTelegram.Service;
 using SharedLibrary.Telegram;
 using SharedLibrary.Telegram.Enums;
@@ -11,7 +11,6 @@ public class UpdateHandler(
     IMessageHandler messageHandler,
     ILogger<UpdateHandler> logger) : IUpdateHandler
 {
-
     public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken = default)
     {
         var handler = update.Type switch
@@ -32,16 +31,19 @@ public class UpdateHandler(
             var message = update.Message ?? update.CallbackQuery!.Message;
 
             await sender.ReplyAsync(message!.Chat, "Please signup to proceed.",
-                $"UnauthorizedAccessException: {e.Message}. User message: {message.Text}.",
+                $"UnauthorizedAccessException: {e.Message} User message: {message.Text}.",
                 logLevel: LogLevel.Warning,
                 cancellationToken: cancellationToken);
-
         }
         catch (InvalidUserInputException e)
         {
             var message = update.Message ?? update.CallbackQuery!.Message;
 
-            await sender.ReplyAsync(message!.Chat, "Your message was invalid somehow. Please try something else.",
+            var replyMessage = string.IsNullOrWhiteSpace(e.Message) ?
+                "Your message was invalid somehow. Please try something else." :
+                e.Message;
+
+            await sender.ReplyAsync(message!.Chat, replyMessage,
                 $"InvalidUserInputException: {e.Message}. User message: {message.Text}.",
                 logLevel: LogLevel.Information,
                 cancellationToken: cancellationToken);

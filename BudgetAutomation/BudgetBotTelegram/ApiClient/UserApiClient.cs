@@ -51,23 +51,23 @@ public class UserApiClient : IUserApiClient
                 return new UserSignupResponse { Success = false };
             }
 
-            var userResponse = await response.Content.ReadFromJsonAsync(
+            var userSignupResponse = await response.Content.ReadFromJsonAsync(
                 jsonTypeInfo: AppJsonSerializerContext.Default.UserSignupResponse,
                 cancellationToken: cancellationToken);
 
-            if (userResponse is not { Success: true, User: not null })
+            if (userSignupResponse is not { Success: true, User.UserId: not null })
             {
                 _logger.LogError(
-                    "Received success status code but failed to deserialize UserResponse for TelegramId {TelegramId}",
-                    telegramId);
+                    "Received success status code but failed to deserialize {ResponseObject} for TelegramId {TelegramId}",
+                    typeof(UserSignupResponse), telegramId);
                 return new UserSignupResponse { Success = false };
             }
 
             // --
 
             _logger.LogInformation("Signup successful for TelegramId {TelegramId}. User ID: {UserId}",
-                telegramId, userResponse.User.UserId);
-            return userResponse;
+                telegramId, userSignupResponse.User.UserId);
+            return userSignupResponse;
         }
         catch (HttpRequestException ex)
         {
@@ -90,7 +90,7 @@ public class UserApiClient : IUserApiClient
     {
         var requestUri = new Uri(_httpClient.BaseAddress!, $"/user/telegram/{telegramId}");
 
-        _logger.LogInformation("Sending signup request for TelegramId {TelegramId} to {RequestUri}", telegramId,
+        _logger.LogInformation("Sending get request for TelegramId {TelegramId} to {RequestUri}", telegramId,
             requestUri);
 
         try
@@ -112,10 +112,20 @@ public class UserApiClient : IUserApiClient
 
             if (userGetResponse is not { Success: true })
             {
-                _logger.LogError(
-                    "Received success status code but failed to deserialize {ResponseObject} for TelegramId {TelegramId}",
-                    typeof(UserGetResponse), telegramId);
+                if (userGetResponse is null)
+                {
+                    _logger.LogError(
+                        "Received success status code but failed to deserialize {ResponseObject} for TelegramId {TelegramId}",
+                        typeof(UserGetResponse), telegramId);
+                    return new UserGetResponse { Success = false };
+                }
+
+                if (userGetResponse.Message == "user not found")
+                    return userGetResponse;
+
+                _logger.LogWarning("User not found for TelegramId {TelegramId}", telegramId);
                 return new UserGetResponse { Success = false };
+
             }
 
             _logger.LogInformation("Signup successful for TelegramId {TelegramId}. User ID: {UserId}",
@@ -147,7 +157,7 @@ public class UserApiClient : IUserApiClient
             new UserConfigurationDto { SpreadsheetId = userConfiguration.SpreadsheetId }
         );
 
-        _logger.LogInformation("Sending Configuration Update request for UserId {UserId}", userId);
+        _logger.LogInformation("Sending configuration update request for UserId {UserId}", userId);
 
         try
         {
@@ -171,9 +181,8 @@ public class UserApiClient : IUserApiClient
 
             if (configurationUpdateResponse is not { Success: true })
             {
-                _logger.LogError(
-                    "Received success status code but failed to deserialize UserResponse for UserId {UserId}",
-                    userId);
+                _logger.LogError("Received success status code but failed to deserialize {ResponseObject} for UserId {UserId}",
+                    typeof(UserConfigurationUpdateResponse), userId);
                 return false;
             }
 

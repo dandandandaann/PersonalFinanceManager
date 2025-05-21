@@ -1,6 +1,5 @@
 using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.SQS;
-using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

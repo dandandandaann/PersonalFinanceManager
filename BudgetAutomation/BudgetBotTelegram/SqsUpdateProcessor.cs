@@ -67,7 +67,8 @@ public class SqsUpdateProcessor(IUpdateHandler updateHandler, ILogger<SqsUpdateP
         }
         catch (JsonException ex)
         {
-            logger.LogError(ex, "Failed to deserialize Telegram Update from SQS message body. Body: {Body}", sqsMessage.Body);
+            logger.LogError(ex, "Failed to deserialize {ResponseObject} from SQS message body. Body: {Body}",
+                typeof(Telegram.Bot.Types.Update), sqsMessage.Body);
             throw; // Re-throw to be caught by the outer handler and potentially go to DLQ
         }
 

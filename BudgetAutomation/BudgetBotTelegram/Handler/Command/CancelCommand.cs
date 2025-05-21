@@ -14,8 +14,7 @@ public class CancelCommand(ISenderGateway sender, IChatStateService chatStateSer
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(message.Text);
 
-        if (!UserManagerService.UserLoggedIn)
-            throw new UnauthorizedAccessException();
+        UserManagerService.EnsureUserSignedIn();
 
         await chatStateService.ClearState(message.Chat.Id);
 
