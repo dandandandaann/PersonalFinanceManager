@@ -1,4 +1,4 @@
-﻿// using BudgetBotTelegram.Interface;
+﻿// using BudgetAutomation.Engine.Interface;
 // using Microsoft.AspNetCore.Hosting;
 // using Microsoft.AspNetCore.Mvc.Testing;
 // using Microsoft.Extensions.Configuration;
@@ -6,7 +6,7 @@
 // using Microsoft.Extensions.Hosting;
 // using Moq;
 //
-// namespace BudgetBotTelegram.Tests.IntegrationTest.Webhook
+// namespace BudgetAutomation.Engine.Tests.IntegrationTest.Webhook
 // {
 //     public class CustomWebApplicationFactory : WebApplicationFactory<Other.Program>
 //     {

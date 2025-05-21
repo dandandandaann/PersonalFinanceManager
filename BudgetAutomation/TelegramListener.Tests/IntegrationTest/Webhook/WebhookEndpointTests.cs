@@ -6,7 +6,7 @@
 // using Telegram.Bot.Types;
 // using Xunit;
 //
-// namespace BudgetBotTelegram.Tests.IntegrationTest.Webhook;
+// namespace BudgetAutomation.Engine.Tests.IntegrationTest.Webhook;
 //
 // public class WebhookEndpointTests : IClassFixture<CustomWebApplicationFactory>
 // {
