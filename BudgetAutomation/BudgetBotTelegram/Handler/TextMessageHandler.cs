@@ -38,8 +38,7 @@ public class TextMessageHandler(
             }
         }
 
-        if (!UserManagerService.UserLoggedIn)
-            throw new UnauthorizedAccessException();
+        UserManagerService.EnsureUserSignedIn();
 
         (bool hasState, ChatState? chatState) = await chatStateService.HasState(message.Chat.Id);
 

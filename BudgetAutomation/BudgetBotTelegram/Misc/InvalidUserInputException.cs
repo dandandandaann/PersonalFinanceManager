@@ -1,4 +1,4 @@
-﻿namespace BudgetBotTelegram.Model;
+﻿namespace BudgetBotTelegram.Misc;
 
 public class InvalidUserInputException : Exception
 {

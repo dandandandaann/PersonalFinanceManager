@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using BudgetBotTelegram.Enum;
 using BudgetBotTelegram.Interface;
+using BudgetBotTelegram.Misc;
 using BudgetBotTelegram.Model;
 using BudgetBotTelegram.Service;
 using SharedLibrary.Model;
@@ -21,8 +22,7 @@ public partial class LogCommand(
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(message.Text);
 
-        if (!UserManagerService.UserLoggedIn)
-            throw new UnauthorizedAccessException();
+        UserManagerService.EnsureUserSignedIn();
 
         if (!TryExtractCommandArguments(message.Text, CommandName, out string expenseArguments))
         {
@@ -45,8 +45,7 @@ public partial class LogCommand(
 
     public async Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken = default)
     {
-        if (!UserManagerService.UserLoggedIn)
-            throw new UnauthorizedAccessException();
+        UserManagerService.EnsureUserSignedIn();
 
         if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
         {
@@ -76,8 +75,7 @@ public partial class LogCommand(
     private async Task<Message> LogExpenseAsync(Chat chat, string spreadsheetId, string expenseArguments,
         CancellationToken cancellationToken = default)
     {
-        if (!UserManagerService.UserLoggedIn)
-            throw new UnauthorizedAccessException();
+        UserManagerService.EnsureUserSignedIn();
 
         if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
         {

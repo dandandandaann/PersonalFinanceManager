@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using Amazon.DynamoDBv2.DataModel;
+﻿using Amazon.DynamoDBv2.DataModel;
 
 namespace SharedLibrary.Model;
 

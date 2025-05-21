@@ -28,7 +28,7 @@ public class GoogleSheetsClientFactory(ILogger<GoogleSheetsClientFactory> logger
 
             if (credentialParameters == null)
             {
-                logger.LogError("Failed to deserialize credentials JSON.");
+                logger.LogError("Failed to deserialize {ResponseObject}.", typeof(JsonCredentialParameters));
                 throw new InvalidOperationException("Could not deserialize credentials JSON.");
             }
 

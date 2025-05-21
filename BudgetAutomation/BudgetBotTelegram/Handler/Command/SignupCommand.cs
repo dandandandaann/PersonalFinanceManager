@@ -17,17 +17,27 @@ public partial class SignupCommand(
     public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
-        ArgumentNullException.ThrowIfNull(message.From, nameof(message.From));
+        ArgumentNullException.ThrowIfNull(message.From);
         ArgumentNullException.ThrowIfNull(message.Text);
 
         var telegramId = message.From.Id;
         var username = message.From.Username;
 
         // Send an initial reply indicating the process has started
-        _ = sender.ReplyAsync(
+        var replyAttempting = sender.ReplyAsync(
             message.Chat,
             "Attempting to sign you up...", "Signup process started.",
             cancellationToken: cancellationToken);
+
+        if (UserManagerService.UserSignedIn)
+        {
+            await replyAttempting;
+            return await sender.ReplyAsync(message.Chat,
+                "Signup failed. You are already signed in.",
+                "User signup failed (already signed in).",
+                logLevel: LogLevel.Warning,
+                cancellationToken: cancellationToken);
+        }
 
         try
         {
@@ -35,23 +45,6 @@ public partial class SignupCommand(
                 !Utility.TryExtractCommandArguments(message.Text, CommandName, EmailRegex, out var signupArguments) ||
                 string.IsNullOrWhiteSpace(signupArguments)
                 )
-            {
-                throw new InvalidUserInputException($"Message text doesn't start with {CommandName} command.");
-            }
-
-            var existingId = await userApiClient.CheckUserAsync(telegramId);
-
-            if (existingId.Success)
-            {
-                return await sender.ReplyAsync(message.Chat,
-                   "Signup failed. You might already be registered.",
-                   "User signup failed (already exists or API error).",
-                   logLevel: LogLevel.Warning,
-                   cancellationToken: cancellationToken);
-            }
-
-            if (string.IsNullOrWhiteSpace(signupArguments) ||
-                !EmailRegex().IsMatch(signupArguments))
             {
                 return await sender.ReplyAsync(message.Chat,
                     "Please include your email for signing up.",

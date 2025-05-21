@@ -4,7 +4,6 @@ using Amazon.Lambda.Annotations.APIGateway;
 using Amazon.Lambda.APIGatewayEvents;
 using SharedLibrary.Dto;
 using SharedLibrary.Model;
-using SharedLibrary.Utility;
 using UserManagerApi.Service;
 using ApiResponse = SharedLibrary.Utility.ApiResponse;
 
@@ -163,7 +162,7 @@ public class Functions(IUserService userService)
             {
                 logger.LogInformation("GetUserByTelegramIdAsync: User not found for TelegramId: {telegramIdNumber}", telegramId);
                 // For a GET, returning 404 Not Found is often more idiomatic than 200 OK with a "success: false" body.
-                return ApiResponse.Ok(new UserGetResponse { Success = false, Message = "User not found." });
+                return ApiResponse.Ok(new UserGetResponse { Success = false, Message = "user not found" });
                 // return ApiResponse.NotFound("User not found.");
             }
 

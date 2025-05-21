@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using ExpenseLoggerApi.Interface;
 using Google.Apis.Sheets.v4.Data;
-using SharedLibrary;
 using SharedLibrary.Model;
 
 namespace ExpenseLoggerApi.Service;

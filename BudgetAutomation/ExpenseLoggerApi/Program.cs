@@ -5,7 +5,6 @@ using ExpenseLoggerApi.Interface;
 using ExpenseLoggerApi.Service;
 using Google.Apis.Sheets.v4;
 using Microsoft.AspNetCore.Mvc;
-using SharedLibrary;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Dto;
 using SharedLibrary.Settings;
