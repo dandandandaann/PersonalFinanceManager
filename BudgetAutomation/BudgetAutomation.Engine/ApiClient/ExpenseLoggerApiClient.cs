@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using SharedLibrary.Dto;
 using SharedLibrary.Model;
 using SharedLibrary.Settings;
+using Telegram.Bot.Types.Payments;
 
 namespace BudgetAutomation.Engine.ApiClient;
 
@@ -25,7 +26,7 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
         _httpClient.DefaultRequestHeaders.Add("x-api-key", options.Value.Key);
     }
 
-    public async Task<Expense> LogExpenseAsync(
+    public async Task<LogExpenseResponse> LogExpenseAsync(
         string spreadsheetId, Expense expense, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Sending request /log-expense for '{Description}'.", expense.Description);
@@ -48,6 +49,12 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
 
         var response = await _httpClient.SendAsync(request, cancellationToken);
 
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogError("Failed to create log for Spreadsheet {SpreadsheetId}", spreadsheetId);
+            return new LogExpenseResponse { Success = false };
+        }
+        
         response.EnsureSuccessStatusCode();
 
         _logger.LogInformation("Log expense request sent. Response code: {StatusCode}", response.StatusCode);
@@ -60,7 +67,7 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
 
             if (responseExpense?.expense != null)
             {
-                return responseExpense.expense;
+                return responseExpense;
             }
 
             _logger.LogError("Received successful status code but failed to deserialize {ResponseObject} from response body.",
@@ -75,6 +82,6 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
             _logger.LogError("Received status code {StatusCode}, but content was null or not JSON.", response.StatusCode);
         }
 
-        return new Expense();
+        return new LogExpenseResponse();
     }
 }
