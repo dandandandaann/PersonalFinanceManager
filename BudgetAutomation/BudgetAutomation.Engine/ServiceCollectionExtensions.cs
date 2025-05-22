@@ -1,4 +1,4 @@
-using Amazon;
+﻿using Amazon;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.SQS;
@@ -14,22 +14,12 @@ using Telegram.Bot;
 
 namespace BudgetAutomation.Engine;
 
-[Amazon.Lambda.Annotations.LambdaStartup]
-public class Startup
+public static class ServiceCollectionExtensions
 {
-    public void ConfigureServices(IServiceCollection services)
+    public static IServiceCollection AddBudgetAutomationCoreServices(
+        this IServiceCollection services,
+        IConfiguration config) // Pass in the fully built configuration
     {
-        var configBuilder = new ConfigurationBuilder();
-
-        // Local development settings
-        var isLocalDev = SharedLibrary.LocalDevelopment.SamStart.IsLocalDev();
-        var devPrefix = isLocalDev ? "dev-" : "";
-
-        // Configure AWS Parameter Store
-        configBuilder.AddSystemsManager($"/{devPrefix}{BudgetAutomationSettings.Configuration}/");
-
-        var config = configBuilder.Build();
-
         // Configure AWS Services
         services.AddAWSService<IAmazonSQS>();
         services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(RegionEndpoint.USEast2));
@@ -86,5 +76,7 @@ public class Startup
         services.AddScoped<ICommand, CancelCommand>();
         services.AddScoped<ICommand, SignupCommand>();
         services.AddScoped<ICommand, SpreadsheetCommand>();
+
+        return services;
     }
 }

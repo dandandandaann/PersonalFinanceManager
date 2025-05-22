@@ -15,7 +15,8 @@ public partial class LogCommand(
     IChatStateService chatStateService)
     : ICommand
 {
-    public string CommandName => "log";
+    public string CommandName => StaticCommandName;
+    public static string StaticCommandName => "log";
 
     public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
@@ -23,6 +24,14 @@ public partial class LogCommand(
         ArgumentNullException.ThrowIfNull(message.Text);
 
         UserManagerService.EnsureUserSignedIn();
+
+        if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
+        {
+            return await sender.ReplyAsync(message.Chat,
+                $"Por favor configure sua planilha com o commando /{SpreadsheetCommand.StaticCommandName} antes de " +
+                $"usar o comando /{CommandName}.",
+                cancellationToken: cancellationToken);
+        }
 
         if (!TryExtractCommandArguments(message.Text, CommandName, out string expenseArguments))
         {
@@ -46,14 +55,6 @@ public partial class LogCommand(
     public async Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken = default)
     {
         UserManagerService.EnsureUserSignedIn();
-
-        if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
-        {
-            return await sender.ReplyAsync(message.Chat,
-                $"Por favor configure sua planilha com o commando /{SpreadsheetCommand.StaticCommandName} antes de " +
-                $"usar o comando /{CommandName}.",
-                cancellationToken: cancellationToken);
-        }
 
         ArgumentException.ThrowIfNullOrEmpty(message.Text);
 

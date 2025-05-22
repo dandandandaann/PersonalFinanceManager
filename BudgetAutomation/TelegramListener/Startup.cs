@@ -28,6 +28,7 @@ public class Startup
         if (isLocalDev)
         {
             configBuilder.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+            Console.WriteLine("Start with local development settings.");
         }
 
         var config = configBuilder.Build();

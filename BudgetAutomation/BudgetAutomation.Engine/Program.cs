@@ -1,87 +1,26 @@
-using Amazon;
-using Amazon.DynamoDBv2;
-using Amazon.DynamoDBv2.DataModel;
-using Amazon.Lambda.Serialization.SystemTextJson;
-using Amazon.SQS;
 using BudgetAutomation.Engine;
-using BudgetAutomation.Engine.ApiClient;
-using BudgetAutomation.Engine.AtoTypes;
-using BudgetAutomation.Engine.Handler;
-using BudgetAutomation.Engine.Handler.Command;
-using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Misc;
-using BudgetAutomation.Engine.Service;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;
 using SharedLibrary.Validator;
-using Telegram.Bot;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = Host.CreateApplicationBuilder(args);
 var services = builder.Services;
-var config = builder.Configuration;
 
-var isLocalDev = builder.Environment.IsDevelopment() ? "dev-" : "";
+var configBuilder = new ConfigurationBuilder();
 
-// Configure AWS Parameter Store ---
-config.AddSystemsManager($"/{isLocalDev}{BudgetAutomationSettings.Configuration}/");
+var localDevelopment = builder.Environment.IsDevelopment();
+// Local development settings
+var devPrefix = localDevelopment ? "dev-" : "";
 
-// Bind Bot configuration ---
-services.Configure<TelegramBotSettings>(config.GetSection(TelegramBotSettings.Configuration));
-services.AddSingleton<IValidateOptions<TelegramBotSettings>, TelegramBotSettingsValidator>();
+// Configure AWS Parameter Store
+configBuilder.AddSystemsManager($"/{devPrefix}{BudgetAutomationSettings.Configuration}/");
 
-builder.Services.Configure<TelegramBotSettings>(config.GetSection(TelegramBotSettings.Configuration));
-// Register typed HttpClient directly (optional, but good practice if you need custom HttpClient settings)
-builder.Services.AddHttpClient("telegram_bot_client")
-    .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
-    {
-        var botConfig = sp.GetRequiredService<IOptions<TelegramBotSettings>>().Value;
-        TelegramBotClientOptions options = new(botConfig.Token);
-        return new TelegramBotClient(options, httpClient);
-    });
-// .SetHandlerLifetime(TimeSpan.FromMinutes(5)); // Configure lifetime as needed
+var config = configBuilder.Build();
 
-services.Configure<ExpenseLoggerApiClientSettings>(config.GetSection(ExpenseLoggerApiClientSettings.Configuration));
-services.AddSingleton<IValidateOptions<ExpenseLoggerApiClientSettings>, ExpenseLoggerApiClientSettingsValidator>();
-services.AddHttpClient<IExpenseLoggerApiClient, ExpenseLoggerApiClient>();
+builder.Services.AddBudgetAutomationCoreServices(config);
 
-services.Configure<UserApiClientSettings>(config.GetSection(UserApiClientSettings.Configuration));
-services.AddHttpClient<IUserApiClient, UserApiClient>();
-
-// Register AWS Services ---
-services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(RegionEndpoint.USEast2));
-services.AddScoped<IDynamoDBContext>(sp =>
-{
-    var client = sp.GetRequiredService<IAmazonDynamoDB>();
-    var contextBuilder = new DynamoDBContextBuilder()
-        .WithDynamoDBClient(() => client);
-    // contextBuilder = contextBuilder.WithTableNamePrefix("DEV_");
-    return contextBuilder.Build();
-});
-builder.Services.AddAWSService<IAmazonSQS>();
-
-services.AddScoped<IChatStateService, ChatStateService>();
-services.AddScoped<IUserManagerService, UserManagerService>();
-
-services.AddSingleton<ISenderGateway, SenderGateway>();
-
-// Register handlers ---
-services.AddScoped<IUpdateHandler, UpdateHandler>();
-services.AddScoped<IMessageHandler, MessageHandler>();
-services.AddScoped<ITextMessageHandler, TextMessageHandler>();
-services.AddScoped<ICommandHandler, CommandHandler>();
-
-// Register commands ---
-services.AddScoped<ICommand, LogCommand>();
-services.AddScoped<ICommand, CancelCommand>();
-services.AddScoped<ICommand, SignupCommand>();
-services.AddScoped<ICommand, SpreadsheetCommand>();
-
-services.AddTransient<SqsUpdateProcessor>();
-
-#pragma warning disable IL2026
-services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,
-    options => { options.Serializer = new SourceGeneratorLambdaJsonSerializer<AppJsonSerializerContext>(); });
-#pragma warning restore IL2026
+Console.WriteLine($"builder.Environment.IsDevelopment(): {builder.Environment.IsDevelopment()}");
 
 #if DEBUG
     // Bind test configurations
