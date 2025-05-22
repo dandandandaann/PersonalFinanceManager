@@ -12,13 +12,11 @@ using SharedLibrary.Settings;
 using SharedLibrary.Validator;
 using Telegram.Bot;
 
-namespace BudgetAutomation.Engine;
+namespace BudgetAutomation.Engine.Extension;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddBudgetAutomationCoreServices(
-        this IServiceCollection services,
-        IConfiguration config) // Pass in the fully built configuration
+    public static IServiceCollection AddBudgetAutomationCoreServices(this IServiceCollection services, IConfiguration config)
     {
         // Configure AWS Services
         services.AddAWSService<IAmazonSQS>();

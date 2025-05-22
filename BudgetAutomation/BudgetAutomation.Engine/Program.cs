@@ -1,4 +1,4 @@
-using BudgetAutomation.Engine;
+using BudgetAutomation.Engine.Extension;
 using BudgetAutomation.Engine.Misc;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;
@@ -10,24 +10,15 @@ var services = builder.Services;
 var configBuilder = new ConfigurationBuilder();
 
 var localDevelopment = builder.Environment.IsDevelopment();
-// Local development settings
-var devPrefix = localDevelopment ? "dev-" : "";
 
-// Configure AWS Parameter Store
-configBuilder.AddSystemsManager($"/{devPrefix}{BudgetAutomationSettings.Configuration}/");
-
-var config = configBuilder.Build();
+var config = configBuilder.AddConfigurations(localDevelopment).Build();
 
 builder.Services.AddBudgetAutomationCoreServices(config);
 
-Console.WriteLine($"builder.Environment.IsDevelopment(): {builder.Environment.IsDevelopment()}");
-
-#if DEBUG
-    // Bind test configurations
-    services.Configure<TelegramListenerSettings>(config.GetSection(TelegramListenerSettings.Configuration));
-    services.AddSingleton<IValidateOptions<TelegramListenerSettings>, TelegramListenerSettingsValidator>();
-    services.AddHostedService<SqsListenerForTestingService>();
-#endif
+// Bind test configurations
+services.Configure<TelegramListenerSettings>(config.GetSection(TelegramListenerSettings.Configuration));
+services.AddSingleton<IValidateOptions<TelegramListenerSettings>, TelegramListenerSettingsValidator>();
+services.AddHostedService<SqsListenerForTestingService>();
 
 var app = builder.Build();
 
