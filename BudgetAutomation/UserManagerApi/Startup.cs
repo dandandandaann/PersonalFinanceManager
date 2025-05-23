@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SharedLibrary.Settings;
 using UserManagerApi.AotTypes;
+using UserManagerApi.Extension;
 using UserManagerApi.Service;
 
 namespace UserManagerApi;
@@ -23,32 +24,6 @@ public class Startup
     /// </summary>
     public void ConfigureServices(IServiceCollection services)
     {
-        var config = new ConfigurationBuilder();
-
-        // Local development settings
-        var isLocalDev = SharedLibrary.LocalDevelopment.SamStart.IsLocalDev();
-        var devPrefix = isLocalDev ? "dev-" : "";
-
-        // Configure AWS Parameter Store
-        config.AddSystemsManager($"/{devPrefix}{BudgetAutomationSettings.Configuration}/");
-
-        // #pragma warning disable IL2026
-        services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,
-            options => { options.Serializer = new SourceGeneratorLambdaJsonSerializer<AppJsonSerializerContext>(); });
-        // #pragma warning restore IL2026
-
-        services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(RegionEndpoint.USEast2));
-
-        services.AddScoped<IDynamoDBContext>(sp =>
-        {
-            var client = sp.GetRequiredService<IAmazonDynamoDB>();
-            var contextBuilder = new DynamoDBContextBuilder()
-                .WithDynamoDBClient(() => client);
-            // contextBuilder = contextBuilder.WithTableNamePrefix("DEV_");
-            return contextBuilder.Build();
-        });
-
-        // Register services
-        services.AddScoped<IUserService, UserService>();
+        services.AddProjectSpecificServices(new ConfigurationManager());
     }
 }
