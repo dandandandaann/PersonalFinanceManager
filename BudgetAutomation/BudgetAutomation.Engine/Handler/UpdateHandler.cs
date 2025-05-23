@@ -75,7 +75,7 @@ public class UpdateHandler(
         if (update.Message != null)
         {
             await sender.ReplyAsync(
-                chatId: update.Message.Chat,
+                chat: update.Message.Chat,
                 text: $"I can't handle message type {update.Type}.",
                 cancellationToken: cancellationToken);
         }

@@ -44,7 +44,7 @@ public partial class SpreadsheetCommand(
             }
 
             return await sender.ReplyAsync(message.Chat,
-                "Configuração da realizada planilha com sucesso!.",
+                "Configuração da planilha realizada com sucesso!",
                 "SpreadsheetId configuration successful.",
                 cancellationToken: cancellationToken);
         }

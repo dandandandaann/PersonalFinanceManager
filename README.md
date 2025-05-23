@@ -11,7 +11,7 @@
 An exploration into building a personal finance toolset, starting with the challenge of quick and easy expense tracking. PersonalFinanceManager currently implements a Telegram bot that acts as a conversational interface for recording financial transactions directly into a Google Spreadsheet. The goal is to build out further budgeting and automation features over time. 
 Tech Stack: .NET 8, AWS Lambda (Minimal APIs), DynamoDB, Telegram Bot API, Google Sheets API. Status: Work in Progress.
 
-This monorepo contains source code, Infrastructure as Code (IaC), and test files intended to be compiled/deployed through MSBuild (Visual Studio) and [AWS Sam](#Citations)
+This monorepo contains source code, Infrastructure as Code (IaC), and test files intended to be compiled/deployed through MSBuild (Visual Studio) and [AWS Sam](#citations)
 <hr />
 
 <!-- ------------------------------------------------------------ -->
@@ -22,8 +22,8 @@ Initial onboarding steps are available here: still not available
 
 ## Projects
 
-- [BudgetAutomation - SQS Worker](BudgetAutomation/BudgetBotTelegram)
-  - Port: 6001
+- [BudgetAutomation.Engine - SQS Worker](BudgetAutomation/BudgetAutomation.Engine)
+  - Worker service
 - [TelegramListener - Api](BudgetAutomation/TelegramListener)
   - API Port: 6011
 - [ExpenseLoggerApi - Api](BudgetAutomation/ExpenseLoggerApi)
@@ -40,7 +40,7 @@ Initial onboarding steps are available here: still not available
 
 ### Projects
 
-- [BudgetAutomation](BudgetAutomation/BudgetAutomation.Tests)
+- [BudgetAutomation](BudgetAutomation/BudgetAutomation.Engine.Tests)
 - [TelegramListener](BudgetAutomation/TelegramListener.Tests)
 - [ExpenseLoggerApi](BudgetAutomation/ExpenseLoggerApi.Tests)
 - [UserManagerApi](BudgetAutomation/UserManagerApi.Tests)
@@ -49,7 +49,7 @@ Initial onboarding steps are available here: still not available
 
 ### `BudgetAutomation/deploy_all_functions.ps1`
   - A script you can use to call all `deploy_function.ps1` under its file structure.
-  - For example, the following command will start the deploy of all lambda services
+  - For example, the following command will start the deployment of all lambda services
     - ```.\BudgetAutomation\deploy_all_functions.ps1```
 
 <hr />

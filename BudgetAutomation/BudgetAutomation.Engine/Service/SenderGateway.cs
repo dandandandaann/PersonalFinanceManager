@@ -6,7 +6,7 @@ namespace BudgetAutomation.Engine.Service;
 public interface ISenderGateway
 {
     Task<Message> ReplyAsync(
-        SharedLibrary.Telegram.Chat chatId,
+        SharedLibrary.Telegram.Chat chat,
         string text,
         string logMessage = "",
         LogLevel logLevel = LogLevel.Information,
@@ -27,7 +27,7 @@ public interface ISenderGateway
 public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> logger) : ISenderGateway
 {
     public async Task<Message> ReplyAsync(
-        SharedLibrary.Telegram.Chat chatId,
+        SharedLibrary.Telegram.Chat chat,
         string text,
         string logMessage = "",
         LogLevel logLevel = LogLevel.Information,
@@ -45,7 +45,7 @@ public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> 
         CancellationToken cancellationToken = default)
     {
         var sentMessage = await botClient.SendMessage(
-            chatId: chatId.Id,
+            chatId: chat.Id,
             text: text,
             // parseMode: parseMode, // TODO: fix these parameters on the new reply service
             // replyParameters: replyParameters,
@@ -63,7 +63,7 @@ public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> 
 
         const string logDefault = "ChatId: {ChatId}. Username: {Username}.";
         logMessage = string.IsNullOrWhiteSpace(logMessage) ? $"Sent message. {logDefault}" : $"Sent. {logMessage} {logDefault}";
-        logger.Log(logLevel, logMessage, chatId, chatId.Username);
+        logger.Log(logLevel, logMessage, chat.Id, chat.Username);
 
         return new Message();// sentMessage;
     }

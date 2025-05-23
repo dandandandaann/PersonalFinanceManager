@@ -1,5 +1,4 @@
 ﻿using Amazon.Lambda.Core;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;
 using Telegram.Bot;
