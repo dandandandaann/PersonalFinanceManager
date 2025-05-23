@@ -168,7 +168,7 @@ public class Functions(IUserService userService)
 
             // TODO: create a data mapper
             var userConfiguration = new UserConfigurationDto();
-            if (!string.IsNullOrEmpty(user.Configuration?.SpreadsheetId))
+            if (!string.IsNullOrEmpty(user.Configuration.SpreadsheetId))
                 userConfiguration.SpreadsheetId = user.Configuration.SpreadsheetId;
 
             return ApiResponse.Ok(new UserGetResponse

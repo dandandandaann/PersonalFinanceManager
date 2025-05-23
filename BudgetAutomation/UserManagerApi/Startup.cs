@@ -23,14 +23,14 @@ public class Startup
     /// </summary>
     public void ConfigureServices(IServiceCollection services)
     {
-        var configBuilder = new ConfigurationBuilder();
+        var config = new ConfigurationBuilder();
 
         // Local development settings
         var isLocalDev = SharedLibrary.LocalDevelopment.SamStart.IsLocalDev();
         var devPrefix = isLocalDev ? "dev-" : "";
 
         // Configure AWS Parameter Store
-        configBuilder.AddSystemsManager($"/{devPrefix}{BudgetAutomationSettings.Configuration}/");
+        config.AddSystemsManager($"/{devPrefix}{BudgetAutomationSettings.Configuration}/");
 
         // #pragma warning disable IL2026
         services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,
@@ -49,6 +49,6 @@ public class Startup
         });
 
         // Register services
-        services.AddSingleton<IUserService, UserService>();
+        services.AddScoped<IUserService, UserService>();
     }
 }

@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramListener", "Telegra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramListener.Tests", "TelegramListener.Tests\TelegramListener.Tests.csproj", "{17457825-9AA1-42FB-A913-B56B5F90F169}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLibrary.Lambda", "SharedLibrary.Lambda\SharedLibrary.Lambda.csproj", "{F056A073-5867-4B30-B620-4EDAF44CD890}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,5 +62,9 @@ Global
 		{17457825-9AA1-42FB-A913-B56B5F90F169}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17457825-9AA1-42FB-A913-B56B5F90F169}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17457825-9AA1-42FB-A913-B56B5F90F169}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F056A073-5867-4B30-B620-4EDAF44CD890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F056A073-5867-4B30-B620-4EDAF44CD890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F056A073-5867-4B30-B620-4EDAF44CD890}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F056A073-5867-4B30-B620-4EDAF44CD890}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

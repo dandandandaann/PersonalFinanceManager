@@ -21,7 +21,7 @@ public class UserService(IDynamoDBContext dbContext) : IUserService
 
     public async Task<User?> FindUserByTelegramIdAsync(long telegramId, ILambdaLogger logger)
     {
-        logger.LogInformation("UpsertUserAsync: Attempting to find user by TelegramId: {TelegramId}", telegramId);
+        logger.LogInformation("{Method}: Attempting to find user by TelegramId: {TelegramId}", nameof(FindUserByTelegramIdAsync), telegramId);
         try
         {
             var queryOperationConfig = new QueryOperationConfig
@@ -43,14 +43,15 @@ public class UserService(IDynamoDBContext dbContext) : IUserService
             var user = users?.FirstOrDefault();
 
             logger.LogInformation(user != null
-                ? $"UpsertUserAsync: Found user for TelegramId: {telegramId}. UserId: {user.UserId}"
-                : $"UpsertUserAsync: No user found for TelegramId: {telegramId}");
+                ? $"{nameof(FindUserByTelegramIdAsync)}: Found user for TelegramId: {telegramId}. UserId: {user.UserId}"
+                : $"{nameof(FindUserByTelegramIdAsync)}: No user found for TelegramId: {telegramId}");
 
             return user;
         }
         catch (Exception ex)
         {
-            logger.LogError("UpsertUserAsync: Error querying DynamoDB by TelegramId {TelegramId}: {Exception}", telegramId, ex.ToString());
+            logger.LogError("{Method}: Error querying DynamoDB by TelegramId {TelegramId}: {Exception}",
+                nameof(FindUserByTelegramIdAsync), telegramId, ex.ToString());
             throw;
         }
     }
@@ -66,36 +67,36 @@ public class UserService(IDynamoDBContext dbContext) : IUserService
         };
 
         logger.LogInformation(
-            "CreateUserAsync: Attempting to create new user with UserId: {NewUserId} for TelegramId: {TelegramId}",
-            newUser.UserId, telegramId);
+            "{Method}: Attempting to create new user with UserId: {NewUserId} for TelegramId: {TelegramId}",
+            nameof(CreateUserAsync), newUser.UserId, telegramId);
 
         return await UpsertUserAsync(newUser, logger);
     }
 
     public async Task<User?> GetUserAsync(string userId, ILambdaLogger logger)
     {
-        logger.LogInformation("GetUserAsync: Attempting to get user by UserId: {UserId}", userId);
+        logger.LogInformation("{Method}: Attempting to get user by UserId: {UserId}", nameof(GetUserAsync), userId);
         try
         {
             var user = await _dbContext.LoadAsync<User>(userId, userId);
 
             if (user == null)
             {
-                logger.LogWarning("GetUserAsync: No user found for UserId: {UserId}", userId);
+                logger.LogWarning("{Method}: No user found for UserId: {UserId}", nameof(GetUserAsync), userId);
                 return null;
             }
 
-            logger.LogInformation("GetUserAsync: Successfully retrieved user with UserId: {UserId}", userId);
+            logger.LogInformation("{Method}: Successfully retrieved user with UserId: {UserId}", nameof(GetUserAsync), userId);
             return user;
         }
         catch (KeyNotFoundException)
         {
-            logger.LogWarning("GetUserAsync: No key found for UserId: {UserId}", userId);
+            logger.LogWarning("{Method}: No key found for UserId: {UserId}", nameof(GetUserAsync), userId);
             return null;
         }
         catch (Exception ex)
         {
-            logger.LogError("GetUserAsync: Error retrieving user from DynamoDB by UserId {UserId}: {Exception}", userId, ex.ToString());
+            logger.LogError("{Method}: Error retrieving user from DynamoDB by UserId {UserId}: {Exception}", nameof(GetUserAsync), userId, ex.ToString());
             throw;
         }
     }
@@ -106,7 +107,7 @@ public class UserService(IDynamoDBContext dbContext) : IUserService
 
         if (user == null)
         {
-            logger.LogInformation("UpdateUserConfigurationAsync: User not found: {UserId}", userId);
+            logger.LogInformation("{Method}: User not found: {UserId}", nameof(UpdateUserConfigurationAsync), userId);
             return null;
         }
 
@@ -122,14 +123,15 @@ public class UserService(IDynamoDBContext dbContext) : IUserService
         try
         {
             await _dbContext.SaveAsync(user);
-            logger.LogInformation("UpsertUserAsync: Successfully upserted user with UserId: {UserId}", user.UserId);
+            logger.LogInformation("{Method}: Successfully upserted user with UserId: {UserId}",
+                nameof(UpsertUserAsync), user.UserId);
             return user;
         }
         catch (Exception ex)
         {
             logger.LogError(
-                "UpsertUserAsync: Error saving user to DynamoDB. UserId: {UserId}, TelegramId: {TelegramId}. " +
-                "Exception: {Exception}", user.UserId, user.TelegramId, ex.ToString());
+                "{Method}: Error saving user to DynamoDB. UserId: {UserId}, TelegramId: {TelegramId}. Exception: {Exception}",
+                nameof(UpsertUserAsync), user.UserId, user.TelegramId, ex.ToString());
             throw;
         }
     }
