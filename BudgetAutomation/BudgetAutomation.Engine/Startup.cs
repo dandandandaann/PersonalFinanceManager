@@ -12,8 +12,8 @@ public class Startup
         // Local development settings
         var localDevelopment = SharedLibrary.LocalDevelopment.SamStart.IsLocalDev();
 
-        var config = configBuilder.AddConfigurations(localDevelopment).Build();
+        var config = configBuilder.AddProjectSpecificConfigurations(localDevelopment).Build();
 
-        services.AddBudgetAutomationCoreServices(config);
+        services.AddProjectSpecificServices(config);
     }
 }

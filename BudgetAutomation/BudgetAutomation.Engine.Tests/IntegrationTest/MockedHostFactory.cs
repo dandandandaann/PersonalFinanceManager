@@ -1,6 +1,5 @@
 ﻿using Amazon.SQS;
 using BudgetAutomation.Engine.Extension;
-using BudgetAutomation.Engine.Misc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -8,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using Moq;
 using SharedLibrary.Settings;
 using Xunit;
-// Crucial change
 
 namespace BudgetAutomation.Engine.Tests.IntegrationTest;
 
@@ -58,7 +56,7 @@ public class MockedHostFactory<TProgram> : IAsyncLifetime where TProgram : class
 
                 // 1. Call your shared service registration extension method
                 //    This assumes your BudgetAutomation.Engine.ServiceCollectionExtensions is accessible
-                services.AddBudgetAutomationCoreServices(hostContext.Configuration);
+                services.AddProjectSpecificServices(hostContext.Configuration);
 
                 // 2. Register/Override services specifically for testing
                 ConfigureTestServices(services, hostContext.Configuration);
@@ -83,7 +81,7 @@ public class MockedHostFactory<TProgram> : IAsyncLifetime where TProgram : class
         // hostBuilder.ConfigureAppConfiguration(...)
         // hostBuilder.ConfigureServices(...)
         // OR, more simply, use Host.CreateDefaultBuilder() and then register services from your app.
-        // For the shared `AddBudgetAutomationCoreServices` method, this is cleaner.
+        // For the shared `AddProjectSpecificServices` method, this is cleaner.
 
         _host = hostBuilder.Build(); // Build the host to get the ServiceProvider
         return Task.CompletedTask;

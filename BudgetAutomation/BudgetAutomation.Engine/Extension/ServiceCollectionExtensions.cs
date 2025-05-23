@@ -16,7 +16,7 @@ namespace BudgetAutomation.Engine.Extension;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddBudgetAutomationCoreServices(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddProjectSpecificServices(this IServiceCollection services, IConfiguration config)
     {
         // Configure AWS Services
         services.AddAWSService<IAmazonSQS>();

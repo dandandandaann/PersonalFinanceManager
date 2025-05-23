@@ -11,9 +11,9 @@ var configBuilder = new ConfigurationBuilder();
 
 var localDevelopment = builder.Environment.IsDevelopment();
 
-var config = configBuilder.AddConfigurations(localDevelopment).Build();
+var config = configBuilder.AddProjectSpecificConfigurations(localDevelopment).Build();
 
-builder.Services.AddBudgetAutomationCoreServices(config);
+builder.Services.AddProjectSpecificServices(config);
 
 // Bind test configurations
 services.Configure<TelegramListenerSettings>(config.GetSection(TelegramListenerSettings.Configuration));
