@@ -1,7 +1,5 @@
 ﻿using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.SQS;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;
 using SharedLibrary.Validator;

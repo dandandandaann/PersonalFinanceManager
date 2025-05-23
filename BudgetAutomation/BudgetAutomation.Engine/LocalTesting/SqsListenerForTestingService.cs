@@ -5,7 +5,7 @@ using Amazon.SQS.Model;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;
 
-namespace BudgetAutomation.Engine.Misc;
+namespace BudgetAutomation.Engine.LocalTesting;
 
 public class SqsListenerForTestingService(
     ILogger<SqsListenerForTestingService> logger,

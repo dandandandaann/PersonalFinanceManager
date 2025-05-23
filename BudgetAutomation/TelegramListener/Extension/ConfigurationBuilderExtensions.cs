@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using SharedLibrary.Settings;
+﻿using SharedLibrary.Settings;
 
 namespace TelegramListener.Extension;
 

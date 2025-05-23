@@ -23,7 +23,8 @@ public class Functions
     }
 
     [LambdaFunction(
-        Policies = "AWSLambdaBasicExecutionRole",
+        Policies = "AWSLambdaBasicExecutionRole, " +
+                   "arn:aws:iam::795287297286:policy/Configurations_Read",
         MemorySize = 128,
         Timeout = 10)]
     [HttpApi(LambdaHttpMethod.Get, "/")]

@@ -8,8 +8,8 @@ using Xunit.Abstractions;
 
 namespace BudgetAutomation.Engine.Tests.IntegrationTest;
 
-public class DependencyInjectionTests(MockedHostFactory<BudgetAutomation.Engine.Misc.Program> factory, ITestOutputHelper output)
-    : IClassFixture<MockedHostFactory<BudgetAutomation.Engine.Misc.Program>> // Use the new factory type
+public class DependencyInjectionTests(MockedHostFactory<LocalTesting.Program> factory, ITestOutputHelper output)
+    : IClassFixture<MockedHostFactory<LocalTesting.Program>> // Use the new factory type
 {
     [Fact]
     public void ShouldResolve_IMessageHandler_FromScopedProvider()

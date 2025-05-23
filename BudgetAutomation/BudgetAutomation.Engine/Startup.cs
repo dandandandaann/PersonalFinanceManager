@@ -9,8 +9,7 @@ public class Startup
     {
         var configBuilder = new ConfigurationBuilder();
 
-        // Local development settings
-        var localDevelopment = SharedLibrary.LocalDevelopment.SamStart.IsLocalDev();
+        var localDevelopment = false;//SharedLibrary.LocalTesting.SamStart.IsLocalDev();
 
         var config = configBuilder.AddProjectSpecificConfigurations(localDevelopment).Build();
 
