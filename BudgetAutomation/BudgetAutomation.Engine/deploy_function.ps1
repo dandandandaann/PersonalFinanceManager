@@ -1,5 +1,5 @@
-﻿if ((Split-Path -Leaf (Get-Location)) -ne "BudgetBotTelegram") {
-    Set-Location BudgetBotTelegram
+﻿if ((Split-Path -Leaf (Get-Location)) -ne "BudgetAutomation.Engine") {
+    Set-Location "BudgetAutomation.Engine"
 }
 
 Write-Host "Starting build..."

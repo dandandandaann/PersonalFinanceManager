@@ -23,7 +23,8 @@
         "MemorySize": 128,
         "Timeout": 10,
         "Policies": [
-          "AWSLambdaBasicExecutionRole"
+          "AWSLambdaBasicExecutionRole",
+          "arn:aws:iam::795287297286:policy/Configurations_Read"
         ],
         "PackageType": "Zip",
         "Handler": "TelegramListener::TelegramListener.Functions_Default_Generated::Default",

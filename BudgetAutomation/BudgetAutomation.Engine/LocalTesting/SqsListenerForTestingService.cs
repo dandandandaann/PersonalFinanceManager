@@ -5,7 +5,7 @@ using Amazon.SQS.Model;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;
 
-namespace BudgetAutomation.Engine.Misc;
+namespace BudgetAutomation.Engine.LocalTesting;
 
 public class SqsListenerForTestingService(
     ILogger<SqsListenerForTestingService> logger,
@@ -36,14 +36,14 @@ public class SqsListenerForTestingService(
                     MessageAttributeNames = ["All"] // Get all message attributes
                 };
 
-                var receiveResponse = await sqsClient.ReceiveMessageAsync(receiveRequest, cancellationToken);
+                var messageReceiver = await sqsClient.ReceiveMessageAsync(receiveRequest, cancellationToken);
 
-                if (receiveResponse.Messages is { Count: > 0 })
+                if (messageReceiver.Messages is { Count: > 0 })
                 {
-                    logger.LogInformation("Received {Count} messages from SQS.", receiveResponse.Messages.Count);
+                    logger.LogInformation("Received {Count} messages from SQS.", messageReceiver.Messages.Count);
 
                     // Create the SQSEvent object expected by the processor
-                    var sqsEventMessages = ConvertToSqsMessages(receiveResponse.Messages);
+                    var sqsEventMessages = ConvertToSqsMessages(messageReceiver.Messages);
 
                     // Create a scope to resolve scoped services for the processor invocation
                     using var scope = scopeFactory.CreateScope();
