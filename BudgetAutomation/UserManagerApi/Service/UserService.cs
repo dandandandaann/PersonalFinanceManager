@@ -8,7 +8,7 @@ namespace UserManagerApi.Service;
 public interface IUserService
 {
     Task<User?> FindUserByTelegramIdAsync(long telegramId, ILambdaLogger logger);
-    Task<User> CreateUserAsync(long telegramId, string? username, ILambdaLogger logger);
+    Task<User> CreateUserAsync(long telegramId, string email, string? username, ILambdaLogger logger);
     Task<User?> GetUserAsync(string userId, ILambdaLogger logger);
     Task<User?> UpdateUserConfigurationAsync(string userId, UserConfiguration userConfiguration, ILambdaLogger logger);
     Task<User> UpsertUserAsync(User user, ILambdaLogger logger);
@@ -56,13 +56,14 @@ public class UserService(IDynamoDBContext dbContext) : IUserService
         }
     }
 
-    public async Task<User> CreateUserAsync(long telegramId, string? username, ILambdaLogger logger)
+    public async Task<User> CreateUserAsync(long telegramId, string email, string? username, ILambdaLogger logger)
     {
         var newUser = new User
         {
             UserId = Guid.NewGuid().ToString(),
             TelegramId = telegramId,
             Username = username,
+            Email = email,
             CreatedAt = DateTime.UtcNow
         };
 

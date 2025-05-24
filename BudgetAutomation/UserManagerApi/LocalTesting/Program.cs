@@ -7,7 +7,7 @@ using UserManagerApi.Extension;
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 
-services.AddProjectSpecificServices(new ConfigurationManager());
+services.AddProjectSpecificServices(new ConfigurationManager(), builder.Environment.IsDevelopment());
 
 // Register Functions
 services.AddScoped<Functions>();

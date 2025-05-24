@@ -1,4 +1,6 @@
-﻿using Amazon.Lambda.Core;
+﻿// This file was mostly AI generated.
+
+using Amazon.Lambda.Core;
 using Microsoft.Extensions.Logging;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 

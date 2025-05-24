@@ -7,12 +7,13 @@ using Google.Apis.Sheets.v4;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Dto;
+using SharedLibrary.LocalTesting;
 using SharedLibrary.Settings;
 using SharedLibrary.Validator;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-var isLocalDev = builder.Environment.IsDevelopment() ? "dev-" : "";
+var isLocalDev = LocalDevelopment.Prefix(builder.Environment.IsDevelopment());
 
 // Configure AWS Parameter Store
 builder.Configuration.AddSystemsManager($"/{isLocalDev}{BudgetAutomationSettings.Configuration}/");

@@ -1,4 +1,6 @@
-﻿using Amazon.SQS;
+﻿// This file was mostly AI generated.
+
+using Amazon.SQS;
 using BudgetAutomation.Engine.Extension;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
