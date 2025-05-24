@@ -25,7 +25,7 @@ app.MapGet("/setupWebhook", async (Functions functions, ConfigureWebhook configu
 
     APIGatewayHttpApiV2ProxyResponse lambdaResponse = await functions.SetupWebhook(configureWebhook, localContext);
 
-    return LambdaResponseMapper.ToMinimalApiResult(lambdaResponse);
+    return LambdaToApiResponseMapper.ToMinimalApiResult(lambdaResponse);
 });
 
 // Webhook
@@ -44,7 +44,7 @@ app.MapPost("/webhook", async (
     APIGatewayHttpApiV2ProxyResponse lambdaResponse =
         await functions.Webhook(token, update, localContext, authenticator, updateProcessor);
 
-    return LambdaResponseMapper.ToMinimalApiResult(lambdaResponse);
+    return LambdaToApiResponseMapper.ToMinimalApiResult(lambdaResponse);
 });
 
 app.MapGet("/", () => "Hello World! This is the TelegramListener running locally.");

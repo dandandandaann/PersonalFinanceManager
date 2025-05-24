@@ -7,7 +7,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace SharedLibrary.Lambda.LocalDevelopment;
 
-public static class LambdaResponseMapper
+public static class LambdaToApiResponseMapper
 {
     public static IResult ToMinimalApiResult(APIGatewayHttpApiV2ProxyResponse lambdaResponse)
     {

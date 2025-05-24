@@ -3,9 +3,10 @@ using Amazon.Lambda.Annotations;
 using Amazon.Lambda.Annotations.APIGateway;
 using Amazon.Lambda.APIGatewayEvents;
 using SharedLibrary.Dto;
+using SharedLibrary.Lambda.LocalDevelopment;
 using SharedLibrary.Model;
+using SharedLibrary.Utility;
 using UserManagerApi.Service;
-using ApiResponse = SharedLibrary.Utility.ApiResponse;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -41,7 +42,7 @@ public class Functions(IUserService userService)
         if (request.TelegramId <= 0) // Basic validation
         {
             logger.LogWarning("SignupUserAsync: Invalid TelegramId received: {TelegramId}", request.TelegramId);
-            return ApiResponse.BadRequest("Invalid TelegramId.");
+            return ApiGatewayResult.BadRequest("Invalid TelegramId.");
         }
 
         try
@@ -53,7 +54,7 @@ public class Functions(IUserService userService)
                 logger.LogInformation(
                     "SignupUserAsync: User already exists with UserId: {ExistingUserId} for TelegramId: {TelegramId}",
                     existingUser.UserId, request.TelegramId);
-                return ApiResponse.Ok(
+                return ApiGatewayResult.Ok(
                     new UserSignupResponse { Success = false, Message = "User already exists.", User = existingUser }
                     );
             }
@@ -66,7 +67,7 @@ public class Functions(IUserService userService)
 
             logger.LogInformation("SignupUserAsync: Successfully created new user with UserId: {NewUserId}",
                 newUser.UserId);
-            return ApiResponse.Created(
+            return ApiGatewayResult.Created(
                 $"/user/{newUser.UserId}",
                 new UserSignupResponse
                 {
@@ -79,7 +80,7 @@ public class Functions(IUserService userService)
         {
             logger.LogError(ex, "SignupUserAsync: Error during signup for TelegramId {TelegramId}.",
                 request.TelegramId);
-            return ApiResponse.InternalServerError("An error occurred during the signup process.");
+            return ApiGatewayResult.InternalServerError("An error occurred during the signup process.");
         }
     }
 
@@ -106,7 +107,7 @@ public class Functions(IUserService userService)
         if (string.IsNullOrWhiteSpace(userId))
         {
             logger.LogWarning("UpdateUserConfigurationAsync: Invalid UserId received: {UserId}", userId);
-            return ApiResponse.BadRequest("Invalid UserId.");
+            return ApiGatewayResult.BadRequest("Invalid UserId.");
         }
 
         try
@@ -118,17 +119,17 @@ public class Functions(IUserService userService)
             if (updatedUser == null)
             {
                 logger.LogInformation("UpdateUserConfigurationAsync: User not found: {UserId}", userId);
-                return ApiResponse.NotFound("User does not exist.");
+                return ApiGatewayResult.NotFound("User does not exist.");
             }
 
             logger.LogInformation("UpdateUserConfigurationAsync: User configuration updated was successful: {UserId}", userId);
 
-            return ApiResponse.Ok(new UserConfigurationUpdateResponse { Success = true, Message = "User configuration updated." });
+            return ApiGatewayResult.Ok(new UserConfigurationUpdateResponse { Success = true, Message = "User configuration updated." });
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "UpdateUserConfigurationAsync: Error during update for UserId {UserId}.", userId);
-            return ApiResponse.InternalServerError("An error occurred during the configuration update.");
+            return ApiGatewayResult.InternalServerError("An error occurred during the configuration update.");
         }
     }
 
@@ -155,7 +156,7 @@ public class Functions(IUserService userService)
         if (!long.TryParse(telegramId, out var telegramIdNumber) || telegramIdNumber <= 0)
         {
             logger.LogWarning("GetUserByTelegramIdAsync: Invalid TelegramId format or value in path: {TelegramId}", telegramId);
-            return ApiResponse.BadRequest("Invalid TelegramId format or value provided.");
+            return ApiGatewayResult.BadRequest("Invalid TelegramId format or value provided.");
         }
 
         try
@@ -166,8 +167,8 @@ public class Functions(IUserService userService)
             {
                 logger.LogInformation("GetUserByTelegramIdAsync: User not found for TelegramId: {telegramIdNumber}", telegramId);
                 // For a GET, returning 404 Not Found is often more idiomatic than 200 OK with a "success: false" body.
-                return ApiResponse.Ok(new UserGetResponse { Success = false, Message = "user not found" });
-                // return ApiResponse.NotFound("User not found.");
+                return ApiGatewayResult.Ok(new UserGetResponse { Success = false, Message = "user not found" });
+                // return ApiGatewayResult.NotFound("User not found.");
             }
 
             // TODO: create a data mapper
@@ -175,7 +176,7 @@ public class Functions(IUserService userService)
             if (!string.IsNullOrEmpty(user.Configuration.SpreadsheetId))
                 userConfiguration.SpreadsheetId = user.Configuration.SpreadsheetId;
 
-            return ApiResponse.Ok(new UserGetResponse
+            return ApiGatewayResult.Ok(new UserGetResponse
                 {
                     Success = true,
                     UserId = user.UserId,
@@ -188,7 +189,7 @@ public class Functions(IUserService userService)
         {
             logger.LogError(ex, "GetUserByTelegramIdAsync: Error retrieving user by TelegramId {TelegramId}.",
                 telegramIdNumber);
-            return ApiResponse.InternalServerError("An error occurred while retrieving the user.");
+            return ApiGatewayResult.InternalServerError("An error occurred while retrieving the user.");
         }
     }
 }
