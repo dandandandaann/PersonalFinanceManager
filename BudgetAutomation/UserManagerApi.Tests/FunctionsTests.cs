@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿// This file was mostly AI generated.
+
+using System.Text.Json;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.APIGatewayEvents;
@@ -26,6 +28,7 @@ public class FunctionsTests
     // --- Test Data ---
     private const long DefaultTelegramId = 123456789;
     private const string DefaultUsername = "testuser";
+    private const string DefaultEmail = "test@email.com";
     private const string ExistingUserId = "existing-user-guid";
     // We won't predict the new Guid, just check it's generated
 
@@ -74,7 +77,7 @@ public class FunctionsTests
     public async Task SignupUserAsync_WhenUserExists_ShouldReturnOkAndExistingUserId()
     {
         // Arrange
-        var request = new UserSignupRequest( DefaultTelegramId, DefaultUsername );
+        var request = new UserSignupRequest( DefaultTelegramId, DefaultEmail, DefaultUsername );
         var existingUser = new User { UserId = ExistingUserId, TelegramId = DefaultTelegramId, Username = "oldUsername" };
         var usersFound = new List<User> { existingUser };
 
@@ -103,7 +106,7 @@ public class FunctionsTests
     public async Task SignupUserAsync_WhenUserDoesNotExist_ShouldCreateUserAndReturnCreated()
     {
         // Arrange
-        var request = new UserSignupRequest( DefaultTelegramId, DefaultUsername );
+        var request = new UserSignupRequest( DefaultTelegramId, DefaultEmail, DefaultUsername );
 
         // --- Configure the mock search for this specific test ---
         // The default setup in the constructor already returns an empty list,
@@ -141,7 +144,7 @@ public class FunctionsTests
     public async Task SignupUserAsync_WhenDbQueryThrows_ShouldReturnInternalServerError()
     {
         // Arrange
-        var request = new UserSignupRequest( DefaultTelegramId );
+        var request = new UserSignupRequest( DefaultTelegramId, DefaultEmail );
         var dbException = new InvalidOperationException("DynamoDB query failed"); // Use a specific exception type
 
         // --- Configure the mock search to throw ---
@@ -165,7 +168,7 @@ public class FunctionsTests
     public async Task SignupUserAsync_WhenDbSaveThrows_ShouldReturnInternalServerError()
     {
         // Arrange
-        var request = new UserSignupRequest(DefaultTelegramId, DefaultUsername );
+        var request = new UserSignupRequest(DefaultTelegramId, DefaultEmail, DefaultUsername );
         var dbException = new InvalidOperationException("DynamoDB save failed"); // Use a specific exception type
 
         // User not found initially

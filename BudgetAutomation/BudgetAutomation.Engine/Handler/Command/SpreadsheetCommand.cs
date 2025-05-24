@@ -17,6 +17,8 @@ public partial class SpreadsheetCommand(
 
     public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
+        UserManagerService.EnsureUserSignedIn();
+
         ArgumentNullException.ThrowIfNull(message.Text);
 
         try

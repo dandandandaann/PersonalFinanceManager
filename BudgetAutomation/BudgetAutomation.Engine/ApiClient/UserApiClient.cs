@@ -27,11 +27,11 @@ public class UserApiClient : IUserApiClient
     }
 
     public async Task<UserSignupResponse> SignupUserAsync(
-        long telegramId, string? username, string? email,
+        long telegramId, string email, string? username,
         CancellationToken cancellationToken = default)
     {
         var requestUri = new Uri(_httpClient.BaseAddress!, "/user/signup");
-        var signupRequest = new UserSignupRequest(telegramId, username);
+        var signupRequest = new UserSignupRequest(telegramId, email, username);
 
         _logger.LogInformation("Sending signup request for TelegramId {TelegramId} to {RequestUri}", telegramId,
             requestUri);

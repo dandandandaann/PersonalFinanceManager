@@ -8,6 +8,7 @@ using BudgetAutomation.Engine.Handler.Command;
 using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Service;
 using Microsoft.Extensions.Options;
+using SharedLibrary.LocalTesting;
 using SharedLibrary.Settings;
 using SharedLibrary.Validator;
 using Telegram.Bot;
@@ -16,7 +17,8 @@ namespace BudgetAutomation.Engine.Extension;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddProjectSpecificServices(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddProjectSpecificServices(
+        this IServiceCollection services, IConfiguration config, bool localDevelopment = false)
     {
         // Configure AWS Services
         services.AddAWSService<IAmazonSQS>();
@@ -25,7 +27,11 @@ public static class ServiceCollectionExtensions
         {
             var client = sp.GetRequiredService<IAmazonDynamoDB>();
             var contextBuilder = new DynamoDBContextBuilder()
-                .WithDynamoDBClient(() => client);
+                .WithDynamoDBClient(() => client)
+                .ConfigureContext(dynamoDbContextConfig => // Use the ConfigureContext method
+                {
+                    dynamoDbContextConfig.TableNamePrefix = LocalDevelopment.Prefix(localDevelopment);
+                });
             // contextBuilder = contextBuilder.WithTableNamePrefix("DEV_");
             return contextBuilder.Build();
         });
