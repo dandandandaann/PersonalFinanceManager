@@ -54,8 +54,6 @@ public class UserManagerService(IUserApiClient userApiClient) : IUserManagerServ
         if (string.IsNullOrWhiteSpace(Current?.UserId))
             throw new UnauthorizedAccessException();
 
-        Current.Configuration ??= new UserConfiguration();
-
         Current.Configuration.SpreadsheetId = spreadsheetId;
 
         return userApiClient.UpdateUserConfigurationAsync(Current.UserId, Current.Configuration, cancellationToken)

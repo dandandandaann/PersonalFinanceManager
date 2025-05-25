@@ -17,11 +17,12 @@ public interface IUserService
 public class UserService(IDynamoDBContext dbContext) : IUserService
 {
     private readonly IDynamoDBContext _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
-    private const string TelegramIdIndexName = "telegramId-index"; // This could be injected via IOptions if it varies
+    private const string TelegramIdIndexName = "telegramId-index";
 
     public async Task<User?> FindUserByTelegramIdAsync(long telegramId, ILambdaLogger logger)
     {
-        logger.LogInformation("{Method}: Attempting to find user by TelegramId: {TelegramId}", nameof(FindUserByTelegramIdAsync), telegramId);
+        logger.LogInformation("{Method}: Attempting to find user by TelegramId: {TelegramId}",
+            nameof(FindUserByTelegramIdAsync), telegramId);
         try
         {
             var queryOperationConfig = new QueryOperationConfig
@@ -58,20 +59,29 @@ public class UserService(IDynamoDBContext dbContext) : IUserService
 
     public async Task<User> CreateUserAsync(long telegramId, string email, string? username, ILambdaLogger logger)
     {
-        var newUser = new User
+        try
         {
-            UserId = Guid.NewGuid().ToString(),
-            TelegramId = telegramId,
-            Username = username,
-            Email = email,
-            CreatedAt = DateTime.UtcNow
-        };
+            var newUser = new User
+            {
+                UserId = Guid.NewGuid().ToString(),
+                TelegramId = telegramId,
+                Username = username,
+                Email = email,
+                CreatedAt = DateTime.UtcNow
+            };
 
-        logger.LogInformation(
-            "{Method}: Attempting to create new user with UserId: {NewUserId} for TelegramId: {TelegramId}",
-            nameof(CreateUserAsync), newUser.UserId, telegramId);
+            logger.LogInformation(
+                "{Method}: Attempting to create new user with UserId: {NewUserId} for TelegramId: {TelegramId}",
+                nameof(CreateUserAsync), newUser.UserId, telegramId);
 
-        return await UpsertUserAsync(newUser, logger);
+            return await UpsertUserAsync(newUser, logger);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("{Method}: Error trying to create user with TelegramId {TelegramId}: {Exception}",
+                nameof(CreateUserAsync), telegramId, ex.ToString());
+            throw;
+        }
     }
 
     public async Task<User?> GetUserAsync(string userId, ILambdaLogger logger)
@@ -97,12 +107,14 @@ public class UserService(IDynamoDBContext dbContext) : IUserService
         }
         catch (Exception ex)
         {
-            logger.LogError("{Method}: Error retrieving user from DynamoDB by UserId {UserId}: {Exception}", nameof(GetUserAsync), userId, ex.ToString());
+            logger.LogError("{Method}: Error retrieving user from DynamoDB by UserId {UserId}: {Exception}", nameof(GetUserAsync),
+                userId, ex.ToString());
             throw;
         }
     }
 
-    public async Task<User?> UpdateUserConfigurationAsync(string userId, UserConfiguration userConfiguration, ILambdaLogger logger)
+    public async Task<User?> UpdateUserConfigurationAsync(string userId, UserConfiguration userConfiguration,
+        ILambdaLogger logger)
     {
         var user = await GetUserAsync(userId, logger);
 
