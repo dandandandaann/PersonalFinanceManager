@@ -68,6 +68,6 @@ public partial class SpreadsheetCommand(
         throw new NotImplementedException();
     }
 
-    [GeneratedRegex("^[a-zA-Z0-9]+$")]
+    [GeneratedRegex("^[a-zA-Z0-9_]+$")]
     private static partial Regex SpreadsheetIdRegex();
 }

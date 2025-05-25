@@ -2,14 +2,14 @@
 using System.Text.Json;
 using Amazon.Lambda.APIGatewayEvents;
 
-namespace SharedLibrary.Utility;
+namespace SharedLibrary.Lambda.LocalDevelopment;
 
 /// <summary>
 /// Provides static factory methods for creating standardized <see cref="APIGatewayHttpApiV2ProxyResponse"/> objects.
 /// This class simplifies the process of returning common HTTP responses from AWS Lambda functions
 /// integrated with API Gateway (HTTP API V2).
 /// </summary>
-public static class ApiResponse
+public static class ApiGatewayResult
 {
     /// <summary>
     /// Default headers for JSON responses.

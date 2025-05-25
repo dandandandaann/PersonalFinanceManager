@@ -3,6 +3,7 @@ title: BudgetAutomation Overview
 config:
   theme: neo
   layout: dagre
+comment: mermaidchart.com
 ---
 flowchart TD
     TB["Telegram Bot"] --> TL["Telegram Listener"]
