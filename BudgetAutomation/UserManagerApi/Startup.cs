@@ -7,6 +7,6 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddProjectSpecificServices(new ConfigurationManager(), true);
+        services.AddProjectSpecificServices(new ConfigurationManager());
     }
 }

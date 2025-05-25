@@ -23,12 +23,19 @@ public partial class SpreadsheetCommand(
 
         try
         {
-            if (
-                !Utility.TryExtractCommandArguments(message.Text, CommandName, SpreadsheetIdRegex, out var commandArguments) ||
-                string.IsNullOrWhiteSpace(commandArguments))
+            if (!Utility.TryExtractCommandArguments(message.Text, CommandName, SpreadsheetIdRegex, out var commandArguments))
             {
+                if (string.IsNullOrWhiteSpace(commandArguments))
+                {
+                    return await sender.ReplyAsync(message.Chat,
+                        "Por favor envie o ID da sua planilha com esse comando.",
+                        "User tried configuring spreadsheet id with empty arguments.",
+                        logLevel: LogLevel.Information,
+                        cancellationToken: cancellationToken);
+                }
+
                 return await sender.ReplyAsync(message.Chat,
-                    "Por favor envie o ID da sua planilha com esse comando.",
+                    "ID de planilha inválido, tente novamente.",
                     $"User tried configuring spreadsheet id with bad arguments: '{commandArguments}'.",
                     logLevel: LogLevel.Information,
                     cancellationToken: cancellationToken);
