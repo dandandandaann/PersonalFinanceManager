@@ -3,7 +3,7 @@
 }
 
 Write-Host "Starting build..."
-sam build -t serverless.template
+sam build -t LambdaConfig/serverless.template -s ./
 
 Write-Host "Starting deploy..."
 sam deploy --no-confirm-changeset

@@ -1,6 +1,0 @@
-﻿Resources:
-  MyLambdaFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: BudgetBotTelegram::BudgetBotTelegram.SqsUpdateProcessor::ProcessSqsMessagesAsync
-      Runtime: dotnet8
