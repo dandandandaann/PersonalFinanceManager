@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using SharedLibrary.Enum;
 
 namespace SharedLibrary.Dto;
 
@@ -11,5 +12,8 @@ public class ApiResponse
     public bool Success { get; set; }
 
     [JsonPropertyName("message")]
-    public string? Message { get; set; }
+    public string Message { get; set; } = "";
+
+    [JsonPropertyName("error_code")]
+    public ErrorCodeEnum ErrorCode { get; set; } = ErrorCodeEnum.None;
 }

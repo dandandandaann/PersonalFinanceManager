@@ -1,4 +1,6 @@
-﻿using Amazon.Lambda.SQSEvents;
+﻿// This file was mostly AI generated.
+
+using Amazon.Lambda.SQSEvents;
 using Amazon.Lambda.TestUtilities;
 using Amazon.SQS;
 using Amazon.SQS.Model;
@@ -78,8 +80,8 @@ public class SqsListenerForTestingService(
                         // Messages will NOT be deleted and will become visible again in SQS after timeout.
                         // TODO: figure out which message failed and add its ID to the log
                         logger.LogError(ex, "SqsUpdateProcessor failed to process message batch. " +
-                            "{Current} of {Total} messages were processed, but message ID '{FailedMessageID}' failed. " +
-                            "Messages will return to queue.",
+                                            "{Current} of {Total} messages were processed, but message ID '{FailedMessageID}' failed. " +
+                                            "Messages will return to queue.",
                             messageIndex, sqsEventMessages.Count, sqsEventMessages[messageIndex].MessageId);
                     }
                 }

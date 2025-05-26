@@ -2,6 +2,7 @@
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.Lambda.Serialization.SystemTextJson;
+using SharedLibrary.LocalTesting;
 using UserManagerApi.AotTypes;
 using UserManagerApi.Service;
 
@@ -9,7 +10,8 @@ namespace UserManagerApi.Extension;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddProjectSpecificServices(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddProjectSpecificServices(
+        this IServiceCollection services, IConfiguration config, bool localDevelopment = false)
     {
         // #pragma warning disable IL2026
         services.AddAWSLambdaHosting(LambdaEventSource.HttpApi,
@@ -22,8 +24,11 @@ public static class ServiceCollectionExtensions
         {
             var client = sp.GetRequiredService<IAmazonDynamoDB>();
             var contextBuilder = new DynamoDBContextBuilder()
-                .WithDynamoDBClient(() => client);
-            // contextBuilder = contextBuilder.WithTableNamePrefix("DEV_");
+                .WithDynamoDBClient(() => client)
+                .ConfigureContext(dynamoDbContextConfig => // Use the ConfigureContext method
+                {
+                    dynamoDbContextConfig.TableNamePrefix = LocalDevelopment.Prefix(localDevelopment);
+                });
             return contextBuilder.Build();
         });
 

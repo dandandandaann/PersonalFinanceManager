@@ -1,7 +1,8 @@
-﻿namespace SharedLibrary.LocalDevelopment;
+﻿namespace SharedLibrary.LocalTesting;
 
 public static class SamStart
 {
+    // TODO: this doesn't work. Figure out how to check if sam start-api is running locally.
     public static bool IsLocalDev() =>
         (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development") == "Development";
 

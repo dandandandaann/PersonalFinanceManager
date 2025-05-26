@@ -7,7 +7,7 @@ using UserManagerApi.Extension;
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 
-services.AddProjectSpecificServices(new ConfigurationManager());
+services.AddProjectSpecificServices(new ConfigurationManager(), builder.Environment.IsDevelopment());
 
 // Register Functions
 services.AddScoped<Functions>();
@@ -25,7 +25,7 @@ app.MapPost("/user/signup", async (
     var localContext = new LocalLambdaContext(lambdaContextLogger, nameof(functions.SignupUserAsync));
 
     var lambdaResponse = await functions.SignupUserAsync(request, localContext);
-    return LambdaResponseMapper.ToMinimalApiResult(lambdaResponse);
+    return LambdaToApiResponseMapper.ToMinimalApiResult(lambdaResponse);
 });
 
 // UpdateUserConfigurationAsync
@@ -40,7 +40,7 @@ app.MapPut("/user/{userId}/configuration", async (
     var localContext = new LocalLambdaContext(lambdaContextLogger, nameof(functions.UpdateUserConfigurationAsync));
 
     var lambdaResponse = await functions.UpdateUserConfigurationAsync(userId, request, localContext);
-    return LambdaResponseMapper.ToMinimalApiResult(lambdaResponse);
+    return LambdaToApiResponseMapper.ToMinimalApiResult(lambdaResponse);
 });
 
 
@@ -55,7 +55,7 @@ app.MapGet("/user/telegram/{telegramId}", async (
     var localContext = new LocalLambdaContext(lambdaContextLogger, nameof(functions.GetUserByTelegramIdAsync));
 
     var lambdaResponse = await functions.GetUserByTelegramIdAsync(telegramId, localContext);
-    return LambdaResponseMapper.ToMinimalApiResult(lambdaResponse);
+    return LambdaToApiResponseMapper.ToMinimalApiResult(lambdaResponse);
 });
 
 app.MapGet("/", () => "Hello World! This is the UserManagerApi running locally.");

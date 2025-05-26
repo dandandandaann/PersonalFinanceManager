@@ -13,7 +13,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddProjectSpecificServices(this IServiceCollection services, IConfiguration config)
     {
-
         // Serialize Options for AOT
         services.ConfigureTelegramBot<Microsoft.AspNetCore.Http.Json.JsonOptions>(opt => opt.SerializerOptions);
         // #pragma warning disable IL2026

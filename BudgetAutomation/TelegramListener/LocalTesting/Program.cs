@@ -18,14 +18,25 @@ services.AddScoped<Functions>();
 var app = builder.Build();
 
 // SetupWebhook
-app.MapGet("/setupWebhook", async (Functions functions, ConfigureWebhook configureWebhook, ILoggerFactory loggerFactory) =>
+app.MapGet("/setupWebhook", async (
+    Functions functions, ConfigureWebhook configureWebhook, ILoggerFactory loggerFactory,
+    [FromQuery] string apiDomain) =>
 {
     var lambdaContextLogger = loggerFactory.CreateLogger(typeof(Functions).FullName ?? "Functions");
     var localContext = new LocalLambdaContext(lambdaContextLogger, nameof(functions.SetupWebhook));
 
-    APIGatewayHttpApiV2ProxyResponse lambdaResponse = await functions.SetupWebhook(configureWebhook, localContext);
+    var apiGatewayRequest = new APIGatewayHttpApiV2ProxyRequest
+    {
+        RequestContext = new APIGatewayHttpApiV2ProxyRequest.ProxyRequestContext
+        {
+            DomainName = apiDomain.TrimEnd('/')
+        }
+    };
 
-    return LambdaResponseMapper.ToMinimalApiResult(lambdaResponse);
+    APIGatewayHttpApiV2ProxyResponse lambdaResponse = await functions.SetupWebhook(
+        apiGatewayRequest, configureWebhook, localContext);
+
+    return LambdaToApiResponseMapper.ToMinimalApiResult(lambdaResponse);
 });
 
 // Webhook
@@ -40,11 +51,10 @@ app.MapPost("/webhook", async (
     var lambdaContextLogger = loggerFactory.CreateLogger(typeof(Functions).FullName ?? "Functions");
     var localContext = new LocalLambdaContext(lambdaContextLogger, nameof(functions.Webhook));
 
-    // Call the function
     APIGatewayHttpApiV2ProxyResponse lambdaResponse =
         await functions.Webhook(token, update, localContext, authenticator, updateProcessor);
 
-    return LambdaResponseMapper.ToMinimalApiResult(lambdaResponse);
+    return LambdaToApiResponseMapper.ToMinimalApiResult(lambdaResponse);
 });
 
 app.MapGet("/", () => "Hello World! This is the TelegramListener running locally.");

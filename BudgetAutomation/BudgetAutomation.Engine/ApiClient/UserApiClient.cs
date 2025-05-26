@@ -5,6 +5,7 @@ using BudgetAutomation.Engine.AtoTypes;
 using BudgetAutomation.Engine.Interface;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Dto;
+using SharedLibrary.Enum;
 using SharedLibrary.Model;
 using SharedLibrary.Settings;
 
@@ -27,11 +28,11 @@ public class UserApiClient : IUserApiClient
     }
 
     public async Task<UserSignupResponse> SignupUserAsync(
-        long telegramId, string? username, string? email,
+        long telegramId, string email, string? username,
         CancellationToken cancellationToken = default)
     {
         var requestUri = new Uri(_httpClient.BaseAddress!, "/user/signup");
-        var signupRequest = new UserSignupRequest(telegramId, username);
+        var signupRequest = new UserSignupRequest(telegramId, email, username);
 
         _logger.LogInformation("Sending signup request for TelegramId {TelegramId} to {RequestUri}", telegramId,
             requestUri);
@@ -102,8 +103,8 @@ public class UserApiClient : IUserApiClient
 
             if (!response.IsSuccessStatusCode)
             {
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                    _logger.LogError("Failed to check user for TelegramId {TelegramId}", telegramId);
+                _logger.LogError("Received status {StatusCode}  when trying to get user for TelegramId {TelegramId}",
+                    response.StatusCode, telegramId);
                 return new UserGetResponse { Success = false };
             }
 
@@ -121,12 +122,8 @@ public class UserApiClient : IUserApiClient
                     return new UserGetResponse { Success = false };
                 }
 
-                if (userGetResponse.Message == "user not found")
-                    return userGetResponse;
-
                 _logger.LogWarning("User not found for TelegramId {TelegramId}", telegramId);
                 return new UserGetResponse { Success = false };
-
             }
 
             _logger.LogInformation("Signup successful for TelegramId {TelegramId}. User ID: {UserId}",
@@ -165,7 +162,8 @@ public class UserApiClient : IUserApiClient
             // -- TODO: make this into a method (that maybe could live in SharedLibrary)
             var request = new HttpRequestMessage(HttpMethod.Put, requestUri);
 
-            var content = JsonContent.Create(configurationUpdateRequest, AppJsonSerializerContext.Default.UserConfigurationUpdateRequest);
+            var content = JsonContent.Create(configurationUpdateRequest,
+                AppJsonSerializerContext.Default.UserConfigurationUpdateRequest);
             request.Content = content;
 
             var response = await _httpClient.SendAsync(request, cancellationToken);

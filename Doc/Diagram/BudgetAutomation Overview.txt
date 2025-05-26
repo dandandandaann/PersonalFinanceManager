@@ -1,0 +1,19 @@
+---
+title: BudgetAutomation Overview
+config:
+  theme: neo
+  layout: dagre
+comment: mermaidchart.com
+---
+flowchart TD
+    TB["Telegram Bot"] --> TL["Telegram Listener"]
+    TL --> SQS["SQS Queue"]
+    SQS --> E["Engine"]
+    E <-.-> UM["User Manager"] & EL["Expense Logger"] & DBC["Chat State DB"]
+    EL -.-> DBU["Spreadsheet"]
+    UM -.-> S["User DB"]
+    TB@{ icon: "fa:face-grimace", form: "rounded", pos: "b"}
+    SQS@{ shape: cyl}
+    DBC@{ shape: das}
+    DBU@{ shape: internal-storage}
+    S@{ shape: das}

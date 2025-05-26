@@ -1,11 +1,13 @@
-﻿using System.Text;
+﻿// This file was mostly AI generated.
+
+using System.Text;
 using Amazon.Lambda.APIGatewayEvents;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 
 namespace SharedLibrary.Lambda.LocalDevelopment;
 
-public static class LambdaResponseMapper
+public static class LambdaToApiResponseMapper
 {
     public static IResult ToMinimalApiResult(APIGatewayHttpApiV2ProxyResponse lambdaResponse)
     {
@@ -35,32 +37,29 @@ public static class LambdaResponseMapper
         }
 
         string? locationHeader = null;
-        if (lambdaResponse is { StatusCode: StatusCodes.Status201Created, Headers: not null })
+        if (lambdaResponse.StatusCode == StatusCodes.Status201Created && lambdaResponse.Headers != null)
         {
             if (lambdaResponse.Headers.TryGetValue(HeaderNames.Location, out var locValue) ||
-                lambdaResponse.Headers.TryGetValue("location", out locValue))
+                lambdaResponse.Headers.TryGetValue("location", out locValue)) // Case-insensitive
             {
                 locationHeader = locValue;
             }
         }
 
+        // Handle 201 Created with Location specifically
         if (locationHeader != null)
         {
-            object? createdBodyObject = null;
-            if (bodyBytes != null) {
-                 // If the created body is JSON text, deserialize or pass as string
-                if (contentType.Contains("json") || contentType.StartsWith("text/")) {
-                    createdBodyObject = Encoding.UTF8.GetString(bodyBytes);
-                } else {
-                    // For truly binary created body, Results.Created might not be ideal
-                    // as it often expects an object to serialize or a string.
-                    // You might need a more specialized handling or ensure created bodies are text.
-                    createdBodyObject = bodyBytes; // Pass as is, Results.Created might serialize it differently
-                }
-            } else if (bodyString != null) {
-                createdBodyObject = bodyString;
-            }
-            return Results.Created(locationHeader, createdBodyObject);
+            if (bodyString != null) // If the body is a string (potentially JSON)
+                return new CreatedWithRawBodyResult(locationHeader, bodyString, contentType);
+
+            if (bodyBytes == null)
+                return new CreatedWithRawBodyResult(locationHeader, null, contentType);
+
+            if (!contentType.Contains("json") && !contentType.StartsWith("text/"))
+                return new CreatedWithRawBodyResult(locationHeader, null, contentType);
+
+            var decodedStringBody = Encoding.UTF8.GetString(bodyBytes);
+            return new CreatedWithRawBodyResult(locationHeader, decodedStringBody, contentType);
         }
 
         if (bodyBytes != null)
@@ -86,5 +85,21 @@ public class ByteArrayResult(byte[] bytes, string contentType, int statusCode) :
         httpContext.Response.StatusCode = statusCode;
         httpContext.Response.ContentType = contentType;
         return httpContext.Response.Body.WriteAsync(bytes, 0, bytes.Length);
+    }
+}
+
+public class CreatedWithRawBodyResult(string location, string? body, string contentType) : IResult
+{
+    public Task ExecuteAsync(HttpContext httpContext)
+    {
+        httpContext.Response.StatusCode = StatusCodes.Status201Created;
+        httpContext.Response.Headers[HeaderNames.Location] = location;
+
+        if (string.IsNullOrEmpty(body))
+            return Task.CompletedTask;
+
+        httpContext.Response.ContentType = contentType;
+        // httpContext.Response.ContentLength = Encoding.UTF8.GetByteCount(_body); // Optional
+        return httpContext.Response.WriteAsync(body, Encoding.UTF8);
     }
 }
