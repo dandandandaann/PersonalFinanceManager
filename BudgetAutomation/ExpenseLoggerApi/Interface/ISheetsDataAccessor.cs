@@ -1,4 +1,5 @@
 ﻿using Google.Apis.Sheets.v4.Data;
+using SharedLibrary.Dto;
 
 namespace ExpenseLoggerApi.Interface
 {
@@ -26,6 +27,7 @@ namespace ExpenseLoggerApi.Interface
         /// Performs a batch update of cell values in a spreadsheet.
         /// </summary>
         Task BatchUpdateValuesAsync(string spreadsheetId, BatchUpdateValuesRequest request);
+        Task<SpreadsheetValidatorResponse> ValidateSpreadsheetIdAsync(SpreadsheetValidatorRequest request);
     }
 }
 

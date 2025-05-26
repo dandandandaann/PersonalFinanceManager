@@ -1,6 +1,8 @@
 ﻿using ExpenseLoggerApi.Interface;
+using Google;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
+using SharedLibrary.Dto;
 
 namespace ExpenseLoggerApi.Service;
 
@@ -95,6 +97,49 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
         {
             logger.LogError(ex, "Error executing BatchUpdateValues for spreadsheet {SpreadsheetId}.", spreadsheetId);
             throw;
+        }
+    }
+    public async Task<SpreadsheetValidatorResponse> ValidateSpreadsheetIdAsync(SpreadsheetValidatorRequest request)
+    {
+        var response = new SpreadsheetValidatorResponse();
+
+        if (string.IsNullOrEmpty(request.SpreadsheetId))
+        {
+            response.Success = false;
+            response.Message = "O Id da planilha está vazio ou nulo";
+            return response;
+        }
+
+        try
+        {
+            var sheetRequest = sheetsService.Spreadsheets.Get(request.SpreadsheetId);
+            var sheetResponse = await sheetRequest.ExecuteAsync();
+
+            response.Success = sheetResponse?.SpreadsheetId == request.SpreadsheetId;
+
+            if (response.Success == true)
+            {
+                response.Message = "Planilha válida.";
+            }
+            else
+            {
+                response.Message = "Id da planilha não corresponde.";
+            }
+            return response;
+
+        }
+        catch (GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            response.Success = false;
+            response.Message = "Planilha não encontrada";
+            return response;
+
+        }
+        catch (Exception ex)
+        {
+            response.Success = false;
+            response.Message = $"Erro ao validar a planilha: {ex.Message}";
+            return response;
         }
     }
 }

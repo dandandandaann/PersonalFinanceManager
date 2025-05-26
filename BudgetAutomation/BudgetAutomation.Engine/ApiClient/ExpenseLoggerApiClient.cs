@@ -30,6 +30,7 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
     public async Task<LogExpenseResponse> LogExpenseAsync(
         string spreadsheetId, Expense expense, CancellationToken cancellationToken = default)
     {
+
         _logger.LogInformation("Sending request /log-expense for '{Description}'.", expense.Description);
 
         var endpointUri = new Uri(_httpClient.BaseAddress!, "log-expense");
@@ -84,5 +85,39 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
         }
 
         return new LogExpenseResponse();
+    }
+
+    public async Task<SpreadsheetValidatorResponse> ValidateSpreadsheet(SpreadsheetValidatorRequest request)
+    {
+        _logger.LogInformation("Sending request to /validate-spreadsheet");
+
+        var endpointUri = new Uri(_httpClient.BaseAddress!, "validate-spreadsheet");
+
+        var httpResponse = await _httpClient.PostAsJsonAsync(endpointUri, request);
+
+        if (!httpResponse.IsSuccessStatusCode)
+        {
+            _logger.LogError("Validation failed with status code: {StatusCode}", httpResponse.StatusCode);
+            return new SpreadsheetValidatorResponse
+            {
+                Success = false,
+                Message = $"Validation failed with status code: {httpResponse.StatusCode}"
+            };
+        }
+
+        var result = await httpResponse.Content.ReadFromJsonAsync<SpreadsheetValidatorResponse>();
+
+        if (result == null)
+        {
+            _logger.LogError("Validation response is null or malformed.");
+            return new SpreadsheetValidatorResponse
+            {
+                Success = false,
+                Message = "Validation response was null or malformed."
+            };
+        }
+
+        _logger.LogInformation("Validation result: {Message}", result.Message);
+        return result;
     }
 }

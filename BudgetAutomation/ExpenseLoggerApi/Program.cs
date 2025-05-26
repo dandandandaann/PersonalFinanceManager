@@ -85,6 +85,8 @@ builder.Services.AddScoped<ExpenseLoggerService>(sp =>
     );
 });
 
+builder.Services.AddScoped<SpreadsheetService>();
+
 var app = builder.Build();
 
 app.Use(async (context, next) =>
@@ -124,6 +126,26 @@ app.MapPut("/log-expense",
         {
             app.Logger.LogError(ex, "Failed to log expense for description: {Description}", description);
             return Results.Problem(detail: "An error occurred while logging the expense.", statusCode: 500);
+        }
+    });
+
+app.MapPost("/validate-spreadsheet",
+    async ([FromServices] SpreadsheetService sheetService,
+        [FromBody] SpreadsheetValidatorRequest request) =>
+    {
+        try
+        {
+            var response = await sheetService.ValidateSpreadsheetId(request.SpreadsheetId);
+            return Results.Ok(new SpreadsheetValidatorResponse
+            {
+                Success = response,
+                Message = response ? "Valid Spreadsheet." : "Invalid Spreadsheet."
+            });
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogError(ex, "Error while validating the spreadsheet.");
+            return Results.Problem(detail:"Internal error while validating the spreadsheet.", statusCode: 500);
         }
     });
 
