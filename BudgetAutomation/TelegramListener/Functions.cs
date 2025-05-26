@@ -3,7 +3,6 @@ using Amazon.Lambda.Annotations;
 using Amazon.Lambda.Annotations.APIGateway;
 using Amazon.Lambda.APIGatewayEvents;
 using SharedLibrary.Lambda.LocalDevelopment;
-using SharedLibrary.Utility;
 using Telegram.Bot.Types;
 using TelegramListener.Service;
 
@@ -41,11 +40,12 @@ public class Functions
         Timeout = 10)]
     [HttpApi(LambdaHttpMethod.Get, "/setupWebhook")]
     public async Task<APIGatewayHttpApiV2ProxyResponse> SetupWebhook(
+        APIGatewayHttpApiV2ProxyRequest request,
         [FromServices] ConfigureWebhook configureWebhook, ILambdaContext context)
     {
         try
         {
-            await configureWebhook.StartAsync(context.Logger);
+            await configureWebhook.SetupWebhookAsync(request.RequestContext.DomainName, context.Logger);
         }
         catch (Exception e)
         {
