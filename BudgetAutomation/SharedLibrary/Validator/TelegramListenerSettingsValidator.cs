@@ -15,11 +15,6 @@ public class TelegramListenerSettingsValidator : IValidateOptions<TelegramListen
             return ValidateOptionsResult.Fail(failures);
         }
 
-        if (string.IsNullOrWhiteSpace(options.HostAddress))
-        {
-            failures.Add($"{nameof(options.HostAddress)} is missing or empty.");
-        }
-
         if (string.IsNullOrWhiteSpace(options.TelegramUpdateQueue))
         {
             failures.Add($"{nameof(options.TelegramUpdateQueue)} is missing or empty.");

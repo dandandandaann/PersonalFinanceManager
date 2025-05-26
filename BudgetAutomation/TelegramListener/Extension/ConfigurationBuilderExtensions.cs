@@ -17,6 +17,7 @@ public static class ConfigurationBuilderExtensions
             configBuilder.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
             Console.WriteLine("Start with local development settings.");
         }
+
         return configBuilder;
     }
 }
