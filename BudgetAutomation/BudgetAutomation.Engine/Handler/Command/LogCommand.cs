@@ -102,7 +102,7 @@ public partial class LogCommand(
                     cancellationToken: cancellationToken);
             }
             return await sender.ReplyAsync(chat,
-                $"Logged Expense\n{expense}",
+                $"Logged Expense\n{response.expense}",
                 "Logged expense.",
                 cancellationToken: cancellationToken);
         }
