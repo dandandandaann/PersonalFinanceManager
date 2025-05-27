@@ -1,4 +1,11 @@
-﻿#Set-Location "ExpenseLoggerApi"
-dotnet lambda deploy-function expense-logger --function-runtime dotnet8 --function-architecture x86_64
+﻿if ((Split-Path -Leaf (Get-Location)) -ne "ExpenseLoggerApi") {
+    Set-Location ExpenseLoggerApi
+}
+
+Write-Host "Starting build..."
+sam build -t serverless.template
+
+Write-Host "Starting deploy..."
+sam deploy --config-file LambdaConfig/samconfig.toml --no-confirm-changeset
 
 Read-Host -Prompt "Press Enter to exit"

@@ -8,19 +8,19 @@ RUN apt-get update && apt-get install -y clang zlib1g-dev --no-install-recommend
 WORKDIR /src
 
 # Copy csproj and restore dependencies first for layer caching
-COPY ["BudgetBotTelegram/BudgetBotTelegram.csproj", "BudgetBotTelegram/"]
+COPY ["BudgetAutomation.Engine/BudgetAutomation.Engine.csproj", "BudgetAutomation.Engine/"]
 
 # Copy the referenced projects
 COPY ["SharedLibrary/SharedLibrary.csproj", "SharedLibrary/"]
 
-RUN dotnet restore "BudgetBotTelegram/BudgetBotTelegram.csproj" -r linux-x64
+RUN dotnet restore "BudgetAutomation.Engine/BudgetAutomation.Engine.csproj" -r linux-x64
 
 # Copy the rest of the source code
 COPY . .
-WORKDIR /src/BudgetBotTelegram
+WORKDIR /src/BudgetAutomation.Engine
 
 # Publish the application using Native AOT for linux-arm64
-RUN dotnet publish "BudgetBotTelegram.csproj" \
+RUN dotnet publish "BudgetAutomation.Engine.csproj" \
     -r linux-amd64 \
     -c Release \
     -o /app/publish \
@@ -39,4 +39,4 @@ ENV ASPNETCORE_HTTP_PORTS=6001
 EXPOSE 6001
 
 # Entrypoint is the native executable
-ENTRYPOINT ["./BudgetBotTelegram"]
+ENTRYPOINT ["./BudgetAutomation.Engine"]

@@ -25,7 +25,7 @@ public static class ServiceCollectionExtensions
             var client = sp.GetRequiredService<IAmazonDynamoDB>();
             var contextBuilder = new DynamoDBContextBuilder()
                 .WithDynamoDBClient(() => client)
-                .ConfigureContext(dynamoDbContextConfig => // Use the ConfigureContext method
+                .ConfigureContext(dynamoDbContextConfig =>
                 {
                     dynamoDbContextConfig.TableNamePrefix = LocalDevelopment.Prefix(localDevelopment);
                 });

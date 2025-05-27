@@ -1,11 +1,12 @@
 ﻿using SharedLibrary.LocalTesting;
 using SharedLibrary.Settings;
 
-namespace TelegramListener.Extension;
+namespace ExpenseLoggerApi.Extension;
 
 public static class ConfigurationBuilderExtensions
 {
-    public static IConfigurationBuilder AddProjectSpecificConfigurations(this IConfigurationBuilder configBuilder, bool localDevelopment = false)
+    public static IConfigurationBuilder AddProjectSpecificConfigurations(
+        this IConfigurationBuilder configBuilder, bool localDevelopment = false)
     {
         var devPrefix = LocalDevelopment.Prefix(localDevelopment);
 

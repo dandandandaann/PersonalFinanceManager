@@ -20,6 +20,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddProjectSpecificServices(
         this IServiceCollection services, IConfiguration config, bool localDevelopment = false)
     {
+        services.AddLogging(builder => builder.AddLambdaLogger());
+
         // Configure AWS Services
         services.AddAWSService<IAmazonSQS>();
         services.AddSingleton<IAmazonDynamoDB>(_ => new AmazonDynamoDBClient(RegionEndpoint.USEast2));
@@ -28,11 +30,10 @@ public static class ServiceCollectionExtensions
             var client = sp.GetRequiredService<IAmazonDynamoDB>();
             var contextBuilder = new DynamoDBContextBuilder()
                 .WithDynamoDBClient(() => client)
-                .ConfigureContext(dynamoDbContextConfig => // Use the ConfigureContext method
+                .ConfigureContext(dynamoDbContextConfig =>
                 {
                     dynamoDbContextConfig.TableNamePrefix = LocalDevelopment.Prefix(localDevelopment);
                 });
-            // contextBuilder = contextBuilder.WithTableNamePrefix("DEV_");
             return contextBuilder.Build();
         });
 
