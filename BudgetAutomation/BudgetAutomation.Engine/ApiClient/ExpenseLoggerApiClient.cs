@@ -105,7 +105,7 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
             };
         }
 
-        var result = await httpResponse.Content.ReadFromJsonAsync<SpreadsheetValidatorResponse>();
+            var result = await response.Content.ReadFromJsonAsync(AppJsonSerializerContext.Default.SpreadsheetValidatorResponse, cancellationToken);
 
         if (result == null)
         {
