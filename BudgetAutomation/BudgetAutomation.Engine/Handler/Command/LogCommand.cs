@@ -1,5 +1,5 @@
 ﻿using System.Text.RegularExpressions;
-using BudgetAutomation.Engine.Enum;
+using BudgetAutomation.Engine.Enums;
 using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Misc;
 using BudgetAutomation.Engine.Model;

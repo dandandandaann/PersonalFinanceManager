@@ -1,4 +1,4 @@
-﻿namespace BudgetAutomation.Engine.Enum;
+﻿namespace BudgetAutomation.Engine.Enums;
 
 public enum ChatStateEnum
 {

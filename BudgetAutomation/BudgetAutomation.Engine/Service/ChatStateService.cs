@@ -1,5 +1,5 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
-using BudgetAutomation.Engine.Enum;
+using BudgetAutomation.Engine.Enums;
 using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Model;
 
