@@ -3,6 +3,7 @@ using Google;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 using SharedLibrary.Dto;
+using SharedLibrary.Enum;
 
 namespace ExpenseLoggerApi.Service;
 
@@ -99,39 +100,33 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
             throw;
         }
     }
-    public async Task<SpreadsheetValidatorResponse> ValidateSpreadsheetIdAsync(SpreadsheetValidatorRequest request)
+    public async Task<SpreadsheetValidationResponse> ValidateSpreadsheetIdAsync(SpreadsheetValidationRequest request)
     {
-        var response = new SpreadsheetValidatorResponse();
+        var response = new SpreadsheetValidationResponse();
 
-        if (string.IsNullOrEmpty(request.SpreadsheetId))
+        if (string.IsNullOrWhiteSpace(request.SpreadsheetId))
         {
             response.Success = false;
             response.Message = "O Id da planilha está vazio ou nulo";
+            response.ErrorCode = ErrorCodeEnum.InvalidInput;
             return response;
         }
 
         try
         {
-            var sheetRequest = sheetsService.Spreadsheets.Get(request.SpreadsheetId);
-            var sheetResponse = await sheetRequest.ExecuteAsync();
+            var spreadsheetGet = sheetsService.Spreadsheets.Get(request.SpreadsheetId);
+            var spreadsheet = await spreadsheetGet.ExecuteAsync();
 
-            response.Success = sheetResponse?.SpreadsheetId == request.SpreadsheetId;
+            response.Success = spreadsheet?.SpreadsheetId == request.SpreadsheetId;
+            response.Message = response.Success ? "Planilha válida." : "Id da planilha não corresponde.";
 
-            if (response.Success == true)
-            {
-                response.Message = "Planilha válida.";
-            }
-            else
-            {
-                response.Message = "Id da planilha não corresponde.";
-            }
             return response;
-
         }
         catch (GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
         {
             response.Success = false;
             response.Message = "Planilha não encontrada";
+            response.ErrorCode = ErrorCodeEnum.ResourceNotFound;
             return response;
 
         }
@@ -139,6 +134,7 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
         {
             response.Success = false;
             response.Message = $"Erro ao validar a planilha: {ex.Message}";
+            response.ErrorCode = ErrorCodeEnum.UnknownError;
             return response;
         }
     }

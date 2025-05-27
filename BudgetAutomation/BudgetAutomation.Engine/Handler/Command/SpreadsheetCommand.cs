@@ -3,7 +3,7 @@ using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Misc;
 using BudgetAutomation.Engine.Model;
 using BudgetAutomation.Engine.Service;
-using SharedLibrary.Dto;
+using SharedLibrary.Enum;
 using SharedLibrary.Telegram;
 
 namespace BudgetAutomation.Engine.Handler.Command;
@@ -25,9 +25,9 @@ public partial class SpreadsheetCommand(
 
         try
         {
-            if (!Utility.TryExtractCommandArguments(message.Text, CommandName, SpreadsheetIdRegex, out var commandArguments))
+            if (!Utility.TryExtractCommandArguments(message.Text, CommandName, SpreadsheetIdRegex, out var spreadsheetId))
             {
-                if (string.IsNullOrWhiteSpace(commandArguments))
+                if (string.IsNullOrWhiteSpace(spreadsheetId))
                 {
                     return await sender.ReplyAsync(message.Chat,
                         "Por favor envie o ID da sua planilha com esse comando.",
@@ -38,31 +38,47 @@ public partial class SpreadsheetCommand(
 
                 return await sender.ReplyAsync(message.Chat,
                     "ID de planilha inválido, tente novamente.",
-                    $"User tried configuring spreadsheet id with bad arguments: '{commandArguments}'.",
+                    $"User tried configuring spreadsheet id with bad arguments: '{spreadsheetId}'.",
                     logLevel: LogLevel.Information,
                     cancellationToken: cancellationToken);
             }
 
-            var validateRequest = new SpreadsheetValidatorRequest();
-            validateRequest.SpreadsheetId = commandArguments;
+            var validationResponse = await expenseLoggerApiClient.ValidateSpreadsheet(spreadsheetId, cancellationToken);
 
-            var validateResponse = await expenseLoggerApiClient.ValidateSpreadsheet(validateRequest);
-
-            if (!validateResponse.Success)
+            if (!validationResponse.Success)
             {
-                return await sender.ReplyAsync(message.Chat,
-                    "Não foi possível encontrar a planilha. Por favor tente novamente.",
-                    "Spreadsheet not found.",
-                    logLevel: LogLevel.Warning,
-                
-                    cancellationToken: cancellationToken);
+                switch (validationResponse.ErrorCode)
+                {
+                    case ErrorCodeEnum.InvalidInput:
+                        return await sender.ReplyAsync(message.Chat,
+                            "O ID da planilha é inválido. Verifique o ID e tente novamente.",
+                            "Invalid spreadsheet id.",
+                            logLevel: LogLevel.Information,
+                            cancellationToken: cancellationToken);
+                        break;
+                    case ErrorCodeEnum.ResourceNotFound:
+                        return await sender.ReplyAsync(message.Chat,
+                            "Não foi possível encontrar a planilha com o ID enviado. Verifique o ID e tente novamente.",
+                            "Spreadsheet not found.",
+                            logLevel: LogLevel.Information,
+                            cancellationToken: cancellationToken);
+                        break;
+                    case ErrorCodeEnum.UnknownError:
+                    default:
+                        return await sender.ReplyAsync(message.Chat,
+                            "Ocorreu um erro ao tentar verificar a planilha com o ID informado. Tente novamente mais tarde.",
+                            "Unable to validate spreadsheet with provided ID.",
+                            logLevel: LogLevel.Information,
+                            cancellationToken: cancellationToken);
+                }
             }
-            var success = userManagerService.ConfigureSpreadsheet(commandArguments, cancellationToken);
 
-            if (!success)
+            var spreadsheetConfigured = userManagerService.ConfigureSpreadsheet(spreadsheetId, cancellationToken);
+
+            if (!spreadsheetConfigured)
             {
                 return await sender.ReplyAsync(message.Chat,
-                    "Não foi possível configurar a sua planilha. Por favor tente novamente.",
+                    "Sua planilha é válida, mas não foi possível configurar ela no momento. Por favor tente novamente.",
                     "SpreadsheetId configuration failed.",
                     logLevel: LogLevel.Warning,
                     cancellationToken: cancellationToken);
@@ -73,10 +89,12 @@ public partial class SpreadsheetCommand(
                 "SpreadsheetId configuration successful.",
                 cancellationToken: cancellationToken);
         }
+        catch (Exception e) when (e is InvalidUserInputException || e is UnauthorizedAccessException)
+        {
+            throw;
+        }
         catch (Exception e)
         {
-            if (e is InvalidUserInputException or UnauthorizedAccessException)
-                throw;
 
             return await sender.ReplyAsync(message.Chat,
                 "Um erro ocorreu ao tentar configurar a planilha. Tente novamente mais tarde.",

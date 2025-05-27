@@ -40,7 +40,7 @@ public class Functions
         MemorySize = 128,
         Timeout = 15)]
     [HttpApi(LambdaHttpMethod.Put, "/log-expense")]
-    public async Task<APIGatewayHttpApiV2ProxyResponse> LogExpenseAsyncAsync(ILambdaContext context,
+    public async Task<APIGatewayHttpApiV2ProxyResponse> LogExpenseAsync(ILambdaContext context,
         [FromServices] ExpenseLoggerService sheetsLogger,
         [FromQuery] string spreadsheetId,
         [FromQuery] string description, [FromQuery] string amount, [FromQuery] string category = "")
@@ -62,6 +62,27 @@ public class Functions
         {
             logger.LogError(ex, "LogExpenseAsyncAsync: Failed to log expense for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
             return ApiGatewayResult.InternalServerError("An error occurred while logging the expense.");
+        }
+    }
+
+    [LambdaFunction(
+        Policies = "AWSLambdaBasicExecutionRole, " +
+                   "arn:aws:iam::795287297286:policy/Configurations_Read",
+        MemorySize = 128,
+        Timeout = 15)]
+    [HttpApi(LambdaHttpMethod.Put, "/validate-spreadsheet")]
+    public async Task<APIGatewayHttpApiV2ProxyResponse> ValidateSpreadsheetAsync(ILambdaContext context,
+        [FromServices] SpreadsheetService sheetService, [FromBody] SpreadsheetValidationRequest request)
+    {
+        try
+        {
+            var response = await sheetService.ValidateSpreadsheetId(request.SpreadsheetId);
+            return ApiGatewayResult.Ok(response);
+        }
+        catch (Exception ex)
+        {
+            context.Logger.LogError(ex, "Error while validating the spreadsheet.");
+            return ApiGatewayResult.InternalServerError("Internal error while validating the spreadsheet.");
         }
     }
 }

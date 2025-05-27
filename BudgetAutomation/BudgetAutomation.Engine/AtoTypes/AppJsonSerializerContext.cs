@@ -14,6 +14,8 @@ namespace BudgetAutomation.Engine.AtoTypes;
 [JsonSerializable(typeof(UserSignupResponse))]
 [JsonSerializable(typeof(UserUpdateResponse))]
 [JsonSerializable(typeof(UserUpsertResponse))]
+[JsonSerializable(typeof(SpreadsheetValidationRequest))]
+[JsonSerializable(typeof(SpreadsheetValidationResponse))]
 
 [JsonSerializable(typeof(User))]
 [JsonSerializable(typeof(UserConfiguration))]

@@ -53,7 +53,7 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
 
         if (!response.IsSuccessStatusCode)
         {
-            _logger.LogError("Failed to create log for Spreadsheet {SpreadsheetId}", spreadsheetId);
+            _logger.LogError("Failed to log expense in Spreadsheet {SpreadsheetId}", spreadsheetId);
             return new LogExpenseResponse { Success = false };
         }
         
@@ -87,30 +87,38 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
         return new LogExpenseResponse();
     }
 
-    public async Task<SpreadsheetValidatorResponse> ValidateSpreadsheet(SpreadsheetValidatorRequest request)
+    public async Task<SpreadsheetValidationResponse> ValidateSpreadsheet(
+        string spreadSheetId, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Sending request to /validate-spreadsheet");
 
         var endpointUri = new Uri(_httpClient.BaseAddress!, "validate-spreadsheet");
 
-        var httpResponse = await _httpClient.PostAsJsonAsync(endpointUri, request);
+        var validationRequest = new SpreadsheetValidationRequest { SpreadsheetId = spreadSheetId };
+        var content = JsonContent.Create(validationRequest, AppJsonSerializerContext.Default.SpreadsheetValidationRequest);
+
+        var request = new HttpRequestMessage(HttpMethod.Post, endpointUri);
+        request.Content = content;
+
+        var httpResponse = await _httpClient.SendAsync(request, cancellationToken);
 
         if (!httpResponse.IsSuccessStatusCode)
         {
             _logger.LogError("Validation failed with status code: {StatusCode}", httpResponse.StatusCode);
-            return new SpreadsheetValidatorResponse
+            return new SpreadsheetValidationResponse
             {
                 Success = false,
                 Message = $"Validation failed with status code: {httpResponse.StatusCode}"
             };
         }
 
-            var result = await response.Content.ReadFromJsonAsync(AppJsonSerializerContext.Default.SpreadsheetValidatorResponse, cancellationToken);
+        var result = await httpResponse.Content.ReadFromJsonAsync(
+            AppJsonSerializerContext.Default.SpreadsheetValidationResponse, cancellationToken);
 
         if (result == null)
         {
             _logger.LogError("Validation response is null or malformed.");
-            return new SpreadsheetValidatorResponse
+            return new SpreadsheetValidationResponse
             {
                 Success = false,
                 Message = "Validation response was null or malformed."
