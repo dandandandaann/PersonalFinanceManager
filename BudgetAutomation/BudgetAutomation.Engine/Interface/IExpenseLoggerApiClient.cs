@@ -7,5 +7,5 @@ namespace BudgetAutomation.Engine.Interface;
 public interface IExpenseLoggerApiClient
 {
     Task<LogExpenseResponse> LogExpenseAsync(string spreadsheetId, Expense expense, CancellationToken cancellationToken = default);
-    Task<SpreadsheetValidatorResponse> ValidateSpreadsheet(SpreadsheetValidatorRequest request);
+    Task<SpreadsheetValidationResponse> ValidateSpreadsheet(string spreadsheetId, CancellationToken cancellationToken = default);
 }

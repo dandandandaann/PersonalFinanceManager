@@ -61,8 +61,10 @@ public static class ServiceCollectionExtensions
             options => { options.Serializer = new SourceGeneratorLambdaJsonSerializer<AppJsonSerializerContext>(); });
 #pragma warning restore IL2026
 
-        services.AddSingleton<GoogleSheetsClientFactory>();
 
+        // Register Services
+        services.AddScoped<SpreadsheetService>();
+        services.AddSingleton<GoogleSheetsClientFactory>();
         services.AddSingleton<SheetsService>(sp =>
         {
             var factory = sp.GetRequiredService<GoogleSheetsClientFactory>();
@@ -70,9 +72,7 @@ public static class ServiceCollectionExtensions
 
             return factory.CreateSheetsService(settings.credentials);
         });
-
         services.AddSingleton<ISheetsDataAccessor, GoogleSheetsDataAccessor>();
-
         services.AddScoped<ExpenseLoggerService>(sp =>
         {
             var settings = sp.GetRequiredService<IOptions<ExpenseLoggerSettings>>().Value;

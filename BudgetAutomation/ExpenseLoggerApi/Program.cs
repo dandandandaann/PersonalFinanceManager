@@ -13,8 +13,6 @@ builder.Configuration.AddProjectSpecificConfigurations(localDevelopment);
 
 builder.Services.AddProjectSpecificServices(builder.Configuration);
 
-builder.Services.AddScoped<SpreadsheetService>();
-
 var app = builder.Build();
 
 app.Use(async (context, next) =>
@@ -59,16 +57,12 @@ app.MapPut("/log-expense",
 
 app.MapPost("/validate-spreadsheet",
     async ([FromServices] SpreadsheetService sheetService,
-        [FromBody] SpreadsheetValidatorRequest request) =>
+        [FromBody] SpreadsheetValidationRequest request) =>
     {
         try
         {
             var response = await sheetService.ValidateSpreadsheetId(request.SpreadsheetId);
-            return Results.Ok(new SpreadsheetValidatorResponse
-            {
-                Success = response,
-                Message = response ? "Valid Spreadsheet." : "Invalid Spreadsheet."
-            });
+            return Results.Ok(response);
         }
         catch (Exception ex)
         {

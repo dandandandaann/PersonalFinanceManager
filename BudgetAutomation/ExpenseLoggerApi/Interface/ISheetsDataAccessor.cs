@@ -27,7 +27,11 @@ namespace ExpenseLoggerApi.Interface
         /// Performs a batch update of cell values in a spreadsheet.
         /// </summary>
         Task BatchUpdateValuesAsync(string spreadsheetId, BatchUpdateValuesRequest request);
-        Task<SpreadsheetValidatorResponse> ValidateSpreadsheetIdAsync(SpreadsheetValidatorRequest request);
+
+        /// <summary>
+        /// Check if we have access to the Spreadsheet
+        /// </summary>
+        Task<SpreadsheetValidationResponse> ValidateSpreadsheetIdAsync(SpreadsheetValidationRequest request);
     }
 }
 
