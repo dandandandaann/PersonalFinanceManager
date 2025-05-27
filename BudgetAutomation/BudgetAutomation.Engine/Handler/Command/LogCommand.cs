@@ -4,6 +4,7 @@ using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Misc;
 using BudgetAutomation.Engine.Model;
 using BudgetAutomation.Engine.Service;
+using SharedLibrary.Dto;
 using SharedLibrary.Model;
 using SharedLibrary.Telegram;
 
@@ -90,10 +91,18 @@ public partial class LogCommand(
 
         try
         {
-            expense = await expenseApiClient.LogExpenseAsync(spreadsheetId, expense, cancellationToken);
+            var response = await expenseApiClient.LogExpenseAsync(spreadsheetId, expense, cancellationToken);
 
+            if(!response.Success)
+            {
+                return await sender.ReplyAsync(chat,
+                    "Log failed. The spreadsheet might not exist.",
+                    "User log failed (not found or API error).",
+                    logLevel: LogLevel.Warning,
+                    cancellationToken: cancellationToken);
+            }
             return await sender.ReplyAsync(chat,
-                $"Logged Expense\n{expense}",
+                $"Logged Expense\n{response.expense}",
                 "Logged expense.",
                 cancellationToken: cancellationToken);
         }

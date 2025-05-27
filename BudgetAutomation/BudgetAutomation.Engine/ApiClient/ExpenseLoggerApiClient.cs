@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using SharedLibrary.Dto;
 using SharedLibrary.Model;
 using SharedLibrary.Settings;
+using Telegram.Bot.Types.Payments;
 
 namespace BudgetAutomation.Engine.ApiClient;
 
@@ -26,9 +27,10 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
         _httpClient.DefaultRequestHeaders.Add("x-api-key", options.Value.Key);
     }
 
-    public async Task<Expense> LogExpenseAsync(
+    public async Task<LogExpenseResponse> LogExpenseAsync(
         string spreadsheetId, Expense expense, CancellationToken cancellationToken = default)
     {
+
         _logger.LogInformation("Sending request /log-expense for '{Description}'.", expense.Description);
 
         var endpointUri = new Uri(_httpClient.BaseAddress!, "log-expense");
@@ -49,6 +51,12 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
 
         var response = await _httpClient.SendAsync(request, cancellationToken);
 
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogError("Failed to create log for Spreadsheet {SpreadsheetId}", spreadsheetId);
+            return new LogExpenseResponse { Success = false };
+        }
+        
         response.EnsureSuccessStatusCode();
 
         _logger.LogInformation("Log expense request sent. Response code: {StatusCode}", response.StatusCode);
@@ -61,7 +69,7 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
 
             if (responseExpense?.expense != null)
             {
-                return responseExpense.expense;
+                return responseExpense;
             }
 
             _logger.LogError("Received successful status code but failed to deserialize {ResponseObject} from response body.",
@@ -76,6 +84,40 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
             _logger.LogError("Received status code {StatusCode}, but content was null or not JSON.", response.StatusCode);
         }
 
-        return new Expense();
+        return new LogExpenseResponse();
+    }
+
+    public async Task<SpreadsheetValidatorResponse> ValidateSpreadsheet(SpreadsheetValidatorRequest request)
+    {
+        _logger.LogInformation("Sending request to /validate-spreadsheet");
+
+        var endpointUri = new Uri(_httpClient.BaseAddress!, "validate-spreadsheet");
+
+        var httpResponse = await _httpClient.PostAsJsonAsync(endpointUri, request);
+
+        if (!httpResponse.IsSuccessStatusCode)
+        {
+            _logger.LogError("Validation failed with status code: {StatusCode}", httpResponse.StatusCode);
+            return new SpreadsheetValidatorResponse
+            {
+                Success = false,
+                Message = $"Validation failed with status code: {httpResponse.StatusCode}"
+            };
+        }
+
+            var result = await response.Content.ReadFromJsonAsync(AppJsonSerializerContext.Default.SpreadsheetValidatorResponse, cancellationToken);
+
+        if (result == null)
+        {
+            _logger.LogError("Validation response is null or malformed.");
+            return new SpreadsheetValidatorResponse
+            {
+                Success = false,
+                Message = "Validation response was null or malformed."
+            };
+        }
+
+        _logger.LogInformation("Validation result: {Message}", result.Message);
+        return result;
     }
 }

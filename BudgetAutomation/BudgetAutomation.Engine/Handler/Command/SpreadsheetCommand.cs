@@ -3,13 +3,15 @@ using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Misc;
 using BudgetAutomation.Engine.Model;
 using BudgetAutomation.Engine.Service;
+using SharedLibrary.Dto;
 using SharedLibrary.Telegram;
 
 namespace BudgetAutomation.Engine.Handler.Command;
 
 public partial class SpreadsheetCommand(
     ISenderGateway sender,
-    IUserManagerService userManagerService) : ICommand
+    IUserManagerService userManagerService,
+    IExpenseLoggerApiClient expenseLoggerApiClient) : ICommand
 {
     public string CommandName => StaticCommandName;
     // TODO: check if it's possible to have this static property coming from the interface somehow
@@ -41,6 +43,20 @@ public partial class SpreadsheetCommand(
                     cancellationToken: cancellationToken);
             }
 
+            var validateRequest = new SpreadsheetValidatorRequest();
+            validateRequest.SpreadsheetId = commandArguments;
+
+            var validateResponse = await expenseLoggerApiClient.ValidateSpreadsheet(validateRequest);
+
+            if (!validateResponse.Success)
+            {
+                return await sender.ReplyAsync(message.Chat,
+                    "Não foi possível encontrar a planilha. Por favor tente novamente.",
+                    "Spreadsheet not found.",
+                    logLevel: LogLevel.Warning,
+                
+                    cancellationToken: cancellationToken);
+            }
             var success = userManagerService.ConfigureSpreadsheet(commandArguments, cancellationToken);
 
             if (!success)
