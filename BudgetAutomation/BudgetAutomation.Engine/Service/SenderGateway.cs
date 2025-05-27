@@ -1,21 +1,22 @@
 ﻿using Telegram.Bot;
-using Message = SharedLibrary.Telegram.Message;
+using SharedLibrary.Telegram;
+using SharedLibrary.Telegram.Enums;
 
 namespace BudgetAutomation.Engine.Service;
 
 public interface ISenderGateway
 {
     Task<Message> ReplyAsync(
-        SharedLibrary.Telegram.Chat chat,
+        Chat chat,
         string text,
         string logMessage = "",
         LogLevel logLevel = LogLevel.Information,
-        string ParseModeparseMode = default,
+        ParseMode parseMode = default,
         string ReplyParametersQreplyParameters = default,
         string ReplyMarkupQreplyMarkup = default,
         string LinkPreviewOptionsQlinkPreviewOptions = default,
         int? messageThreadId = default,
-        IEnumerable<SharedLibrary.Telegram.MessageEntity>? entities = default,
+        IEnumerable<MessageEntity>? entities = default,
         bool disableNotification = default,
         bool protectContent = default,
         string? messageEffectId = default,
@@ -27,16 +28,16 @@ public interface ISenderGateway
 public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> logger) : ISenderGateway
 {
     public async Task<Message> ReplyAsync(
-        SharedLibrary.Telegram.Chat chat,
+        Chat chat,
         string text,
         string logMessage = "",
         LogLevel logLevel = LogLevel.Information,
-        string ParseModeparseMode = default,
+        ParseMode parseMode = default,
         string ReplyParametersQreplyParameters = default,
         string ReplyMarkupQreplyMarkup = default,
         string LinkPreviewOptionsQlinkPreviewOptions = default,
         int? messageThreadId = default,
-        IEnumerable<SharedLibrary.Telegram.MessageEntity>? entities = default,
+        IEnumerable<MessageEntity>? entities = default,
         bool disableNotification = default,
         bool protectContent = default,
         string? messageEffectId = default,
@@ -47,7 +48,7 @@ public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> 
         var sentMessage = await botClient.SendMessage(
             chatId: chat.Id,
             text: text,
-            // parseMode: parseMode, // TODO: fix these parameters on the new reply service
+            parseMode: System.Enum.Parse<Telegram.Bot.Types.Enums.ParseMode>(parseMode.ToString()),
             // replyParameters: replyParameters,
             // replyMarkup: replyMarkup,
             // linkPreviewOptions: linkPreviewOptions,

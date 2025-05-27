@@ -8,12 +8,16 @@ RUN apt-get update && apt-get install -y clang zlib1g-dev --no-install-recommend
 WORKDIR /src
 
 # Copy csproj and restore dependencies first for layer caching
-COPY ["ExpenseLoggerApi.csproj", "."]
+COPY ["ExpenseLoggerApi/ExpenseLoggerApi.csproj", "."]
+
+# Copy the referenced projects
+COPY ["SharedLibrary/SharedLibrary.csproj", "SharedLibrary/"]
+
 RUN dotnet restore "ExpenseLoggerApi.csproj" -r linux-x64
 
 # Copy the rest of the source code
 COPY . .
-WORKDIR /src
+WORKDIR /src/ExpenseLoggerApi
 
 # Publish the application using Native AOT for linux-arm64
 RUN dotnet publish "ExpenseLoggerApi.csproj" \

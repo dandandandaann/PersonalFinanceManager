@@ -3,8 +3,7 @@
 }
 
 Write-Host "Starting build..."
-#Set-Location UserManagerApi
-sam build -t LambdaConfig/serverless.template -s ./
+sam build -t serverless.template
 
 Write-Host "Starting deploy..."
 sam deploy --no-confirm-changeset --config-file LambdaConfig/samconfig.toml

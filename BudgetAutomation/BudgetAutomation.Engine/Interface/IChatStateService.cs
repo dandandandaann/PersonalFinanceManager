@@ -1,4 +1,4 @@
-﻿using BudgetAutomation.Engine.Enum;
+﻿using BudgetAutomation.Engine.Enums;
 using BudgetAutomation.Engine.Model;
 
 namespace BudgetAutomation.Engine.Interface;

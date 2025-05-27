@@ -5,6 +5,7 @@ using BudgetAutomation.Engine.Misc;
 using BudgetAutomation.Engine.Model;
 using BudgetAutomation.Engine.Service;
 using SharedLibrary.Telegram;
+using SharedLibrary.Telegram.Enums;
 
 namespace BudgetAutomation.Engine.Handler.Command;
 
@@ -70,13 +71,16 @@ public partial class SignupCommand(
             var welcomeMessage = new StringBuilder();
             welcomeMessage.AppendLine("Signup successful.");
             welcomeMessage.AppendLine();
-            welcomeMessage.AppendLine(response.User?.Username == null ? "**Welcome!**" : $"**Welcome, {response.User.Username}!**");
-            welcomeMessage.AppendLine("Please type /start to see all available commands and /setup to configure your spreadsheet.");
+            welcomeMessage.Append("<b>");
+            welcomeMessage.Append(response.User?.Username == null ? "Welcome!" : $"Welcome, {response.User.Username}!");
+            welcomeMessage.AppendLine("</b>");
+            welcomeMessage.AppendLine($"Please type /{StartCommand.StaticCommandName} to see all available commands " +
+                                      $"and /{SpreadsheetCommand.StaticCommandName} to configure your spreadsheet.");
 
             return await sender.ReplyAsync(message.Chat,
                 welcomeMessage.ToString(),
                 "User signup successful.",
-                // parseMode: ParseMode.MarkdownV2,
+                parseMode: ParseMode.Html,
                 cancellationToken: cancellationToken);
         }
         catch (Exception e)
