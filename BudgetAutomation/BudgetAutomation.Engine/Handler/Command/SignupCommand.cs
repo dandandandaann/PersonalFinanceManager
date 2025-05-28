@@ -27,14 +27,14 @@ public partial class SignupCommand(
         // Send an initial reply indicating the process has started
         var replyAttempting = sender.ReplyAsync(
             message.Chat,
-            "Attempting to sign you up...", "Signup process started.",
+            "Tentando fazer seu cadastro...", "Processo de cadastro iniciado.",
             cancellationToken: cancellationToken);
 
         if (UserManagerService.UserSignedIn)
         {
             await replyAttempting;
             return await sender.ReplyAsync(message.Chat,
-                "Signup failed. You are already signed in.",
+                "O cadastro falhou. Você já está conectado.",
                 "User signup failed (already signed in).",
                 logLevel: LogLevel.Warning,
                 cancellationToken: cancellationToken);
@@ -48,8 +48,8 @@ public partial class SignupCommand(
                 )
             {
                 return await sender.ReplyAsync(message.Chat,
-                    "Please include your email for signing up.",
-                    $"User tried signing up with bad arguments: '{signupArguments}'.",
+                    "Por favor inclua seu e-mail para o cadastro.",
+                    $"User tried signing up with invalid arguments: '{signupArguments}'.",
                     logLevel: LogLevel.Information,
                     cancellationToken: cancellationToken);
             }
@@ -62,24 +62,24 @@ public partial class SignupCommand(
                 // UserApiClient returns Success=false if user already exists or on API error
                 // TODO: Differentiate between 'already exists' and 'other error' in UserApiClient response
                 return await sender.ReplyAsync(message.Chat,
-                    "Signup failed. You might already be registered.",
+                    "Falha no cadastro. Você pode já estar registrado.",
                     "User signup failed (already exists or API error).",
                     logLevel: LogLevel.Warning,
                     cancellationToken: cancellationToken);
             }
 
             var welcomeMessage = new StringBuilder();
-            welcomeMessage.AppendLine("Signup successful.");
+            welcomeMessage.AppendLine("Cadastro realizado com sucesso.");
             welcomeMessage.AppendLine();
             welcomeMessage.Append("<b>");
-            welcomeMessage.Append(response.User?.Username == null ? "Welcome!" : $"Welcome, {response.User.Username}!");
+            welcomeMessage.Append(response.User?.Username == null ? "Welcome!" : $"Bem vindo(a), {response.User.Username}!");
             welcomeMessage.AppendLine("</b>");
-            welcomeMessage.AppendLine($"Please type /{StartCommand.StaticCommandName} to see all available commands " +
-                                      $"and /{SpreadsheetCommand.StaticCommandName} to configure your spreadsheet.");
+            welcomeMessage.AppendLine($"Por favor digite /{StartCommand.StaticCommandName} para ver todos os comandos disponíveis " +
+                                      $"e /{SpreadsheetCommand.StaticCommandName} para configurar sua planilha.");
 
             return await sender.ReplyAsync(message.Chat,
                 welcomeMessage.ToString(),
-                "User signup successful.",
+                "Cadastro do usuário realizado com sucesso.",
                 parseMode: ParseMode.Html,
                 cancellationToken: cancellationToken);
         }
@@ -90,7 +90,7 @@ public partial class SignupCommand(
 
             // Catch exceptions from the API client (e.g., network issues, deserialization errors)
             return await sender.ReplyAsync(message.Chat,
-                "An error occurred during signup. Please try again later.",
+                "Ocorreu um erro durante o cadastro. Por favor, tente novamente mais tarde.",
                 $"Exception during signup: {e.Message}",
                 logLevel: LogLevel.Error,
                 cancellationToken: cancellationToken);

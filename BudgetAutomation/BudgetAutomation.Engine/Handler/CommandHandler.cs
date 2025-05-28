@@ -20,7 +20,7 @@ public class CommandHandler(
         // Ensure the command is at the beginning of the message
         if (commandEntity.Offset != 0)
         {
-            return await sender.ReplyAsync(message.Chat, "Commands should be on the first position of the message.",
+            return await sender.ReplyAsync(message.Chat, "Os comandos devem estar na primeira posição da mensagem.",
                 cancellationToken: cancellationToken);
         }
 
@@ -41,7 +41,7 @@ public class CommandHandler(
 
         return await sender.ReplyAsync(
             message.Chat,
-            "Command not recognized.",
+            "Comando não reconhecido.",
             $"Unknown command '{commandFromMessage}'.", cancellationToken: cancellationToken);
     }
 }
