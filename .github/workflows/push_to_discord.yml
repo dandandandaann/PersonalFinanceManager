@@ -1,140 +1,20 @@
-name: Notify Discord on Push (with Commit List)
+name: Test Discord Action Download
 
 on:
-  push:
-    # branches:
-    #   - main
+  workflow_dispatch: # Allows you to trigger it manually from the Actions tab
 
 jobs:
-  notify:
+  test_notify:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # Or @v3 if v4 causes issues, but v4 is current
-        with:
-          # Fetch all history for all branches and tags.
-          # This is important for github.event.commits to be populated correctly,
-          # especially if you're pushing a new branch or tag that points to an existing commit.
-          # For simple pushes to an existing branch with new commits, a shallow clone might be okay,
-          # but fetch-depth: 0 is safer for accessing commit history.
-          fetch-depth: 0
+        uses: actions/checkout@v4 # Let's stick with v4 for now
 
-      - name: Prepare Notification Details
-        id: prep_details
-        env:
-          COMMITS_JSON: ${{ toJSON(github.event.commits) }}
-          HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-          REF_NAME: ${{ github.ref_name }}
-          REPO_NAME: ${{ github.repository }}
-          ACTOR: ${{ github.actor }}
-          EVENT_CREATED: ${{ github.event.created }}
-          EVENT_DELETED: ${{ github.event.deleted }}
-          HEAD_COMMIT_URL_EVENT: ${{ github.event.head_commit.url }}
-          HEAD_COMMIT_TIMESTAMP_EVENT: ${{ github.event.head_commit.timestamp }}
-          DEFAULT_REPO_URL: "https://github.com/${{ github.repository }}"
-          DEFAULT_BRANCH_URL: "https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}"
-        run: |
-          # Determine number of commits
-          if [[ "${COMMITS_JSON}" == "null" ||  "${COMMITS_JSON}" == "[]" ]]; then
-            num_commits=0
-          else
-            num_commits=$(echo "${COMMITS_JSON}" | jq 'length')
-          fi
-          echo "num_commits=${num_commits}" >> $GITHUB_OUTPUT
-
-          # --- Set defaults ---
-          embed_color=3447003 # Blue (default push/update)
-          action_taken="Pushed to"
-          commit_list_md="No distinct commits in this push."
-          title_text_raw="Push to ${REF_NAME}"
-          embed_url_final="${DEFAULT_BRANCH_URL}"
-          timestamp_final=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-          # --- Handle different event types ---
-          if [[ "${EVENT_DELETED}" == "true" ]]; then
-            action_taken="Deleted"
-            commit_list_md="Branch/tag \`${REF_NAME}\` deleted by **${ACTOR}**."
-            title_text_raw="Deleted: ${REF_NAME}"
-            embed_color=15158332 # Red
-            embed_url_final="${DEFAULT_REPO_URL}"
-          elif [[ "${EVENT_CREATED}" == "true" ]]; then
-            action_taken="Created"
-            title_text_raw="Created: ${REF_NAME}"
-            embed_color=3066993 # Green
-            embed_url_final="${DEFAULT_BRANCH_URL}"
-            if [[ "$num_commits" -gt 0 ]]; then
-              action_taken="Created and pushed to"
-            else
-              commit_list_md="Branch/tag \`${REF_NAME}\` created by **${ACTOR}**."
-            fi
-          fi
-
-          # --- Process commits if present ---
-          if [[ "$num_commits" -gt 0 ]]; then
-            commit_list_md_temp=$(echo "${COMMITS_JSON}" | jq -r '.[] | "`[\(.id[0:7])](\(.url))`: \(.message | split("\n")[0] | gsub("`"; "\\`") | if (length > 70) then .[0:67] + "..." else . end) by **\(.author.name | gsub("`"; "\\`"))**"')
-            commit_list_md=$(echo "$commit_list_md_temp" | paste -sd '\n' -)
-
-            if [[ "$num_commits" -eq 1 && "${HEAD_COMMIT_MESSAGE}" != "" ]]; then
-              title_text_raw=$(echo "${HEAD_COMMIT_MESSAGE}" | head -n1)
-            else
-              title_text_raw="${num_commits} new commit(s) to ${REF_NAME}"
-            fi
-
-            if [[ "${HEAD_COMMIT_URL_EVENT}" != "" && "${HEAD_COMMIT_URL_EVENT}" != "null" ]]; then
-              embed_url_final="${HEAD_COMMIT_URL_EVENT}"
-            fi
-            if [[ "${HEAD_COMMIT_TIMESTAMP_EVENT}" != "" && "${HEAD_COMMIT_TIMESTAMP_EVENT}" != "null" ]]; then
-              timestamp_final="${HEAD_COMMIT_TIMESTAMP_EVENT}"
-            fi
-          fi
-
-          # --- Finalize outputs ---
-          echo "commit_list_md<<COMMIT_LIST_EOF" >> $GITHUB_OUTPUT
-          echo "${commit_list_md}" >> $GITHUB_OUTPUT
-          echo "COMMIT_LIST_EOF" >> $GITHUB_OUTPUT
-
-          if [ ${#title_text_raw} -gt 250 ]; then title_text_raw="${title_text_raw:0:247}..." ; fi
-          # Escape quotes for JSON compatibility in the title if it's ever directly embedded as a string field value elsewhere
-          title_text_raw_escaped=$(echo "$title_text_raw" | sed 's/"/\\"/g')
-          echo "embed_title=${title_text_raw_escaped}" >> $GITHUB_OUTPUT
-
-          echo "embed_url=${embed_url_final}" >> $GITHUB_OUTPUT
-          echo "embed_color=${embed_color}" >> $GITHUB_OUTPUT
-          echo "action_taken=${action_taken}" >> $GITHUB_OUTPUT
-          echo "embed_timestamp=${timestamp_final}" >> $GITHUB_OUTPUT
-
-      - name: Send Discord Notification
+      - name: Test Send Discord Notification
         uses: crazy-max/ghaction-discord@v4
         with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
-          content: "🚀 ${{ steps.prep_details.outputs.action_taken }} **${{ github.repository }}/${{ github.ref_name }}** by **${{ github.actor }}**."
-          embeds: |
-            [{
-              "author": {
-                "name": "${{ github.actor }}",
-                "url": "https://github.com/${{ github.actor }}",
-                "icon_url": "https://github.com/${{ github.actor }}.png?size=48"
-              },
-              "title": "${{ steps.prep_details.outputs.embed_title }}",
-              "url": "${{ steps.prep_details.outputs.embed_url }}",
-              "description": "${{ steps.prep_details.outputs.commit_list_md }}",
-              "color": ${{ steps.prep_details.outputs.embed_color }},
-              "fields": [
-                {
-                  "name": "Repository",
-                  "value": "[${{ github.repository }}](https://github.com/${{ github.repository }})",
-                  "inline": true
-                },
-                {
-                  "name": "Ref",
-                  "value": "[`${{ github.ref_name }}`](https://github.com/${{ github.repository }}/tree/${{ github.ref_name }})",
-                  "inline": true
-                },
-                {
-                  "name": "Triggered by",
-                  "value": "**${{ github.actor }}**",
-                  "inline": true
-                }
-              ],
-              "timestamp": "${{ steps.prep_details.outputs.embed_timestamp }}"
-            }]
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }} # Make sure this secret is still valid
+          content: "Minimal test: Can crazy-max/ghaction-discord be downloaded?"
+        # Add a condition to avoid running if the secret is missing,
+        # though the download error happens before this point.
+        if: secrets.DISCORD_WEBHOOK != ''
