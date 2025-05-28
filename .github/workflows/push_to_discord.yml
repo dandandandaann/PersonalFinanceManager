@@ -10,11 +10,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Send message to Discord
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Send all commits to Discord
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
+          MESSAGE="**${{ github.actor }}** pushed to **${{ github.repository }}**:\n"
+          for commit in $(jq -c '.commits[]' "$GITHUB_EVENT_PATH"); do
+            SHA=$(echo $commit | jq -r '.id' | cut -c1-7)
+            MSG=$(echo $commit | jq -r '.message' | sed 's/"/\\"/g')
+            URL=$(echo $commit | jq -r '.url')
+            MESSAGE="$MESSAGE- [$SHA]($URL): $MSG\n"
+          done
+
+          PAYLOAD="{\"content\": \"$MESSAGE\"}"
+
           curl -H "Content-Type: application/json" \
                -X POST \
-               -d '{"content":"New push to the repository!"}' \
+               -d "$PAYLOAD" \
                $DISCORD_WEBHOOK
