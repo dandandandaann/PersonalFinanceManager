@@ -1,20 +1,178 @@
-name: Test Discord Action Download
+name: Notify Discord on Push (Manual Curl with Commit List)
 
 on:
   workflow_dispatch: # Allows you to trigger it manually from the Actions tab
+  push:
+    branches:
+     - main
 
 jobs:
-  test_notify:
-    runs-on: ubuntu-latest
+  notify:
+    runs-on: ubuntu-latest # Or ubuntu-22.04 if you suspect issues with 24.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # Let's stick with v4 for now
-
-      - name: Test Send Discord Notification
-        uses: crazy-max/ghaction-discord@v4
+        uses: actions/checkout@v4
         with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK }} # Make sure this secret is still valid
-          content: "Minimal test: Can crazy-max/ghaction-discord be downloaded?"
-        # Add a condition to avoid running if the secret is missing,
-        # though the download error happens before this point.
-        if: secrets.DISCORD_WEBHOOK != ''
+          fetch-depth: 0 # Needed for github.event.commits
+
+      - name: Send Discord Notification via Curl
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          # GitHub Context Variables
+          REPO_NAME: ${{ github.repository }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          PUSHER_NAME: ${{ github.actor }}
+          PUSHER_URL: "https://github.com/${{ github.actor }}"
+          PUSHER_AVATAR_URL: "https://github.com/${{ github.actor }}.png?size=48"
+          # Event specific details
+          COMMITS_JSON: ${{ toJSON(github.event.commits) }}
+          HEAD_COMMIT_MESSAGE_RAW: ${{ github.event.head_commit.message }}
+          HEAD_COMMIT_URL: ${{ github.event.head_commit.url }}
+          HEAD_COMMIT_TIMESTAMP: ${{ github.event.head_commit.timestamp }}
+          EVENT_CREATED: ${{ github.event.created }}
+          EVENT_DELETED: ${{ github.event.deleted }}
+          DEFAULT_REPO_URL: "https://github.com/${{ github.repository }}"
+          DEFAULT_BRANCH_URL: "https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}"
+        run: |
+          # --- Helper function to escape JSON strings ---
+          escape_json_string() {
+            echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed -z 's/\n/\\n/g' | sed 's/\r//g'
+          }
+
+          # --- Prepare Variables ---
+          num_commits=0
+          if [[ "${COMMITS_JSON}" != "null" &&  "${COMMITS_JSON}" != "[]" ]]; then
+            num_commits=$(echo "${COMMITS_JSON}" | jq 'length')
+          fi
+
+          embed_color="3447003" # Blue
+          action_taken_display="Pushed to"
+          commit_list_description="No distinct commits in this push."
+          embed_title_raw="Push to ${BRANCH_NAME}"
+          embed_url_final="${DEFAULT_BRANCH_URL}"
+          timestamp_final=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          if [[ "${EVENT_DELETED}" == "true" ]]; then
+            action_taken_display="Deleted"
+            commit_list_description="Branch/tag \`${BRANCH_NAME}\` deleted by **${PUSHER_NAME}**."
+            embed_title_raw="Deleted: ${BRANCH_NAME}"
+            embed_color="15158332" # Red
+            embed_url_final="${DEFAULT_REPO_URL}"
+          elif [[ "${EVENT_CREATED}" == "true" ]]; then
+            action_taken_display="Created"
+            embed_title_raw="Created: ${BRANCH_NAME}"
+            embed_color="3066993" # Green
+            embed_url_final="${DEFAULT_BRANCH_URL}"
+            if [[ "$num_commits" -gt 0 ]]; then
+              action_taken_display="Created and pushed to"
+            else
+              commit_list_description="Branch/tag \`${BRANCH_NAME}\` created by **${PUSHER_NAME}**."
+            fi
+          fi
+
+          if [[ "$num_commits" -gt 0 ]]; then
+            commit_list_temp=""
+            for i in $(seq 0 $(($num_commits - 1))); do
+              commit_id_short=$(echo "${COMMITS_JSON}" | jq -r ".[${i}].id[0:7]")
+              commit_url=$(echo "${COMMITS_JSON}" | jq -r ".[${i}].url")
+              commit_message_first_line=$(echo "${COMMITS_JSON}" | jq -r ".[${i}].message" | head -n1)
+              commit_author_name=$(echo "${COMMITS_JSON}" | jq -r ".[${i}].author.name")
+
+              # Escape for markdown and then for JSON
+              commit_message_escaped_md=$(echo "$commit_message_first_line" | sed 's/`/\\`/g') # Escape backticks for markdown
+              if [ ${#commit_message_escaped_md} -gt 70 ]; then
+                  commit_message_escaped_md="${commit_message_escaped_md:0:67}..."
+              fi
+              commit_author_name_escaped_md=$(echo "$commit_author_name" | sed 's/`/\\`/g')
+
+              # Note: \` needs to be \\\\` in JSON if the string itself contains \\`
+              # Simpler is to just escape ` for markdown, then the whole string for JSON.
+              commit_line_md="\`[${commit_id_short}](${commit_url})\`: ${commit_message_escaped_md} by **${commit_author_name_escaped_md}**"
+              commit_list_temp="${commit_list_temp}${commit_line_md}\n" # Add newline for Discord markdown
+            done
+            commit_list_description=$(escape_json_string "${commit_list_temp}") # Escape the whole block for JSON
+
+            if [[ "$num_commits" -eq 1 && "${HEAD_COMMIT_MESSAGE_RAW}" != "" ]]; then
+              embed_title_raw=$(echo "${HEAD_COMMIT_MESSAGE_RAW}" | head -n1)
+            else
+              embed_title_raw="${num_commits} new commit(s) to ${BRANCH_NAME}"
+            fi
+
+            if [[ "${HEAD_COMMIT_URL}" != "" && "${HEAD_COMMIT_URL}" != "null" ]]; then
+              embed_url_final="${HEAD_COMMIT_URL}"
+            fi
+            if [[ "${HEAD_COMMIT_TIMESTAMP}" != "" && "${HEAD_COMMIT_TIMESTAMP}" != "null" ]]; then
+              timestamp_final="${HEAD_COMMIT_TIMESTAMP}"
+            fi
+          else
+            # If no commits, ensure the default or event-specific description is JSON escaped
+            commit_list_description=$(escape_json_string "${commit_list_description}")
+          fi
+
+          # Truncate and escape title
+          if [ ${#embed_title_raw} -gt 250 ]; then embed_title_raw="${embed_title_raw:0:247}..." ; fi
+          embed_title_escaped=$(escape_json_string "${embed_title_raw}")
+
+          # --- Construct JSON Payload ---
+          # Using printf for better control over formatting and escaping
+          JSON_PAYLOAD=$(printf '{
+            "username": "GitHub Actions Notifier",
+            "avatar_url": "%s",
+            "content": "🚀 %s **%s/%s** by **%s**.",
+            "embeds": [{
+              "author": {
+                "name": "%s",
+                "url": "%s",
+                "icon_url": "%s"
+              },
+              "title": "%s",
+              "url": "%s",
+              "description": "%s",
+              "color": %s,
+              "fields": [
+                {
+                  "name": "Repository",
+                  "value": "[%s](https://github.com/%s)",
+                  "inline": true
+                },
+                {
+                  "name": "Ref",
+                  "value": "[`%s`](https://github.com/%s/tree/%s)",
+                  "inline": true
+                },
+                {
+                  "name": "Triggered by",
+                  "value": "**%s**",
+                  "inline": true
+                }
+              ],
+              "timestamp": "%s"
+            }]
+          }' \
+          "$(escape_json_string "$PUSHER_AVATAR_URL")" \
+          "$(escape_json_string "$action_taken_display")" "$(escape_json_string "$REPO_NAME")" "$(escape_json_string "$BRANCH_NAME")" "$(escape_json_string "$PUSHER_NAME")" \
+          "$(escape_json_string "$PUSHER_NAME")" "$(escape_json_string "$PUSHER_URL")" "$(escape_json_string "$PUSHER_AVATAR_URL")" \
+          "${embed_title_escaped}" \
+          "$(escape_json_string "$embed_url_final")" \
+          "${commit_list_description}" \
+          "${embed_color}" \
+          "$(escape_json_string "$REPO_NAME")" "$(escape_json_string "$REPO_NAME")" \
+          "$(escape_json_string "$BRANCH_NAME")" "$(escape_json_string "$REPO_NAME")" "$(escape_json_string "$BRANCH_NAME")" \
+          "$(escape_json_string "$PUSHER_NAME")" \
+          "$(escape_json_string "$timestamp_final")"
+          )
+
+          # --- Send to Discord ---
+          # For debugging the payload:
+          # echo "Payload: $JSON_PAYLOAD"
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "$JSON_PAYLOAD" \
+               "$DISCORD_WEBHOOK"
+
+          if [ $? -ne 0 ]; then
+            echo "Curl command failed!"
+            # echo "Failed Payload: $JSON_PAYLOAD" # Uncomment for debug
+            exit 1
+          fi
