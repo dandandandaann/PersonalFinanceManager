@@ -43,7 +43,7 @@ public class TextMessageHandler(
         (bool hasState, ChatState? chatState) = await chatStateService.HasState(message.Chat.Id);
 
         if (!hasState) // Default message
-            return await sender.ReplyAsync(message.Chat, "You said:\n" + messageText, cancellationToken: cancellationToken);
+            return await sender.ReplyAsync(message.Chat, "Você disse:\n" + messageText, cancellationToken: cancellationToken);
 
         if (chatState?.ActiveCommand != null)
         {

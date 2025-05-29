@@ -30,7 +30,7 @@ public class UpdateHandler(
         {
             var message = update.Message ?? update.CallbackQuery!.Message;
 
-            await sender.ReplyAsync(message!.Chat, "Please signup to proceed.",
+            await sender.ReplyAsync(message!.Chat, "Por favor, faça o cadastro para continuar.",
                 $"UnauthorizedAccessException: {e.Message} User message: {message.Text}.",
                 logLevel: LogLevel.Warning,
                 cancellationToken: cancellationToken);
@@ -40,7 +40,7 @@ public class UpdateHandler(
             var message = update.Message ?? update.CallbackQuery!.Message;
 
             var replyMessage = string.IsNullOrWhiteSpace(e.Message) ?
-                "Your message was invalid somehow. Please try something else." :
+                "Sua mensagem estava inválida de alguma forma. Por favor, tente algo diferente." :
                 e.Message;
 
             await sender.ReplyAsync(message!.Chat, replyMessage,

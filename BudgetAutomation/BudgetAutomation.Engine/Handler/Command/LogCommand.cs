@@ -44,7 +44,7 @@ public partial class LogCommand(
             await chatStateService.SetStateAsync(message.Chat.Id, ChatStateEnum.AwaitingArguments, CommandName);
 
             return await sender.ReplyAsync(message.Chat,
-                "Okay, please enter the details for your expense. e.g. 'Café 5,50 Comida'",
+                "Ok, por favor, insira os detalhes da sua despesa. Ex: 'Café 5,50 Comida'",
                 $"Chat state: {ChatStateEnum.AwaitingArguments}.",
                 cancellationToken: cancellationToken);
         }
@@ -67,7 +67,7 @@ public partial class LogCommand(
                 cancellationToken);
         }
 
-        return await sender.ReplyAsync(message.Chat, $"Log state {chatState.State} not implemented.",
+        return await sender.ReplyAsync(message.Chat, $"Estado de registro {chatState.State} não implementado.",
             $"Log state {chatState} not implemented.",
             logLevel: LogLevel.Error,
             cancellationToken: cancellationToken
@@ -96,20 +96,20 @@ public partial class LogCommand(
             if(!response.Success)
             {
                 return await sender.ReplyAsync(chat,
-                    "Log failed. The spreadsheet might not exist.",
+                    "O registro falhou. A planilha pode não existir.",
                     "User log failed (not found or API error).",
                     logLevel: LogLevel.Warning,
                     cancellationToken: cancellationToken);
             }
             return await sender.ReplyAsync(chat,
-                $"Logged Expense\n{response.expense}",
+                $"Despesa registrada\n{response.expense}",
                 "Logged expense.",
                 cancellationToken: cancellationToken);
         }
         catch (ArgumentException e)
         {
             return await sender.ReplyAsync(chat,
-                "Failed to log expense.", e.Message, logLevel: LogLevel.Error,
+                "Falha ao registrar a despesa.", e.Message, logLevel: LogLevel.Error,
                 cancellationToken: cancellationToken);
         }
     }
@@ -130,7 +130,7 @@ public partial class LogCommand(
             var argumentsSplit = expenseArguments.Trim().Split(' ');
 
             if (argumentsSplit.Length < 2)
-                throw new InvalidUserInputException("Invalid message format for logging expense.");
+                throw new InvalidUserInputException("Formato de mensagem inválido para registrar a despesa.");
 
             expense.Description = argumentsSplit[0];
             expense.Amount = argumentsSplit[1];
@@ -139,7 +139,7 @@ public partial class LogCommand(
 
         if (!decimal.TryParse(expense.Amount, out _))
         {
-            throw new InvalidUserInputException("Invalid amount format for logging expense.");
+            throw new InvalidUserInputException("Formato de mensagem inválido para registrar a despesa.");
         }
 
         return expense;
