@@ -3,7 +3,7 @@ using BudgetAutomation.Engine.Misc;
 using Shouldly;
 using Xunit;
 
-namespace BudgetAutomation.Engine.Tests.UniTest;
+namespace BudgetAutomation.Engine.Tests.UnitTest;
 
 public partial class UtilityTests
 {
