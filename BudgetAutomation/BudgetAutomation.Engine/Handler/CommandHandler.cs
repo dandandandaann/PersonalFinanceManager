@@ -1,4 +1,5 @@
-﻿using BudgetAutomation.Engine.Interface;
+﻿using BudgetAutomation.Engine.Handler.Command;
+using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Service;
 using SharedLibrary.Telegram;
 
@@ -39,9 +40,13 @@ public class CommandHandler(
 
         UserManagerService.EnsureUserSignedIn();
 
-        return await sender.ReplyAsync(
+        await sender.ReplyAsync(
             message.Chat,
             "Comando não reconhecido.",
             $"Unknown command '{commandFromMessage}'.", cancellationToken: cancellationToken);
+
+        return await commands.First(x => x.Key == $"/{StartCommand.StaticCommandName}")
+            .Value.HandleAsync(message, cancellationToken);
+
     }
 }

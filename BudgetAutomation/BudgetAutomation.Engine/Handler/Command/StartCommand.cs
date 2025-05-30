@@ -10,10 +10,14 @@ public class StartCommand(ISenderGateway sender, IChatStateService chatStateServ
     public string CommandName => StaticCommandName;
     public static string StaticCommandName => "start";
 
-    public Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
+    public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
-        // TODO: register this class in the DI service collection and finish implementation
-        throw new NotImplementedException();
+        var startMessage = "start message";
+
+        return await sender.ReplyAsync(message.Chat,
+            startMessage,
+            "User signup successful.",
+            cancellationToken: cancellationToken);
     }
 
     public Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken)

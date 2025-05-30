@@ -1,6 +1,8 @@
-﻿using Telegram.Bot;
+﻿using BudgetAutomation.Engine.Mapper;
+using Telegram.Bot;
 using SharedLibrary.Telegram;
 using SharedLibrary.Telegram.Enums;
+using SharedLibrary.Telegram.Types.ReplyMarkups;
 
 namespace BudgetAutomation.Engine.Service;
 
@@ -13,7 +15,7 @@ public interface ISenderGateway
         LogLevel logLevel = LogLevel.Information,
         ParseMode parseMode = default,
         string ReplyParametersQreplyParameters = default,
-        string ReplyMarkupQreplyMarkup = default,
+        ReplyMarkup? replyMarkup = default,
         string LinkPreviewOptionsQlinkPreviewOptions = default,
         int? messageThreadId = default,
         IEnumerable<MessageEntity>? entities = default,
@@ -25,7 +27,7 @@ public interface ISenderGateway
         CancellationToken cancellationToken = default);
 }
 
-public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> logger) : ISenderGateway
+public class SenderGateway(ITelegramBotClient botClient, MessageMapper messageMapper, ILogger<SenderGateway> logger) : ISenderGateway
 {
     public async Task<Message> ReplyAsync(
         Chat chat,
@@ -34,7 +36,7 @@ public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> 
         LogLevel logLevel = LogLevel.Information,
         ParseMode parseMode = default,
         string ReplyParametersQreplyParameters = default,
-        string ReplyMarkupQreplyMarkup = default,
+        ReplyMarkup? replyMarkup = default,
         string LinkPreviewOptionsQlinkPreviewOptions = default,
         int? messageThreadId = default,
         IEnumerable<MessageEntity>? entities = default,
@@ -50,7 +52,7 @@ public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> 
             text: text,
             parseMode: System.Enum.Parse<Telegram.Bot.Types.Enums.ParseMode>(parseMode.ToString()),
             // replyParameters: replyParameters,
-            // replyMarkup: replyMarkup,
+            replyMarkup: replyMarkup == null ? null : messageMapper.MapReplyMarkup(replyMarkup),
             // linkPreviewOptions: linkPreviewOptions,
             messageThreadId: messageThreadId,
             // entities: entities,

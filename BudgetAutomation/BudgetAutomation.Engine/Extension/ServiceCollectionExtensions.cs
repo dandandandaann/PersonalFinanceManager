@@ -6,12 +6,14 @@ using BudgetAutomation.Engine.ApiClient;
 using BudgetAutomation.Engine.Handler;
 using BudgetAutomation.Engine.Handler.Command;
 using BudgetAutomation.Engine.Interface;
+using BudgetAutomation.Engine.Mapper;
 using BudgetAutomation.Engine.Service;
 using Microsoft.Extensions.Options;
 using SharedLibrary.LocalTesting;
 using SharedLibrary.Settings;
 using SharedLibrary.Validator;
 using Telegram.Bot;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BudgetAutomation.Engine.Extension;
 
@@ -77,10 +79,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommandHandler, CommandHandler>();
 
         // Register commands
+        services.AddScoped<ICommand, StartCommand>();
         services.AddScoped<ICommand, LogCommand>();
         services.AddScoped<ICommand, CancelCommand>();
         services.AddScoped<ICommand, SignupCommand>();
         services.AddScoped<ICommand, SpreadsheetCommand>();
+
+        // Register mappers
+        services.AddSingleton<MessageMapper>();
 
         return services;
     }
