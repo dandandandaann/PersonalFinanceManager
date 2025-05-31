@@ -26,7 +26,8 @@ jobs:
             }
 
             const githubAvatarUrl = process.env.GITHUB_AVATAR_URL || "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png";
-            const repoName = context.repo.owner + '/' + context.repo.repo;
+            const repoFullName = context.repo.owner + '/' + context.repo.repo;
+            const repoName = context.repo.repo;
             const branchName = context.ref.replace('refs/heads/', '').replace('refs/tags/', '');
             const pusherName = context.actor;
             const pusherUrl = `https://github.com/${pusherName}`;
@@ -42,8 +43,8 @@ jobs:
             const eventCreated = context.payload.created || false;
             const eventDeleted = context.payload.deleted || false;
 
-            const defaultRepoUrl = `https://github.com/${repoName}`;
-            const defaultBranchUrl = `https://github.com/${repoName}/tree/${branchName}`;
+            const defaultRepoUrl = `https://github.com/${repoFullName}`;
+            const defaultBranchUrl = `https://github.com/${repoFullName}/tree/${branchName}`;
 
             function escapeMarkdown(text) {
               if (!text) return "";
@@ -91,7 +92,7 @@ jobs:
                 }
                 const commitAuthorNameEscapedMd = escapeMarkdown(commitAuthorName);
 
-                const commitLineMd = `\`[${commitIdShort}](${commitUrl})\`: ${commitMessageEscapedMd} by **${commitAuthorNameEscapedMd}**`;
+                const commitLineMd = `\`(${commitIdShort})[${commitUrl}]\`: ${commitMessageEscapedMd} by **${commitAuthorNameEscapedMd}**`;
                 commitListLines.push(commitLineMd);
               }
               commitListDescription = commitListLines.join("\n");
@@ -132,12 +133,12 @@ jobs:
                 fields: [
                   {
                     name: "Repository",
-                    value: `[${repoName}](https://github.com/${repoName})`,
+                    value: `[${repoName}](https://github.com/${repoFullName})`,
                     inline: true
                   },
                   {
                     name: "Ref",
-                    value: `[\`${branchName}\`](https://github.com/${repoName}/tree/${branchName})`,
+                    value: `[\`${branchName}\`](https://github.com/${repoFullName}/tree/${branchName})`,
                     inline: true
                   },
                   {
