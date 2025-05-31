@@ -92,7 +92,7 @@ jobs:
                 }
                 const commitAuthorNameEscapedMd = escapeMarkdown(commitAuthorName);
 
-                const commitLineMd = `\`(${commitIdShort})[${commitUrl}]\`: ${commitMessageEscapedMd} by **${commitAuthorNameEscapedMd}**`;
+                const commitLineMd = `\`[${commitIdShort}](${commitUrl})\`: ${commitMessageEscapedMd} by **${commitAuthorNameEscapedMd}**`;
                 commitListLines.push(commitLineMd);
               }
               commitListDescription = commitListLines.join("\n");
