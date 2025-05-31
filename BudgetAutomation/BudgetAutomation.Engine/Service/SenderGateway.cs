@@ -14,9 +14,9 @@ public interface ISenderGateway
         string logMessage = "",
         LogLevel logLevel = LogLevel.Information,
         ParseMode parseMode = default,
-        string ReplyParametersQreplyParameters = default,
+        // ReplyParameters? replyParameters = default,
         ReplyMarkup? replyMarkup = default,
-        string LinkPreviewOptionsQlinkPreviewOptions = default,
+        // LinkPreviewOptions? linkPreviewOptions = default,
         int? messageThreadId = default,
         IEnumerable<MessageEntity>? entities = default,
         bool disableNotification = default,
@@ -27,7 +27,7 @@ public interface ISenderGateway
         CancellationToken cancellationToken = default);
 }
 
-public class SenderGateway(ITelegramBotClient botClient, MessageMapper messageMapper, ILogger<SenderGateway> logger) : ISenderGateway
+public class SenderGateway(ITelegramBotClient botClient, ReplyMarkupMapper replyMarkupMapper, ILogger<SenderGateway> logger) : ISenderGateway
 {
     public async Task<Message> ReplyAsync(
         Chat chat,
@@ -35,9 +35,9 @@ public class SenderGateway(ITelegramBotClient botClient, MessageMapper messageMa
         string logMessage = "",
         LogLevel logLevel = LogLevel.Information,
         ParseMode parseMode = default,
-        string ReplyParametersQreplyParameters = default,
+        // ReplyParameters? replyParameters = default,
         ReplyMarkup? replyMarkup = default,
-        string LinkPreviewOptionsQlinkPreviewOptions = default,
+        // LinkPreviewOptions? linkPreviewOptions = default,
         int? messageThreadId = default,
         IEnumerable<MessageEntity>? entities = default,
         bool disableNotification = default,
@@ -52,7 +52,7 @@ public class SenderGateway(ITelegramBotClient botClient, MessageMapper messageMa
             text: text,
             parseMode: System.Enum.Parse<Telegram.Bot.Types.Enums.ParseMode>(parseMode.ToString()),
             // replyParameters: replyParameters,
-            replyMarkup: replyMarkup == null ? null : messageMapper.MapReplyMarkup(replyMarkup),
+            replyMarkup: replyMarkup == null ? null : replyMarkupMapper.Map(replyMarkup),
             // linkPreviewOptions: linkPreviewOptions,
             messageThreadId: messageThreadId,
             // entities: entities,

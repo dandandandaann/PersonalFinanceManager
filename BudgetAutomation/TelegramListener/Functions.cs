@@ -86,10 +86,9 @@ public class Functions
         {
             var result = await updateProcessor.ProcessUpdateAsync(update, context);
 
-            if (!result.IsSuccess)
+            if (!result)
             {
-                logger.LogError("Failed to process update: {Status} - {ErrorMessage}", result.Status, result.ErrorMessage);
-                return ApiGatewayResult.InternalServerError(result.ErrorMessage ?? "Failed to process update.");
+                return ApiGatewayResult.InternalServerError("Failed to process update.");
             }
         }
         catch (Exception e)

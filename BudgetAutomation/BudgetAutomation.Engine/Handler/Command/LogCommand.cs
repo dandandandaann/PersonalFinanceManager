@@ -44,7 +44,7 @@ public partial class LogCommand(
             await chatStateService.SetStateAsync(message.Chat.Id, ChatStateEnum.AwaitingArguments, CommandName);
 
             return await sender.ReplyAsync(message.Chat,
-                "Ok, por favor, insira os detalhes da sua despesa. Ex: 'Café 5,50 Comida'",
+                "Insira os detalhes da sua despesa. Exemplo: 'Almoço 5,50 Comida'",
                 $"Chat state: {ChatStateEnum.AwaitingArguments}.",
                 cancellationToken: cancellationToken);
         }

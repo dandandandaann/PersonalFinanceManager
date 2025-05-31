@@ -55,14 +55,12 @@ public partial class SpreadsheetCommand(
                             "Invalid spreadsheet id.",
                             logLevel: LogLevel.Information,
                             cancellationToken: cancellationToken);
-                        break;
                     case ErrorCodeEnum.ResourceNotFound:
                         return await sender.ReplyAsync(message.Chat,
                             "Não foi possível encontrar a planilha com o ID enviado. Verifique o ID e tente novamente.",
                             "Spreadsheet not found.",
                             logLevel: LogLevel.Information,
                             cancellationToken: cancellationToken);
-                        break;
                     case ErrorCodeEnum.UnknownError:
                     default:
                         return await sender.ReplyAsync(message.Chat,
@@ -89,16 +87,16 @@ public partial class SpreadsheetCommand(
                 "SpreadsheetId configuration successful.",
                 cancellationToken: cancellationToken);
         }
-        catch (Exception e) when (e is InvalidUserInputException || e is UnauthorizedAccessException)
+        catch (Exception ex) when (ex is InvalidUserInputException || ex is UnauthorizedAccessException)
         {
             throw;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
 
             return await sender.ReplyAsync(message.Chat,
                 "Um erro ocorreu ao tentar configurar a planilha. Tente novamente mais tarde.",
-                $"Exception during spreadsheet command: {e.Message}",
+                $"Exception during spreadsheet command: {ex.Message}",
                 logLevel: LogLevel.Error,
                 cancellationToken: cancellationToken);
         }
@@ -109,6 +107,6 @@ public partial class SpreadsheetCommand(
         throw new NotImplementedException();
     }
 
-    [GeneratedRegex("^[a-zA-Z0-9_]+$")]
+    [GeneratedRegex("^[a-zA-Z0-9_-]{40,}$")]
     private static partial Regex SpreadsheetIdRegex();
 }

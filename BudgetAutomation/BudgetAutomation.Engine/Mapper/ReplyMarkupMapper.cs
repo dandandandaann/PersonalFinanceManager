@@ -18,12 +18,12 @@ using BotForceReplyMarkup = Telegram.Bot.Types.ReplyMarkups.ForceReplyMarkup;
 
 namespace BudgetAutomation.Engine.Mapper;
 
-[Mapper]
-public partial class MessageMapper
+[Mapper(RequiredMappingStrategy = RequiredMappingStrategy.None)]
+public partial class ReplyMarkupMapper
 {
     [MapDerivedType<SharedLibraryInlineKeyboardMarkup, BotInlineKeyboardMarkup>]
     [MapDerivedType<SharedLibraryReplyKeyboardMarkup, BotReplyKeyboardMarkup>]
     [MapDerivedType<SharedLibraryReplyKeyboardRemove, BotReplyKeyboardRemove>]
     [MapDerivedType<SharedLibraryForceReplyMarkup, BotForceReplyMarkup>]
-    public partial BotBaseReplyMarkup MapReplyMarkup(SharedLibraryBaseReplyMarkup source);
+    public partial BotBaseReplyMarkup Map(SharedLibraryBaseReplyMarkup source);
 }

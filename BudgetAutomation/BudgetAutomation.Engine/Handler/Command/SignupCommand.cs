@@ -34,7 +34,7 @@ public partial class SignupCommand(
         {
             await replyAttempting;
             return await sender.ReplyAsync(message.Chat,
-                "O cadastro falhou. Você já está conectado.",
+                "O cadastro falhou. VocÃª jÃ¡ estÃ¡ conectado.",
                 "User signup failed (already signed in).",
                 logLevel: LogLevel.Warning,
                 cancellationToken: cancellationToken);
@@ -62,7 +62,7 @@ public partial class SignupCommand(
                 // UserApiClient returns Success=false if user already exists or on API error
                 // TODO: Differentiate between 'already exists' and 'other error' in UserApiClient response
                 return await sender.ReplyAsync(message.Chat,
-                    "Falha no cadastro. Você pode já estar registrado.",
+                    "Falha no cadastro. Tente novamente mais tarde.",
                     "User signup failed (already exists or API error).",
                     logLevel: LogLevel.Warning,
                     cancellationToken: cancellationToken);
@@ -72,26 +72,26 @@ public partial class SignupCommand(
             welcomeMessage.AppendLine("Cadastro realizado com sucesso.");
             welcomeMessage.AppendLine();
             welcomeMessage.Append("<b>");
-            welcomeMessage.Append(response.User?.Username == null ? "Welcome!" : $"Bem vindo(a), {response.User.Username}!");
+            welcomeMessage.Append(response.User?.Username == null ? "Bem vindo(a)!" : $"Bem vindo(a), {response.User.Username}!");
             welcomeMessage.AppendLine("</b>");
-            welcomeMessage.AppendLine($"Por favor digite /{StartCommand.StaticCommandName} para ver todos os comandos disponíveis " +
+            welcomeMessage.AppendLine($"Por favor digite /{StartCommand.StaticCommandName} para ver os comandos disponÃ­veis " +
                                       $"e /{SpreadsheetCommand.StaticCommandName} para configurar sua planilha.");
 
             return await sender.ReplyAsync(message.Chat,
                 welcomeMessage.ToString(),
-                "Cadastro do usuário realizado com sucesso.",
+                "Cadastro do usuÃ¡rio realizado com sucesso.",
                 parseMode: ParseMode.Html,
                 cancellationToken: cancellationToken);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            if (e is InvalidUserInputException or UnauthorizedAccessException)
+            if (ex is InvalidUserInputException or UnauthorizedAccessException)
                 throw;
 
             // Catch exceptions from the API client (e.g., network issues, deserialization errors)
             return await sender.ReplyAsync(message.Chat,
                 "Ocorreu um erro durante o cadastro. Por favor, tente novamente mais tarde.",
-                $"Exception during signup: {e.Message}",
+                $"Exception during signup: {ex.Message}",
                 logLevel: LogLevel.Error,
                 cancellationToken: cancellationToken);
         }

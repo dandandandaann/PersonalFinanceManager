@@ -86,7 +86,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommand, SpreadsheetCommand>();
 
         // Register mappers
-        services.AddSingleton<MessageMapper>();
+        services.AddSingleton<ReplyMarkupMapper>();
 
         return services;
     }
