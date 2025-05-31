@@ -1,15 +1,14 @@
 ﻿using System.Text.RegularExpressions;
+using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Model;
 using SharedLibrary.Telegram;
 
-namespace BudgetAutomation.Engine.Interface;
+namespace BudgetAutomation.Engine.Handler.Command.Alias;
 
-public abstract class ICommandAlias(IEnumerable<ICommand> commandImplementations) : ICommand
+public abstract class CommandAliasBase(IEnumerable<ICommand> commandImplementations) : ICommand
 {
     public required string TargetCommandName { get; init; }
-    public string CommandName => StaticCommandName;
-
-    public static string StaticCommandName;
+    public string CommandName { get; protected init; } = null!;
 
     public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken)
     {
@@ -35,5 +34,16 @@ public abstract class ICommandAlias(IEnumerable<ICommand> commandImplementations
         message.Text = pattern.Replace(message.Text, TargetCommandName);
 
         return message;
+    }
+
+    protected static string GetCommandNameFromType(Type type)
+    {
+        var classSuffix = "CommandAlias";
+        string name = type.Name;
+        if (name.EndsWith(classSuffix, StringComparison.OrdinalIgnoreCase))
+        {
+            name = name.Substring(0, name.Length - classSuffix.Length);
+        }
+        return name.ToLowerInvariant();
     }
 }

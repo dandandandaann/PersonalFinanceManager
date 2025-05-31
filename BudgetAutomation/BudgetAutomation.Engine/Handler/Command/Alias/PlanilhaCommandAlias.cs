@@ -2,11 +2,15 @@
 
 namespace BudgetAutomation.Engine.Handler.Command.Alias;
 
-public class PlanilhaCommandAlias : ICommandAlias
+public class PlanilhaCommandAlias : CommandAliasBase
 {
     public PlanilhaCommandAlias(IEnumerable<ICommand> commandImplementations) : base(commandImplementations)
     {
-        StaticCommandName = "planilha";
         TargetCommandName = SpreadsheetCommand.StaticCommandName;
+        base.CommandName = CommandName;
     }
+
+    public static readonly string StaticCommandName = GetCommandNameFromType(typeof(PlanilhaCommandAlias));
+    private new string CommandName => StaticCommandName;
+
 }

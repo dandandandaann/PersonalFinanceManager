@@ -87,8 +87,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommand, SpreadsheetCommand>();
 
         // Register commands alias
-        services.AddScoped<ICommandAlias, RegistrarCommandAlias>();
-        services.AddScoped<ICommandAlias, PlanilhaCommandAlias>();
+        services.AddScoped<CommandAliasBase, RegistrarCommandAlias>();
+        services.AddScoped<CommandAliasBase, PlanilhaCommandAlias>();
 
         // Register mappers
         services.AddSingleton<ReplyMarkupMapper>();

@@ -13,7 +13,8 @@ public partial class SignupCommand(
     ISenderGateway sender,
     IUserApiClient userApiClient) : ICommand
 {
-    public string CommandName => "signup";
+    public string CommandName => StaticCommandName;
+    public static string StaticCommandName => "signup";
 
     public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
@@ -34,7 +35,7 @@ public partial class SignupCommand(
         {
             await replyAttempting;
             return await sender.ReplyAsync(message.Chat,
-                "O cadastro falhou. Você já está conectado.",
+                "O cadastro falhou. Você já está logado no sistema.",
                 "User signup failed (already signed in).",
                 logLevel: LogLevel.Warning,
                 cancellationToken: cancellationToken);
