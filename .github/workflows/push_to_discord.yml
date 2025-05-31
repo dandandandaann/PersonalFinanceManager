@@ -15,164 +15,158 @@ jobs:
         with:
           fetch-depth: 0 # Needed for github.event.commits
 
-      - name: Send Discord Notification via Curl
+      - name: Send Discord Notification (JavaScript)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const discordWebhook = process.env.DISCORD_WEBHOOK;
+            if (!discordWebhook) {
+              core.setFailed("DISCORD_WEBHOOK secret not set.");
+              return;
+            }
+
+            const githubAvatarUrl = process.env.GITHUB_AVATAR_URL || "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png";
+            const repoName = context.repo.owner + '/' + context.repo.repo;
+            const branchName = context.ref.replace('refs/heads/', '').replace('refs/tags/', '');
+            const pusherName = context.actor;
+            const pusherUrl = `https://github.com/${pusherName}`;
+            const pusherAvatarUrl = `https://github.com/${pusherName}.png?size=48`;
+
+            // Event specific details are in context.payload
+            const commits = context.payload.commits || [];
+            const headCommit = context.payload.head_commit || {};
+            const headCommitMessageRaw = headCommit.message || "";
+            const headCommitUrl = headCommit.url;
+            const headCommitTimestamp = headCommit.timestamp;
+
+            const eventCreated = context.payload.created || false;
+            const eventDeleted = context.payload.deleted || false;
+
+            const defaultRepoUrl = `https://github.com/${repoName}`;
+            const defaultBranchUrl = `https://github.com/${repoName}/tree/${branchName}`;
+
+            function escapeMarkdown(text) {
+              if (!text) return "";
+              return text.replace(/`/g, '\\`');
+            }
+
+            // --- Prepare Variables ---
+            const numCommits = commits.length;
+            let embedColor = 3447003; // Blue
+            let actionTakenDisplay = "Pushed to";
+            let commitListDescription = "No distinct commits in this push.";
+            let embedTitleRaw = `Push to ${branchName}`;
+            let embedUrlFinal = defaultBranchUrl;
+            let timestampFinal = new Date().toISOString(); // Default to now
+
+            if (eventDeleted) {
+              actionTakenDisplay = "Deleted";
+              commitListDescription = `Branch/tag \`${branchName}\` deleted by **${pusherName}**.`;
+              embedTitleRaw = `Deleted: ${branchName}`;
+              embedColor = 15158332; // Red
+              embedUrlFinal = defaultRepoUrl;
+            } else if (eventCreated) {
+              actionTakenDisplay = "Created";
+              embedTitleRaw = `Created: ${branchName}`;
+              embedColor = 3066993; // Green
+              embedUrlFinal = defaultBranchUrl;
+              if (numCommits > 0) {
+                actionTakenDisplay = "Created and pushed to";
+              } else {
+                commitListDescription = `Branch/tag \`${branchName}\` created by **${pusherName}**.`;
+              }
+            }
+
+            if (numCommits > 0) {
+              let commitListLines = [];
+              for (const commit of commits) {
+                const commitIdShort = (commit.id || '').substring(0, 7);
+                const commitUrl = commit.url || '';
+                const commitMessageFirstLine = (commit.message || '').split('\n')[0];
+                const commitAuthorName = (commit.author && commit.author.name) || 'Unknown Author';
+
+                let commitMessageEscapedMd = escapeMarkdown(commitMessageFirstLine);
+                if (commitMessageEscapedMd.length > 70) {
+                  commitMessageEscapedMd = commitMessageEscapedMd.substring(0, 67) + "...";
+                }
+                const commitAuthorNameEscapedMd = escapeMarkdown(commitAuthorName);
+
+                const commitLineMd = `\`[${commitIdShort}](${commitUrl})\`: ${commitMessageEscapedMd} by **${commitAuthorNameEscapedMd}**`;
+                commitListLines.push(commitLineMd);
+              }
+              commitListDescription = commitListLines.join("\n");
+
+              if (numCommits === 1 && headCommitMessageRaw) {
+                embedTitleRaw = headCommitMessageRaw.split('\n')[0];
+              } else {
+                embedTitleRaw = `${numCommits} new commit(s) to ${branchName}`;
+              }
+
+              if (headCommitUrl) {
+                embedUrlFinal = headCommitUrl;
+              }
+              if (headCommitTimestamp) {
+                timestampFinal = headCommitTimestamp;
+              }
+            }
+            
+            if (embedTitleRaw.length > 250) {
+              embedTitleRaw = embedTitleRaw.substring(0, 247) + "...";
+            }
+
+            // --- Construct JSON Payload ---
+            const payload = {
+              username: "GitHub Actions Notifier",
+              avatar_url: githubAvatarUrl,
+              content: `🚀 ${actionTakenDisplay} **${repoName}/${branchName}** by **${pusherName}**.`,
+              embeds: [{
+                author: {
+                  name: pusherName,
+                  url: pusherUrl,
+                  icon_url: pusherAvatarUrl
+                },
+                title: embedTitleRaw,
+                url: embedUrlFinal,
+                description: commitListDescription,
+                color: embedColor,
+                fields: [
+                  {
+                    name: "Repository",
+                    value: `[${repoName}](https://github.com/${repoName})`,
+                    inline: true
+                  },
+                  {
+                    name: "Ref",
+                    value: `[\`${branchName}\`](https://github.com/${repoName}/tree/${branchName})`,
+                    inline: true
+                  },
+                  {
+                    name: "Triggered by",
+                    value: `**${pusherName}**`,
+                    inline: true
+                  }
+                ],
+                timestamp: timestampFinal
+              }]
+            };
+
+            // --- Send to Discord ---
+            // For debugging:
+            // console.log("Payload:", JSON.stringify(payload, null, 2));
+
+            const response = await fetch(discordWebhook, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              core.setFailed(`Error sending Discord notification: ${response.status} ${response.statusText}\n${errorText}`);
+              // console.log("Failed Payload:", JSON.stringify(payload, null, 2));
+            } else {
+              console.log("Discord notification sent successfully!");
+            }
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          # GitHub Context Variables
-          REPO_NAME: ${{ github.repository }}
-          BRANCH_NAME: ${{ github.ref_name }}
-          PUSHER_NAME: ${{ github.actor }}
-          PUSHER_URL: "https://github.com/${{ github.actor }}"
-          PUSHER_AVATAR_URL: "https://github.com/${{ github.actor }}.png?size=48"
-          # Event specific details
-          COMMITS_JSON: ${{ toJSON(github.event.commits) }}
-          HEAD_COMMIT_MESSAGE_RAW: ${{ github.event.head_commit.message }}
-          HEAD_COMMIT_URL: ${{ github.event.head_commit.url }}
-          HEAD_COMMIT_TIMESTAMP: ${{ github.event.head_commit.timestamp }}
-          EVENT_CREATED: ${{ github.event.created }}
-          EVENT_DELETED: ${{ github.event.deleted }}
-          DEFAULT_REPO_URL: "https://github.com/${{ github.repository }}"
-          DEFAULT_BRANCH_URL: "https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}"
-        run: |
-          # --- Helper function to escape JSON strings ---
-          escape_json_string() {
-            echo "$1" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed -z 's/\n/\\n/g' | sed 's/\r//g'
-          }
-
-          # --- Prepare Variables ---
-          num_commits=0
-          if [[ "${COMMITS_JSON}" != "null" &&  "${COMMITS_JSON}" != "[]" ]]; then
-            num_commits=$(echo "${COMMITS_JSON}" | jq 'length')
-          fi
-
-          embed_color="3447003" # Blue
-          action_taken_display="Pushed to"
-          commit_list_description="No distinct commits in this push."
-          embed_title_raw="Push to ${BRANCH_NAME}"
-          embed_url_final="${DEFAULT_BRANCH_URL}"
-          timestamp_final=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-          if [[ "${EVENT_DELETED}" == "true" ]]; then
-            action_taken_display="Deleted"
-            commit_list_description="Branch/tag \`${BRANCH_NAME}\` deleted by **${PUSHER_NAME}**."
-            embed_title_raw="Deleted: ${BRANCH_NAME}"
-            embed_color="15158332" # Red
-            embed_url_final="${DEFAULT_REPO_URL}"
-          elif [[ "${EVENT_CREATED}" == "true" ]]; then
-            action_taken_display="Created"
-            embed_title_raw="Created: ${BRANCH_NAME}"
-            embed_color="3066993" # Green
-            embed_url_final="${DEFAULT_BRANCH_URL}"
-            if [[ "$num_commits" -gt 0 ]]; then
-              action_taken_display="Created and pushed to"
-            else
-              commit_list_description="Branch/tag \`${BRANCH_NAME}\` created by **${PUSHER_NAME}**."
-            fi
-          fi
-
-          if [[ "$num_commits" -gt 0 ]]; then
-            commit_list_temp=""
-            for i in $(seq 0 $(($num_commits - 1))); do
-              commit_id_short=$(echo "${COMMITS_JSON}" | jq -r ".[${i}].id[0:7]")
-              commit_url=$(echo "${COMMITS_JSON}" | jq -r ".[${i}].url")
-              commit_message_first_line=$(echo "${COMMITS_JSON}" | jq -r ".[${i}].message" | head -n1)
-              commit_author_name=$(echo "${COMMITS_JSON}" | jq -r ".[${i}].author.name")
-
-              # Escape for markdown and then for JSON
-              commit_message_escaped_md=$(echo "$commit_message_first_line" | sed 's/`/\\`/g') # Escape backticks for markdown
-              if [ ${#commit_message_escaped_md} -gt 70 ]; then
-                  commit_message_escaped_md="${commit_message_escaped_md:0:67}..."
-              fi
-              commit_author_name_escaped_md=$(echo "$commit_author_name" | sed 's/`/\\`/g')
-
-              # Note: \` needs to be \\\\` in JSON if the string itself contains \\`
-              # Simpler is to just escape ` for markdown, then the whole string for JSON.
-              commit_line_md="\`[${commit_id_short}](${commit_url})\`: ${commit_message_escaped_md} by **${commit_author_name_escaped_md}**"
-              commit_list_temp="${commit_list_temp}${commit_line_md}\n" # Add newline for Discord markdown
-            done
-            commit_list_description=$(escape_json_string "${commit_list_temp}") # Escape the whole block for JSON
-
-            if [[ "$num_commits" -eq 1 && "${HEAD_COMMIT_MESSAGE_RAW}" != "" ]]; then
-              embed_title_raw=$(echo "${HEAD_COMMIT_MESSAGE_RAW}" | head -n1)
-            else
-              embed_title_raw="${num_commits} new commit(s) to ${BRANCH_NAME}"
-            fi
-
-            if [[ "${HEAD_COMMIT_URL}" != "" && "${HEAD_COMMIT_URL}" != "null" ]]; then
-              embed_url_final="${HEAD_COMMIT_URL}"
-            fi
-            if [[ "${HEAD_COMMIT_TIMESTAMP}" != "" && "${HEAD_COMMIT_TIMESTAMP}" != "null" ]]; then
-              timestamp_final="${HEAD_COMMIT_TIMESTAMP}"
-            fi
-          else
-            # If no commits, ensure the default or event-specific description is JSON escaped
-            commit_list_description=$(escape_json_string "${commit_list_description}")
-          fi
-
-          # Truncate and escape title
-          if [ ${#embed_title_raw} -gt 250 ]; then embed_title_raw="${embed_title_raw:0:247}..." ; fi
-          embed_title_escaped=$(escape_json_string "${embed_title_raw}")
-
-          # --- Construct JSON Payload ---
-          # Using printf for better control over formatting and escaping
-          JSON_PAYLOAD=$(printf '{
-            "username": "GitHub Actions Notifier",
-            "avatar_url": "%s",
-            "content": "🚀 %s **%s/%s** by **%s**.",
-            "embeds": [{
-              "author": {
-                "name": "%s",
-                "url": "%s",
-                "icon_url": "%s"
-              },
-              "title": "%s",
-              "url": "%s",
-              "description": "%s",
-              "color": %s,
-              "fields": [
-                {
-                  "name": "Repository",
-                  "value": "[%s](https://github.com/%s)",
-                  "inline": true
-                },
-                {
-                  "name": "Ref",
-                  "value": "[`%s`](https://github.com/%s/tree/%s)",
-                  "inline": true
-                },
-                {
-                  "name": "Triggered by",
-                  "value": "**%s**",
-                  "inline": true
-                }
-              ],
-              "timestamp": "%s"
-            }]
-          }' \
-          "$(escape_json_string "$PUSHER_AVATAR_URL")" \
-          "$(escape_json_string "$action_taken_display")" "$(escape_json_string "$REPO_NAME")" "$(escape_json_string "$BRANCH_NAME")" "$(escape_json_string "$PUSHER_NAME")" \
-          "$(escape_json_string "$PUSHER_NAME")" "$(escape_json_string "$PUSHER_URL")" "$(escape_json_string "$PUSHER_AVATAR_URL")" \
-          "${embed_title_escaped}" \
-          "$(escape_json_string "$embed_url_final")" \
-          "${commit_list_description}" \
-          "${embed_color}" \
-          "$(escape_json_string "$REPO_NAME")" "$(escape_json_string "$REPO_NAME")" \
-          "$(escape_json_string "$BRANCH_NAME")" "$(escape_json_string "$REPO_NAME")" "$(escape_json_string "$BRANCH_NAME")" \
-          "$(escape_json_string "$PUSHER_NAME")" \
-          "$(escape_json_string "$timestamp_final")"
-          )
-
-          # --- Send to Discord ---
-          # For debugging the payload:
-          # echo "Payload: $JSON_PAYLOAD"
-
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d "$JSON_PAYLOAD" \
-               "$DISCORD_WEBHOOK"
-
-          if [ $? -ne 0 ]; then
-            echo "Curl command failed!"
-            # echo "Failed Payload: $JSON_PAYLOAD" # Uncomment for debug
-            exit 1
-          fi
+          GITHUB_AVATAR_URL: "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
