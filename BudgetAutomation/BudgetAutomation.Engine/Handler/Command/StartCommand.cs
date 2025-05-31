@@ -13,7 +13,7 @@ public class StartCommand(ISenderGateway sender) : ICommand
 
     public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
-        var startMessage = "Escolha uma das opções:";
+        var startMessage = "Escolha uma das opções";
 
         var buttons = new List<InlineKeyboardButton>();
 

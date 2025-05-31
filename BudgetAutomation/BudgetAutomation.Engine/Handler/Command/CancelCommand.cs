@@ -7,7 +7,8 @@ namespace BudgetAutomation.Engine.Handler.Command;
 
 public class CancelCommand(ISenderGateway sender, IChatStateService chatStateService) : ICommand
 {
-    public string CommandName => "cancel";
+    public string CommandName => StaticCommandName;
+    public static string StaticCommandName => "cancel";
 
     public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
@@ -19,7 +20,7 @@ public class CancelCommand(ISenderGateway sender, IChatStateService chatStateSer
         await chatStateService.ClearState(message.Chat.Id);
 
         return await sender.ReplyAsync(message.Chat,
-            "Comando de cancelamento concluído. \nO que você quer fazer a seguir?", cancellationToken: cancellationToken);
+            "Comando de cancelar ação concluído. \nO que você quer fazer a seguir?", cancellationToken: cancellationToken);
     }
 
     public Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken)

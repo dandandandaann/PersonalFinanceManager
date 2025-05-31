@@ -1,10 +1,7 @@
 ﻿using BudgetAutomation.Engine.Model;
+using SharedLibrary.Telegram;
 
 namespace BudgetAutomation.Engine.Interface;
-
-using SharedLibrary.Telegram;
-using System.Threading;
-using System.Threading.Tasks;
 
 public interface ICommand
 {

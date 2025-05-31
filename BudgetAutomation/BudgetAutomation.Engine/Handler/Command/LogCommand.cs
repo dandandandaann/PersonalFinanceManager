@@ -1,10 +1,10 @@
 ﻿using System.Text.RegularExpressions;
 using BudgetAutomation.Engine.Enums;
+using BudgetAutomation.Engine.Handler.Command.Alias;
 using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Misc;
 using BudgetAutomation.Engine.Model;
 using BudgetAutomation.Engine.Service;
-using SharedLibrary.Dto;
 using SharedLibrary.Model;
 using SharedLibrary.Telegram;
 
@@ -29,7 +29,7 @@ public partial class LogCommand(
         if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
         {
             return await sender.ReplyAsync(message.Chat,
-                $"Por favor configure sua planilha com o commando /{SpreadsheetCommand.StaticCommandName} antes de " +
+                $"Por favor configure sua planilha com o commando /{PlanilhaCommandAlias.StaticCommandName} antes de " +
                 $"usar o comando /{CommandName}.",
                 cancellationToken: cancellationToken);
         }

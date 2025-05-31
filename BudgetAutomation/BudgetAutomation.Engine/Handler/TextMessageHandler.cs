@@ -1,4 +1,5 @@
-﻿using BudgetAutomation.Engine.Interface;
+﻿using BudgetAutomation.Engine.Handler.Command.Alias;
+using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Model;
 using BudgetAutomation.Engine.Service;
 using SharedLibrary.Telegram;
@@ -9,7 +10,8 @@ public class TextMessageHandler(
     ILogger<MessageHandler> logger,
     ISenderGateway sender,
     IChatStateService chatStateService,
-    IEnumerable<ICommand> commandImplementations) : ITextMessageHandler
+    IEnumerable<ICommand> commandImplementations,
+    IEnumerable<CommandAliasBase> commandAliasImplementations) : ITextMessageHandler
 {
     public async Task<Message> HandleTextMessageAsync(Message message, CancellationToken cancellationToken = default)
     {
@@ -20,7 +22,7 @@ public class TextMessageHandler(
         // TODO: this is odd, try to change it
         string[] parts = messageText.Split([' '], 2, StringSplitOptions.RemoveEmptyEntries);
 
-        var commandsByName = commandImplementations.ToDictionary(
+        var commandsByName = commandImplementations.Concat(commandAliasImplementations).ToDictionary(
             cmd => cmd.CommandName.ToLowerInvariant(),
             cmd => cmd
         );

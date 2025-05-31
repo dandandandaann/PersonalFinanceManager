@@ -53,7 +53,8 @@ public class UpdateHandler(
         }
         catch (Exception ex)
         {
-            HandlePollingErrorAsync(ex);
+            logger.LogError("Error handling update. Exception: {Exception}", ex);
+            throw;
         }
     }
 
@@ -99,7 +100,5 @@ public class UpdateHandler(
 
     private void HandlePollingErrorAsync(Exception ex)
     {
-        logger.LogError("Error handling update: {ErrorMessage}", ex.Message);
-        throw ex;
     }
 }
