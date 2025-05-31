@@ -14,34 +14,7 @@ namespace TelegramListener.Service;
 
 public interface ITelegramUpdateProcessor
 {
-    Task<ProcessUpdateResult> ProcessUpdateAsync(Update update, ILambdaContext context);
-}
-
-public enum ProcessUpdateStatus
-{
-    Success,
-    SqsError,
-    GenericError
-}
-
-public class ProcessUpdateResult
-{
-    public ProcessUpdateStatus Status { get; }
-    public string? ErrorMessage { get; }
-    public string? SqsMessageId { get; }
-
-    private ProcessUpdateResult(ProcessUpdateStatus status, string? errorMessage = null, string? sqsMessageId = null)
-    {
-        Status = status;
-        ErrorMessage = errorMessage;
-        SqsMessageId = sqsMessageId;
-    }
-
-    public static ProcessUpdateResult Success(string? sqsMessageId = null) => new(ProcessUpdateStatus.Success, sqsMessageId: sqsMessageId);
-    public static ProcessUpdateResult SqsError(string message) => new(ProcessUpdateStatus.SqsError, message);
-    public static ProcessUpdateResult GenericError(string message) => new(ProcessUpdateStatus.GenericError, message);
-
-    public bool IsSuccess => Status == ProcessUpdateStatus.Success;
+    Task<bool> ProcessUpdateAsync(Update update, ILambdaContext context);
 }
 
 public class TelegramUpdateProcessor(
@@ -50,7 +23,7 @@ public class TelegramUpdateProcessor(
 {
     private readonly TelegramListenerSettings _listenerSettings = listenerOptions.Value;
 
-    public async Task<ProcessUpdateResult> ProcessUpdateAsync(Update update, ILambdaContext context)
+    public async Task<bool> ProcessUpdateAsync(Update update, ILambdaContext context)
     {
         var logger = context.Logger;
         var simplifiedUpdate = TelegramUpdateMapper.ConvertUpdate(update);
@@ -79,22 +52,22 @@ public class TelegramUpdateProcessor(
                 logger.LogError(
                     "SQS did not accept message for Update. SQS Response Status: {SqsStatus}, SQS Message ID (if any): {SqsMessageId}",
                     sendMessageResponse.HttpStatusCode, sendMessageResponse.MessageId);
-                return ProcessUpdateResult.SqsError("Failed to queue message.");
+                return false;
             }
 
             logger.LogInformation("Successfully queued Update to SQS. SQS Message ID: {SqsMessageId}",
                 sendMessageResponse.MessageId);
-            return ProcessUpdateResult.Success(sendMessageResponse.MessageId);
+            return true;
         }
         catch (AmazonSQSException sqsEx)
         {
             logger.LogError(sqsEx, "AWS SQS Exception while sending Update to queue.");
-            return ProcessUpdateResult.SqsError("Error communicating with SQS.");
+            return false;
         }
         catch (Exception e)
         {
             logger.LogError(e, "Generic failure while processing webhook and sending Update to SQS.");
-            return ProcessUpdateResult.GenericError("An unexpected error occurred.");
+            return false;
         }
     }
 }

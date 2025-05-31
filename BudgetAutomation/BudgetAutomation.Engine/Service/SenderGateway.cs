@@ -1,6 +1,8 @@
-﻿using Telegram.Bot;
+﻿using BudgetAutomation.Engine.Mapper;
+using Telegram.Bot;
 using SharedLibrary.Telegram;
 using SharedLibrary.Telegram.Enums;
+using SharedLibrary.Telegram.Types.ReplyMarkups;
 
 namespace BudgetAutomation.Engine.Service;
 
@@ -12,9 +14,9 @@ public interface ISenderGateway
         string logMessage = "",
         LogLevel logLevel = LogLevel.Information,
         ParseMode parseMode = default,
-        string ReplyParametersQreplyParameters = default,
-        string ReplyMarkupQreplyMarkup = default,
-        string LinkPreviewOptionsQlinkPreviewOptions = default,
+        // ReplyParameters? replyParameters = default,
+        ReplyMarkup? replyMarkup = default,
+        // LinkPreviewOptions? linkPreviewOptions = default,
         int? messageThreadId = default,
         IEnumerable<MessageEntity>? entities = default,
         bool disableNotification = default,
@@ -25,7 +27,7 @@ public interface ISenderGateway
         CancellationToken cancellationToken = default);
 }
 
-public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> logger) : ISenderGateway
+public class SenderGateway(ITelegramBotClient botClient, ReplyMarkupMapper replyMarkupMapper, ILogger<SenderGateway> logger) : ISenderGateway
 {
     public async Task<Message> ReplyAsync(
         Chat chat,
@@ -33,9 +35,9 @@ public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> 
         string logMessage = "",
         LogLevel logLevel = LogLevel.Information,
         ParseMode parseMode = default,
-        string ReplyParametersQreplyParameters = default,
-        string ReplyMarkupQreplyMarkup = default,
-        string LinkPreviewOptionsQlinkPreviewOptions = default,
+        // ReplyParameters? replyParameters = default,
+        ReplyMarkup? replyMarkup = default,
+        // LinkPreviewOptions? linkPreviewOptions = default,
         int? messageThreadId = default,
         IEnumerable<MessageEntity>? entities = default,
         bool disableNotification = default,
@@ -50,7 +52,7 @@ public class SenderGateway(ITelegramBotClient botClient, ILogger<SenderGateway> 
             text: text,
             parseMode: System.Enum.Parse<Telegram.Bot.Types.Enums.ParseMode>(parseMode.ToString()),
             // replyParameters: replyParameters,
-            // replyMarkup: replyMarkup,
+            replyMarkup: replyMarkup == null ? null : replyMarkupMapper.Map(replyMarkup),
             // linkPreviewOptions: linkPreviewOptions,
             messageThreadId: messageThreadId,
             // entities: entities,
