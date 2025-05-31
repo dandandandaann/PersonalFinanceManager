@@ -1,5 +1,6 @@
 ﻿using BudgetAutomation.Engine.Handler;
 using BudgetAutomation.Engine.Handler.Command;
+using BudgetAutomation.Engine.Handler.Command.Alias;
 using BudgetAutomation.Engine.Interface;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;

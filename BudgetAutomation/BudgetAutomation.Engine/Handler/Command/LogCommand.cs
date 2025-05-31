@@ -4,7 +4,6 @@ using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Misc;
 using BudgetAutomation.Engine.Model;
 using BudgetAutomation.Engine.Service;
-using SharedLibrary.Dto;
 using SharedLibrary.Model;
 using SharedLibrary.Telegram;
 

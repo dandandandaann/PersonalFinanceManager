@@ -5,6 +5,7 @@ using Amazon.SQS;
 using BudgetAutomation.Engine.ApiClient;
 using BudgetAutomation.Engine.Handler;
 using BudgetAutomation.Engine.Handler.Command;
+using BudgetAutomation.Engine.Handler.Command.Alias;
 using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Mapper;
 using BudgetAutomation.Engine.Service;
@@ -84,6 +85,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommand, CancelCommand>();
         services.AddScoped<ICommand, SignupCommand>();
         services.AddScoped<ICommand, SpreadsheetCommand>();
+
+        // Register commands alias
+        services.AddScoped<ICommandAlias, RegistrarCommandAlias>();
+        services.AddScoped<ICommandAlias, PlanilhaCommandAlias>();
 
         // Register mappers
         services.AddSingleton<ReplyMarkupMapper>();
