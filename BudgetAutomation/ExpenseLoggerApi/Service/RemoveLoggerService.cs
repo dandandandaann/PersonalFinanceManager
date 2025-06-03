@@ -27,23 +27,23 @@ namespace ExpenseLoggerApi.Service
                 {
                     logger.LogWarning("No expenses found to remove in sheet '{SheetName}' in spreadsheet '{SpreadsheetId}'.",
                         sheetName, spreadsheetId);
-                    throw new InvalidOperationException("Nenhuma despesa encontrada para remoção.");
+                    throw new InvalidOperationException("No expense found.");
                 }
 
                 var values = await sheetsAccessor.ReadRowValuesAsync(spreadsheetId, sheetName, lastRow);
 
                 if (values == null || values.Count == 0)
                 {
-                    logger.LogWarning("Linha vazia ou inválida para remoção");
-                    throw new InvalidOperationException("Não foi possível recuperar os dados da despesa para remoção.");
+                    logger.LogWarning("Empty or invalid row");
+                    throw new InvalidOperationException("Could not retrieve expense data.");
                 }
 
                 // Apaga a linha só depois de garantir os dados
                 await sheetsAccessor.DeleteRowAsync(spreadsheetId, sheetId, lastRow);
 
                 var description = values.ElementAtOrDefault(0)?.ToString().Trim();
-                var amount = values.ElementAtOrDefault(3)?.ToString().Trim();
-                var category = values.ElementAtOrDefault(7)?.ToString().Trim();
+                var amount = values.ElementAtOrDefault(7)?.ToString().Trim();
+                var category = values.ElementAtOrDefault(3)?.ToString().Trim();
 
                 var expense = new Expense
                 {

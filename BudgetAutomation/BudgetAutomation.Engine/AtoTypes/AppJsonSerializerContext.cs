@@ -6,6 +6,7 @@ namespace BudgetAutomation.Engine.AtoTypes;
 
 [JsonSerializable(typeof(ApiResponse))]
 [JsonSerializable(typeof(LogExpenseResponse))]
+[JsonSerializable(typeof(RemoveExpenseResponse))]
 [JsonSerializable(typeof(UserConfigurationDto))]
 [JsonSerializable(typeof(UserConfigurationUpdateRequest))]
 [JsonSerializable(typeof(UserConfigurationUpdateResponse))]

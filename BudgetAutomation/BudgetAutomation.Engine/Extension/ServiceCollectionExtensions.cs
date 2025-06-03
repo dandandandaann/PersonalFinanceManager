@@ -81,6 +81,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommand, CancelCommand>();
         services.AddScoped<ICommand, SignupCommand>();
         services.AddScoped<ICommand, SpreadsheetCommand>();
+        services.AddScoped<ICommand, UndoCommand>();
 
         return services;
     }
