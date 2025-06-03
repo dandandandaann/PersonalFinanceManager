@@ -1,5 +1,6 @@
 ﻿using Google.Apis.Sheets.v4.Data;
 using SharedLibrary.Dto;
+using SharedLibrary.Model;
 
 namespace ExpenseLoggerApi.Interface
 {
@@ -24,6 +25,8 @@ namespace ExpenseLoggerApi.Interface
         /// </summary>
         Task InsertRowAsync(string spreadsheetId, int sheetId, int rowIndex);
         Task DeleteRowAsync(string spreadsheetId, int sheetId, int rowIndex);
+        Task<IList<object>> ReadRowValuesAsync(string spreadsheetId, string sheetName, int rowIndex);
+
 
         /// <summary>
         /// Performs a batch update of cell values in a spreadsheet.

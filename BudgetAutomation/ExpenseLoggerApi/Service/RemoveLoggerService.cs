@@ -8,9 +8,8 @@ namespace ExpenseLoggerApi.Service
         ISheetsDataAccessor sheetsAccessor,
         ILogger<RemoveLoggerService> logger)
     {
-        public async Task<RemoveExpenseResponse> RemoveLastExpense(string spreadsheetId, string description, string amount, string category)
+        public async Task<RemoveExpenseResponse> RemoveLastExpense(string spreadsheetId)
         {
-           
             const int startRow = 15;
             const string searchColumn = "B";
 
@@ -24,30 +23,45 @@ namespace ExpenseLoggerApi.Service
 
                 var lastRow = await sheetsAccessor.FindLastItemAsync(spreadsheetId, sheetName, searchColumn, startRow);
 
-                if(lastRow < startRow)
+                if (lastRow < startRow)
                 {
                     logger.LogWarning("No expenses found to remove in sheet '{SheetName}' in spreadsheet '{SpreadsheetId}'.",
                         sheetName, spreadsheetId);
-                    throw new ArgumentException("Invalid row.", nameof(lastRow));
+                    throw new InvalidOperationException("Nenhuma despesa encontrada para remoção.");
                 }
 
+                var values = await sheetsAccessor.ReadRowValuesAsync(spreadsheetId, sheetName, lastRow);
+
+                if (values == null || values.Count == 0)
+                {
+                    logger.LogWarning("Linha vazia ou inválida para remoção");
+                    throw new InvalidOperationException("Não foi possível recuperar os dados da despesa para remoção.");
+                }
+
+                // Apaga a linha só depois de garantir os dados
                 await sheetsAccessor.DeleteRowAsync(spreadsheetId, sheetId, lastRow);
-                logger.LogInformation("Removed last logged expense at row {Row} from sheet '{SheetName}'.",
-                    lastRow, sheetName);
+
+                var description = values.ElementAtOrDefault(0)?.ToString().Trim();
+                var amount = values.ElementAtOrDefault(3)?.ToString().Trim();
+                var category = values.ElementAtOrDefault(7)?.ToString().Trim();
+
+                var expense = new Expense
+                {
+                    Description = description,
+                    Amount = amount,
+                    Category = category
+                };
 
                 return new RemoveExpenseResponse
                 {
-                    expense = new Expense
-                    {
-                        Description = description,
-                        Amount = amount,
-                        Category = category
-                    }
+                    Success = true,
+                    expense = expense
                 };
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to remove last logged expense for description '{Description}'.", description);
+                logger.LogError(ex, "Failed to remove last logged expense.");
                 throw;
             }
         }

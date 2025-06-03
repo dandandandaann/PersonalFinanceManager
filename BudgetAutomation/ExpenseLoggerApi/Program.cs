@@ -71,4 +71,18 @@ app.MapPost("/validate-spreadsheet",
         }
     });
 
+app.MapDelete("/undo",
+    async ([FromServices] RemoveLoggerService removeLogger,
+        [FromQuery] string spreadsheetId) =>
+    {
+        try
+        {
+            var response = await removeLogger.RemoveLastExpense(spreadsheetId);
+            return Results.Ok(response);
+        }catch(Exception ex)
+        {
+            app.Logger.LogError(ex, "Failed to remove expense");
+            return Results.Problem(detail: "An error occured while logging the expense.", statusCode: 500);
+        }
+    });
 app.Run();

@@ -64,6 +64,7 @@ public static class ServiceCollectionExtensions
 
         // Register Services
         services.AddScoped<SpreadsheetService>();
+        services.AddScoped<RemoveLoggerService>();
         services.AddSingleton<GoogleSheetsClientFactory>();
         services.AddSingleton<SheetsService>(sp =>
         {

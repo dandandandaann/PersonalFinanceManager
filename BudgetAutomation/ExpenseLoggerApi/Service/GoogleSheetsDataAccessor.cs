@@ -109,7 +109,7 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
                     SheetId = sheetId,
                     Dimension = "ROWS",
                     StartIndex = rowIndex - 1,
-                    EndIndex = rowIndex
+                    EndIndex = rowIndex       
                 }
             }
         };
@@ -118,6 +118,17 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
         var request = sheetsService.Spreadsheets.BatchUpdate(batchRequest, spreadsheetId);
 
         await request.ExecuteAsync();
+    }
+
+    public async Task<IList<object>> ReadRowValuesAsync(string spreadsheetId, string sheetName, int rowIndex)
+    {
+        var range = $"{sheetName}!B{rowIndex}:I{rowIndex}";
+        var request = sheetsService.Spreadsheets.Values.Get(spreadsheetId, range);
+        var response = await request.ExecuteAsync();
+
+        var values = response.Values?.FirstOrDefault();
+
+        return values;
     }
 
     public async Task BatchUpdateValuesAsync(string spreadsheetId, BatchUpdateValuesRequest request)
