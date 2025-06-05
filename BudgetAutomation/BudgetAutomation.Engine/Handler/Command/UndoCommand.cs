@@ -7,7 +7,6 @@ namespace BudgetAutomation.Engine.Handler.Command;
 
 public partial class UndoCommand(
     ISenderGateway sender,
-    IUserManagerService userManagerService,
     IExpenseLoggerApiClient expenseLoggerApiClient) : ICommand
 {
     public string CommandName => StaticCommandName;
@@ -45,7 +44,7 @@ public partial class UndoCommand(
             }
             return await sender.ReplyAsync(message.Chat,
                 $"Despesa excluída\n{response.expense}",
-                "Removed expense.",
+                $"Removed expense description {response.expense.Description}",
                 cancellationToken: cancellationToken);
         }
         catch (Exception ex)

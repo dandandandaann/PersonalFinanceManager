@@ -155,12 +155,8 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
             return new RemoveExpenseResponse { Success = false };
         }
 
-        response.EnsureSuccessStatusCode();
-
         _logger.LogInformation("Remove expense request sent. Response code: {StatusCode}", response.StatusCode);
 
-        if (response.Content is { Headers.ContentType.MediaType: "application/json" })
-        {
             var responseExpense = await response.Content.ReadFromJsonAsync(
                 AppJsonSerializerContext.Default.RemoveExpenseResponse,
                 cancellationToken);
@@ -172,10 +168,11 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
 
             _logger.LogError("Received successful status code but failed to deserialize {ResponseObject} from response body.",
                 typeof(RemoveExpenseResponse));
-        }
-        else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
             _logger.LogError("Request failed, resource not found.");
+            return new RemoveExpenseResponse() { Success = false };
         }
         return new RemoveExpenseResponse();
     }
