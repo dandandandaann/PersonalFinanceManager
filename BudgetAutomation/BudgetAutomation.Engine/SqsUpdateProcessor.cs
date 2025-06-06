@@ -19,7 +19,7 @@ public class SqsUpdateProcessor(IUpdateHandler updateHandler, ILogger<SqsUpdateP
                    "arn:aws:iam::795287297286:policy/SQS_CRUD, " +
                    "arn:aws:iam::795287297286:policy/DB_chat_state_CRUD",
         MemorySize = 128,
-        Timeout = 15)]
+        Timeout = 20)]
     public async Task ProcessSqsMessagesAsync(SQSEvent sqsEvent, ILambdaContext context)
     {
         if (sqsEvent.Records == null)

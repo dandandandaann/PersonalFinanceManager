@@ -12,7 +12,7 @@
         "Runtime": "dotnet8",
         "CodeUri": ".",
         "MemorySize": 128,
-        "Timeout": 15,
+        "Timeout": 20,
         "Policies": [
           "AWSLambdaBasicExecutionRole",
           "arn:aws:iam::795287297286:policy/Configurations_Read",
