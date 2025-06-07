@@ -128,4 +128,52 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
         _logger.LogInformation("Validation result: {Message}", result.Message);
         return result;
     }
+
+    public async Task<RemoveExpenseResponse> RemoveExpenseAsync(
+        string spreadsheetId, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Sending request /undo");
+
+        var endpointUri = new Uri(_httpClient.BaseAddress!, "undo");
+
+        var queryParams = new Dictionary<string, string?>
+        {
+            ["spreadsheetId"] = spreadsheetId
+        };
+
+        var request = new HttpRequestMessage
+        (
+            HttpMethod.Delete,
+            QueryHelpers.AddQueryString(endpointUri.ToString(), queryParams)
+        );
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogError("Failed to remove expense in Spreadsheet {SpreadsheetId}", spreadsheetId);
+            return new RemoveExpenseResponse { Success = false };
+        }
+
+        _logger.LogInformation("Remove expense request sent. Response code: {StatusCode}", response.StatusCode);
+
+            var responseExpense = await response.Content.ReadFromJsonAsync(
+                AppJsonSerializerContext.Default.RemoveExpenseResponse,
+                cancellationToken);
+
+            if (responseExpense != null)
+            {
+                return responseExpense;
+            }
+
+            _logger.LogError("Received successful status code but failed to deserialize {ResponseObject} from response body.",
+                typeof(RemoveExpenseResponse));
+        
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            _logger.LogError("Request failed, resource not found.");
+            return new RemoveExpenseResponse() { Success = false };
+        }
+        return new RemoveExpenseResponse();
+    }
 }

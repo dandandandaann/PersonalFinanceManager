@@ -5,6 +5,7 @@ using SharedLibrary.Dto;
 namespace ExpenseLoggerApi.AotTypes;
 
 [JsonSerializable(typeof(LogExpenseResponse))]
+[JsonSerializable(typeof(RemoveExpenseResponse))]
 [JsonSerializable(typeof(SpreadsheetValidationRequest))]
 [JsonSerializable(typeof(SpreadsheetValidationResponse))]
 [JsonSerializable(typeof(APIGatewayHttpApiV2ProxyRequest))]
