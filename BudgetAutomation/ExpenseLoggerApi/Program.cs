@@ -72,7 +72,7 @@ app.MapPost("/validate-spreadsheet",
     });
 
 app.MapDelete("/undo",
-    async ([FromServices] RemoveLoggerService removeLogger,
+    async ([FromServices] SpreadsheetService removeLogger,
         [FromQuery] string spreadsheetId) =>
     {
         try

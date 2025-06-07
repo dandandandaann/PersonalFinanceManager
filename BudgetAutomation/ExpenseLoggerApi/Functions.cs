@@ -87,7 +87,7 @@ public class Functions
     }
     [HttpApi(LambdaHttpMethod.Delete, "/undo")]
     public async Task<APIGatewayHttpApiV2ProxyResponse> RemoveExpenseAsync(ILambdaContext context,
-        [FromServices] RemoveLoggerService removeLogger,
+        [FromServices] SpreadsheetService removeLogger,
         [FromQuery] string spreadsheetId)
     {
         var logger = context.Logger;
