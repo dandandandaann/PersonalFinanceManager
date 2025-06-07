@@ -13,5 +13,6 @@ public class Startup
         var config = new ConfigurationBuilder().AddProjectSpecificConfigurations(localDevelopment).Build();
 
         services.AddProjectSpecificServices(config);
+        // teste teste
     }
 }
