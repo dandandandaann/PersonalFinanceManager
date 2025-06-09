@@ -35,22 +35,27 @@ app.MapGet("", () => "ExpenseLogger Api is running!");
 
 app.MapPut("/log-expense",
     async ([FromServices] ExpenseLoggerService sheetsLogger,
-        [FromQuery] string spreadsheetId,
-        [FromQuery] string description, [FromQuery] string amount, [FromQuery] string category = "") =>
+        [FromBody] LogExpenseRequest request ) =>
     {
         try
         {
-            var expense = await sheetsLogger.LogExpense(spreadsheetId, description, amount, category);
+            var expense = await sheetsLogger.LogExpense(
+                request.SpreadsheetId,
+                request.Description,
+                request.Amount,
+                request.Category
+                );
+
             return Results.Ok(new LogExpenseResponse { Success = true, expense = expense });
         }
         catch (ArgumentException ex) when (ex.ParamName == "amount")
         {
-            app.Logger.LogWarning("Invalid amount format provided: {Amount}", amount);
+            app.Logger.LogWarning("Invalid amount format provided: {Amount}", request.Amount);
             return Results.Ok(new LogExpenseResponse { Success = false });
         }
         catch (Exception ex)
         {
-            app.Logger.LogError(ex, "Failed to log expense for description: {Description}", description);
+            app.Logger.LogError(ex, "Failed to log expense for description: {Description}", request.Description);
             return Results.Problem(detail: "An error occurred while logging the expense.", statusCode: 500);
         }
     });
