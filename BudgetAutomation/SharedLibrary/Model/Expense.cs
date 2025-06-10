@@ -14,7 +14,7 @@ namespace SharedLibrary.Model
         public override string ToString()
         {
             var categoryString = string.IsNullOrEmpty(Category) ? string.Empty : $" \nCategoria: {Category}";
-            return $"Descrição: {Description} \nValor: {Amount}{categoryString}";
+            return $"DescriÃ§Ã£o: {Description} \nValor: {Amount}{categoryString}";
         }
     }
 } 
