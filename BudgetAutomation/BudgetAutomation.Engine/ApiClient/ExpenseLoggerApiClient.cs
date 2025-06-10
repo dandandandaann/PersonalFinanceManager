@@ -30,7 +30,6 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
     public async Task<LogExpenseResponse> LogExpenseAsync(
         string spreadsheetId, Expense expense, CancellationToken cancellationToken = default)
     {
-
         _logger.LogInformation("Sending request /log-expense for '{Description}'.", expense.Description);
 
         var endpointUri = new Uri(_httpClient.BaseAddress!, "log-expense");
@@ -56,7 +55,7 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
             _logger.LogError("Failed to log expense in Spreadsheet {SpreadsheetId}", spreadsheetId);
             return new LogExpenseResponse { Success = false };
         }
-        
+
         response.EnsureSuccessStatusCode();
 
         _logger.LogInformation("Log expense request sent. Response code: {StatusCode}", response.StatusCode);
@@ -151,29 +150,25 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
 
         if (!response.IsSuccessStatusCode)
         {
-            _logger.LogError("Failed to remove expense in Spreadsheet {SpreadsheetId}", spreadsheetId);
+            _logger.LogError("Failed to remove expense in Spreadsheet {SpreadsheetId}. Response code: {StatusCode}",
+                spreadsheetId, response.StatusCode);
             return new RemoveExpenseResponse { Success = false };
         }
 
         _logger.LogInformation("Remove expense request sent. Response code: {StatusCode}", response.StatusCode);
 
-            var responseExpense = await response.Content.ReadFromJsonAsync(
-                AppJsonSerializerContext.Default.RemoveExpenseResponse,
-                cancellationToken);
+        var responseExpense = await response.Content.ReadFromJsonAsync(
+            AppJsonSerializerContext.Default.RemoveExpenseResponse,
+            cancellationToken);
 
-            if (responseExpense != null)
-            {
-                return responseExpense;
-            }
-
+        if (responseExpense == null)
+        {
             _logger.LogError("Received successful status code but failed to deserialize {ResponseObject} from response body.",
                 typeof(RemoveExpenseResponse));
-        
-        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            _logger.LogError("Request failed, resource not found.");
-            return new RemoveExpenseResponse() { Success = false };
+
+            return new RemoveExpenseResponse { Success = false };
         }
-        return new RemoveExpenseResponse();
+
+        return responseExpense;
     }
 }
