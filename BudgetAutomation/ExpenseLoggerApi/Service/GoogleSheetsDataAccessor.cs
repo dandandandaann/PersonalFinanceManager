@@ -64,6 +64,19 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
         return startRow + values.Count;
     }
 
+    public async Task<int> FindLastItemAsync(string spreadsheetId, string sheetName, string column, int startRow)
+    {
+        var lastItem = (await FindFirstEmptyRowAsync(spreadsheetId, sheetName, column, startRow)) - 1;
+
+        if(lastItem < startRow)
+        {
+            logger.LogInformation("Nenhum item encontrado na coluna {Column} da planilha '{SheetName}'.", column, sheetName);
+            throw new InvalidOperationException("No item found in column of the spreadsheet.");
+        }
+
+        return lastItem;
+    }
+
     public async Task InsertRowAsync(string spreadsheetId, int sheetId, int rowIndex)
     {
         var requestBody = new Request
@@ -83,6 +96,39 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
         var batchRequest = new BatchUpdateSpreadsheetRequest { Requests = new List<Request> { requestBody } };
         var request = sheetsService.Spreadsheets.BatchUpdate(batchRequest, spreadsheetId);
         await request.ExecuteAsync();
+    }
+
+    public async Task DeleteRowAsync(string spreadsheetId, int sheetId, int rowIndex)
+    {
+        var requestBody = new Request
+        {
+            DeleteDimension = new DeleteDimensionRequest
+            {
+                Range = new DimensionRange
+                {
+                    SheetId = sheetId,
+                    Dimension = "ROWS",
+                    StartIndex = rowIndex - 1,
+                    EndIndex = rowIndex       
+                }
+            }
+        };
+
+        var batchRequest = new BatchUpdateSpreadsheetRequest { Requests = new List<Request> { requestBody } };
+        var request = sheetsService.Spreadsheets.BatchUpdate(batchRequest, spreadsheetId);
+
+        await request.ExecuteAsync();
+    }
+
+    public async Task<IList<object>> ReadRowValuesAsync(string spreadsheetId, string sheetName, int rowIndex)
+    {
+        var range = $"{sheetName}!B{rowIndex}:I{rowIndex}";
+        var request = sheetsService.Spreadsheets.Values.Get(spreadsheetId, range);
+        var response = await request.ExecuteAsync();
+
+        var values = response.Values?.FirstOrDefault();
+
+        return values;
     }
 
     public async Task BatchUpdateValuesAsync(string spreadsheetId, BatchUpdateValuesRequest request)

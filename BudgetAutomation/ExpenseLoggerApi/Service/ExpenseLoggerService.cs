@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using ExpenseLoggerApi.Constants;
 using ExpenseLoggerApi.Interface;
 using Google.Apis.Sheets.v4.Data;
 using SharedLibrary.Model;
@@ -18,8 +19,8 @@ public class ExpenseLoggerService(
             Category = DecideCategory(categoryInput, description)
         };
 
-        const int startRow = 15; // Starting row for expenses
-        const string searchColumn = "B"; // 2nd column where expense descriptions are expected
+        const int startRow = SpreadsheetDefaults.StartRow; // Starting row for expenses
+        const string searchColumn = SpreadsheetDefaults.SearchColumn; // 2nd column where expense descriptions are expected
 
         // Use CultureInfo.InvariantCulture for reliable decimal parsing
         if (!double.TryParse(amount.Replace(',', '.'), CultureInfo.InvariantCulture, out var doubleAmount))

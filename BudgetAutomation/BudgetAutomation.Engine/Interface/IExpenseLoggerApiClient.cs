@@ -8,4 +8,5 @@ public interface IExpenseLoggerApiClient
 {
     Task<LogExpenseResponse> LogExpenseAsync(string spreadsheetId, Expense expense, CancellationToken cancellationToken = default);
     Task<SpreadsheetValidationResponse> ValidateSpreadsheet(string spreadsheetId, CancellationToken cancellationToken = default);
+    Task<RemoveExpenseResponse> RemoveExpenseAsync(string spreadsheetId, CancellationToken cancellationToken = default);
 }

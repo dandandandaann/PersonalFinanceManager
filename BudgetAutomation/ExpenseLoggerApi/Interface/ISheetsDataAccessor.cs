@@ -1,5 +1,6 @@
 ﻿using Google.Apis.Sheets.v4.Data;
 using SharedLibrary.Dto;
+using SharedLibrary.Model;
 
 namespace ExpenseLoggerApi.Interface
 {
@@ -17,11 +18,15 @@ namespace ExpenseLoggerApi.Interface
         /// Finds the first row index in a specific column that is empty or whitespace, starting from a given row.
         /// </summary>
         Task<int> FindFirstEmptyRowAsync(string spreadsheetId, string sheetName, string column, int startRow);
+        Task<int> FindLastItemAsync(string spreadsheetId, string sheetName, string column, int startRow);
 
         /// <summary>
         /// Inserts a new empty row at the specified index within a sheet.
         /// </summary>
         Task InsertRowAsync(string spreadsheetId, int sheetId, int rowIndex);
+        Task DeleteRowAsync(string spreadsheetId, int sheetId, int rowIndex);
+        Task<IList<object>> ReadRowValuesAsync(string spreadsheetId, string sheetName, int rowIndex);
+
 
         /// <summary>
         /// Performs a batch update of cell values in a spreadsheet.
@@ -34,4 +39,3 @@ namespace ExpenseLoggerApi.Interface
         Task<SpreadsheetValidationResponse> ValidateSpreadsheetIdAsync(SpreadsheetValidationRequest request);
     }
 }
-

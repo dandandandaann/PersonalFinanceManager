@@ -85,4 +85,23 @@ public class Functions
             return ApiGatewayResult.InternalServerError("Internal error while validating the spreadsheet.");
         }
     }
+    [HttpApi(LambdaHttpMethod.Delete, "/undo")]
+    public async Task<APIGatewayHttpApiV2ProxyResponse> RemoveExpenseAsync(ILambdaContext context,
+        [FromServices] SpreadsheetService removeLogger,
+        [FromQuery] string spreadsheetId)
+    {
+        var logger = context.Logger;
+        logger.LogInformation("RemoveExpenseAsync: Received remove request for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
+
+        try
+        {
+            var response = await removeLogger.RemoveLastExpense(spreadsheetId);
+            return ApiGatewayResult.Ok(response);
+        }
+        catch(Exception ex)
+        {
+            logger.LogError(ex, "RemoveExpenseAsync: Failed to remove expense for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
+            return ApiGatewayResult.InternalServerError("An erroroccurred while removing the expense");
+        }
+    }
 }
