@@ -11,6 +11,6 @@ secrets/
 *.userosscache
 *.sln.docstates
 *.env
-
+ngrok.exe
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
