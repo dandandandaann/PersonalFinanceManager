@@ -42,25 +42,29 @@ public class Functions
     [HttpApi(LambdaHttpMethod.Put, "/log-expense")]
     public async Task<APIGatewayHttpApiV2ProxyResponse> LogExpenseAsync(ILambdaContext context,
         [FromServices] ExpenseLoggerService sheetsLogger,
-        [FromQuery] string spreadsheetId,
-        [FromQuery] string description, [FromQuery] string amount, [FromQuery] string category = "")
+        [FromBody] LogExpenseRequest request)
     {
         var logger = context.Logger;
-        logger.LogInformation("LogExpenseAsyncAsync: Received request for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
+        logger.LogInformation("LogExpenseAsyncAsync: Received request for SpreadsheetId: {SpreadsheetId}", request.SpreadsheetId);
 
         try
         {
-            var expense = await sheetsLogger.LogExpense(spreadsheetId, description, amount, category);
+            var expense = await sheetsLogger.LogExpense(
+                request.SpreadsheetId,
+                request.Description,
+                request.Amount,
+                request.Category
+            );
             return ApiGatewayResult.Ok(new LogExpenseResponse { Success = true, expense = expense });
         }
         catch (ArgumentException ex) when (ex.ParamName == "amount")
         {
-            logger.LogWarning("LogExpenseAsyncAsync: Invalid amount format provided: {Amount}", amount);
+            logger.LogWarning("LogExpenseAsyncAsync: Invalid amount format provided: {Amount}", request.Amount);
             return ApiGatewayResult.Ok(new LogExpenseResponse { Success = false });
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "LogExpenseAsyncAsync: Failed to log expense for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
+            logger.LogError(ex, "LogExpenseAsyncAsync: Failed to log expense for SpreadsheetId: {SpreadsheetId}", request.SpreadsheetId);
             return ApiGatewayResult.InternalServerError("An error occurred while logging the expense.");
         }
     }
