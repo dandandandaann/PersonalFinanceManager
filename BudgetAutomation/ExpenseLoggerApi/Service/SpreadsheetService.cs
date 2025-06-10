@@ -17,9 +17,6 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
     }
     public async Task<RemoveExpenseResponse> RemoveLastExpense(string spreadsheetId)
     {
-        const int startRow = SpreadsheetDefaults.StartRow;
-        const string searchColumn = SpreadsheetDefaults.SearchColumn;
-
         var sheetName = DateTime.Now.ToString("MM-yyyy");
         logger.LogInformation("Removing expense process for sheet '{SheetName}' in spreadsheet '{SpreadsheetId}'.",
             sheetName, spreadsheetId);
@@ -28,9 +25,10 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
         {
             var sheetId = await sheetsAccessor.GetSheetIdByNameAsync(spreadsheetId, sheetName);
 
-            var lastRow = await sheetsAccessor.FindLastItemAsync(spreadsheetId, sheetName, searchColumn, startRow);
+            var lastRow = await sheetsAccessor.FindLastItemAsync(
+                spreadsheetId, sheetName, SpreadsheetConstants.Column.Description, SpreadsheetConstants.DataStartRow);
 
-            if (lastRow < startRow)
+            if (lastRow < SpreadsheetConstants.DataStartRow)
             {
                 logger.LogWarning("No expenses found to remove in sheet '{SheetName}' in spreadsheet '{SpreadsheetId}'.",
                     sheetName, spreadsheetId);

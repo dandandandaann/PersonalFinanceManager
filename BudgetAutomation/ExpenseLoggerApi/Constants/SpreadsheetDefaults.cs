@@ -1,8 +1,19 @@
-﻿namespace ExpenseLoggerApi.Constants
+﻿namespace ExpenseLoggerApi.Constants;
+
+public static class SpreadsheetConstants
 {
-    public static class SpreadsheetDefaults
+    public const int DataStartRow = 2;
+
+    public static class Column
     {
-        public const int StartRow = 15;
-        public const string SearchColumn = "B";
+        public const string Date = "B";
+        public const string Description = "C";
+        public const string Category = "D";
+        public const string ExchangeRate = "E";
+        public const string Amount = "F";
+        public const string TotalFormula = "G";
+
+        public const string DateCreated = "M";
+        public const string Source = "O";
     }
 }

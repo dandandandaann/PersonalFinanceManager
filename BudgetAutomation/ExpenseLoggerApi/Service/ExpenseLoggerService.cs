@@ -19,9 +19,6 @@ public class ExpenseLoggerService(
             Category = DecideCategory(categoryInput, description)
         };
 
-        const int startRow = SpreadsheetDefaults.StartRow; // Starting row for expenses
-        const string searchColumn = SpreadsheetDefaults.SearchColumn; // 2nd column where expense descriptions are expected
-
         // Use CultureInfo.InvariantCulture for reliable decimal parsing
         if (!double.TryParse(amount.Replace(',', '.'), CultureInfo.InvariantCulture, out var doubleAmount))
         {
@@ -42,19 +39,34 @@ public class ExpenseLoggerService(
         {
             var sheetId = await sheetsAccessor.GetSheetIdByNameAsync(spreadsheetId, sheetName);
 
-            var row = await sheetsAccessor.FindFirstEmptyRowAsync(spreadsheetId, sheetName, searchColumn, startRow);
+            var row = await sheetsAccessor.FindFirstEmptyRowAsync(
+                spreadsheetId, sheetName, SpreadsheetConstants.Column.Description, SpreadsheetConstants.DataStartRow
+            );
 
             await sheetsAccessor.InsertRowAsync(spreadsheetId, sheetId, row);
 
             List<ValueRange> updates =
             [
-                new() { Range = $"{sheetName}!B{row}", Values = Value(expense.Description) },
-                new() { Range = $"{sheetName}!E{row}", Values = Value(expense.Category) },
-                new() { Range = $"{sheetName}!H{row}", Values = Value(doubleAmount) }, // let spreadsheet format the number
+                new()
+                {
+                    Range = $"{sheetName}!{SpreadsheetConstants.Column.Description}{row}", Values = Value(expense.Description)
+                },
+                new()
+                {
+                    Range = $"{sheetName}!{SpreadsheetConstants.Column.Category}{row}", Values = Value(expense.Category)
+                },
+                new()
+                {
+                    // let spreadsheet format the number
+                    Range = $"{sheetName}!{SpreadsheetConstants.Column.Amount}{row}", Values = Value(doubleAmount)
+                },
                 new() // Formula for amount calculation
                 {
-                    Range = $"{sheetName}!I{row}",
-                    Values = Value($"=IF(ISBLANK(H{row}); 0; IF(ISBLANK(F{row}); H{row}; F{row}*H{row}))")
+                    Range = $"{sheetName}!{SpreadsheetConstants.Column.TotalFormula}{row}",
+                    Values = Value(
+                        $"=IF(ISBLANK({SpreadsheetConstants.Column.Amount}{row}); 0; " +
+                        $"IF(ISBLANK({SpreadsheetConstants.Column.ExchangeRate}{row}); {SpreadsheetConstants.Column.Amount}{row}; " +
+                        $"{SpreadsheetConstants.Column.Amount}{row}*{SpreadsheetConstants.Column.ExchangeRate}{row}))")
                 }
             ];
 
@@ -76,8 +88,6 @@ public class ExpenseLoggerService(
         }
     }
 
-
-
     // Simple static helper to wrap value in the required list structure
     private static List<IList<object>> Value(object value) => [[value]];
 
@@ -93,12 +103,12 @@ public class ExpenseLoggerService(
                     continue;
 
                 if (category.Alias.Any(alias =>
-                description.Contains(alias, StringComparison.OrdinalIgnoreCase)))
+                        description.Contains(alias, StringComparison.OrdinalIgnoreCase)))
                 {
-
                     return category.Name;
                 }
             }
+
             return "";
         }
 
@@ -112,13 +122,13 @@ public class ExpenseLoggerService(
                 }
 
                 if (category.Alias != null && category.Alias.Any(alias =>
-                    alias.Equals(userCategory, StringComparison.OrdinalIgnoreCase)))
+                        alias.Equals(userCategory, StringComparison.OrdinalIgnoreCase)))
                 {
                     return category.Name;
                 }
             }
         }
+
         return ""; // Return empty string if no match found
     }
 }
-
