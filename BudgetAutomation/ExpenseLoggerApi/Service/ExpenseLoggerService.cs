@@ -29,7 +29,7 @@ public class ExpenseLoggerService(
 
         doubleAmount = Math.Round(doubleAmount, 2);
 
-        // Parse amount manually to pt-BR
+        // Parse amount manually to pt-BR to send back in the response
         expense.Amount = doubleAmount.ToString("0.00", CultureInfo.InvariantCulture).Replace(",", "").Replace(".", ",");
 
         var sheetName = SpreadsheetConstants.Sheets.Transactions;
@@ -60,7 +60,7 @@ public class ExpenseLoggerService(
                     // let spreadsheet format the number
                     Range = $"{sheetName}!{SpreadsheetConstants.Column.Amount}{row}", Values = Value(doubleAmount)
                 },
-                new() // Formula for amount calculation
+                new()
                 {
                     Range = $"{sheetName}!{SpreadsheetConstants.Column.TotalFormula}{row}",
                     Values = Value(
@@ -70,11 +70,13 @@ public class ExpenseLoggerService(
                 },
                 new()
                 {
-                    Range = $"{sheetName}!{SpreadsheetConstants.Column.Date}{row}", Values = Value(DateTime.Now.Date),
+                    Range = $"{sheetName}!{SpreadsheetConstants.Column.Date}{row}",
+                    Values = Value(DateTime.UtcNow.AddHours(SpreadsheetConstants.DateTimeZone).Date.ToOADate())
                 },
                 new()
                 {
-                    Range = $"{sheetName}!{SpreadsheetConstants.Column.DateCreated}{row}", Values = Value(DateTime.Now)
+                    Range = $"{sheetName}!{SpreadsheetConstants.Column.DateCreated}{row}",
+                    Values = Value(DateTime.UtcNow.AddHours(SpreadsheetConstants.DateTimeZone).ToOADate())
                 },
                 new()
                 {

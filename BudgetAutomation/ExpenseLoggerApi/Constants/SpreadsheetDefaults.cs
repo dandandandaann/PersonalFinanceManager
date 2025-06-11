@@ -3,6 +3,7 @@
 public static class SpreadsheetConstants
 {
     public const int DataStartRow = 2;
+    public const double DateTimeZone = -3;
 
     public static class Column
     {
