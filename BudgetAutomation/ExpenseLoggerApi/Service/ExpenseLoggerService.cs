@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using ExpenseLoggerApi.Constants;
 using ExpenseLoggerApi.Interface;
+using ExpenseLoggerApi.Misc;
 using Google.Apis.Sheets.v4.Data;
 using SharedLibrary.Model;
 
@@ -16,11 +17,8 @@ public class ExpenseLoggerService(
         var expense = new Expense
         {
             Description = description,
-            Category = DecideCategory(categoryInput, description)
+            Category = Utility.DecideCategory(categoryInput, description, categories)
         };
-
-        const int startRow = SpreadsheetDefaults.StartRow; // Starting row for expenses
-        const string searchColumn = SpreadsheetDefaults.SearchColumn; // 2nd column where expense descriptions are expected
 
         // Use CultureInfo.InvariantCulture for reliable decimal parsing
         if (!double.TryParse(amount.Replace(',', '.'), CultureInfo.InvariantCulture, out var doubleAmount))
@@ -31,30 +29,58 @@ public class ExpenseLoggerService(
 
         doubleAmount = Math.Round(doubleAmount, 2);
 
-        // Parse amount manually to pt-BR
+        // Parse amount manually to pt-BR to send back in the response
         expense.Amount = doubleAmount.ToString("0.00", CultureInfo.InvariantCulture).Replace(",", "").Replace(".", ",");
 
-        var sheetName = DateTime.Now.ToString("MM-yyyy");
-        logger.LogInformation("Starting expense logging process for sheet '{SheetName}' in spreadsheet '{SpreadsheetId}'.",
-            sheetName, spreadsheetId);
+        var sheetName = SpreadsheetConstants.Sheets.Transactions;
+        logger.LogInformation("Starting expense logging process in spreadsheet '{SpreadsheetId}'.", spreadsheetId);
 
         try
         {
             var sheetId = await sheetsAccessor.GetSheetIdByNameAsync(spreadsheetId, sheetName);
 
-            var row = await sheetsAccessor.FindFirstEmptyRowAsync(spreadsheetId, sheetName, searchColumn, startRow);
+            var row = await sheetsAccessor.FindFirstEmptyRowAsync(
+                spreadsheetId, sheetName, SpreadsheetConstants.Column.Description, SpreadsheetConstants.DataStartRow
+            );
 
             await sheetsAccessor.InsertRowAsync(spreadsheetId, sheetId, row);
 
             List<ValueRange> updates =
             [
-                new() { Range = $"{sheetName}!B{row}", Values = Value(expense.Description) },
-                new() { Range = $"{sheetName}!E{row}", Values = Value(expense.Category) },
-                new() { Range = $"{sheetName}!H{row}", Values = Value(doubleAmount) }, // let spreadsheet format the number
-                new() // Formula for amount calculation
+                new()
                 {
-                    Range = $"{sheetName}!I{row}",
-                    Values = Value($"=IF(ISBLANK(H{row}); 0; IF(ISBLANK(F{row}); H{row}; F{row}*H{row}))")
+                    Range = $"{sheetName}!{SpreadsheetConstants.Column.Description}{row}", Values = Value(expense.Description)
+                },
+                new()
+                {
+                    Range = $"{sheetName}!{SpreadsheetConstants.Column.Category}{row}", Values = Value(expense.Category)
+                },
+                new()
+                {
+                    // let spreadsheet format the number
+                    Range = $"{sheetName}!{SpreadsheetConstants.Column.Amount}{row}", Values = Value(doubleAmount)
+                },
+                new()
+                {
+                    Range = $"{sheetName}!{SpreadsheetConstants.Column.TotalFormula}{row}",
+                    Values = Value(
+                        $"=IF(ISBLANK({SpreadsheetConstants.Column.Amount}{row}); 0; " +
+                        $"IF(ISBLANK({SpreadsheetConstants.Column.ExchangeRate}{row}); {SpreadsheetConstants.Column.Amount}{row}; " +
+                        $"{SpreadsheetConstants.Column.Amount}{row}*{SpreadsheetConstants.Column.ExchangeRate}{row}))")
+                },
+                new()
+                {
+                    Range = $"{sheetName}!{SpreadsheetConstants.Column.Date}{row}",
+                    Values = Value(DateTime.UtcNow.AddHours(SpreadsheetConstants.DateTimeZone).Date.ToOADate())
+                },
+                new()
+                {
+                    Range = $"{sheetName}!{SpreadsheetConstants.Column.DateCreated}{row}",
+                    Values = Value(DateTime.UtcNow.AddHours(SpreadsheetConstants.DateTimeZone).ToOADate())
+                },
+                new()
+                {
+                    Range = $"{sheetName}!{SpreadsheetConstants.Column.Source}{row}", Values = Value("Telegram")
                 }
             ];
 
@@ -76,49 +102,6 @@ public class ExpenseLoggerService(
         }
     }
 
-
-
     // Simple static helper to wrap value in the required list structure
     private static List<IList<object>> Value(object value) => [[value]];
-
-    private string DecideCategory(string userCategory, string description)
-    {
-        description = description.Trim().Normalize();
-
-        if (string.IsNullOrEmpty(userCategory))
-        {
-            foreach (var category in categories)
-            {
-                if (category.Alias == null)
-                    continue;
-
-                if (category.Alias.Any(alias =>
-                description.Contains(alias, StringComparison.OrdinalIgnoreCase)))
-                {
-
-                    return category.Name;
-                }
-            }
-            return "";
-        }
-
-        foreach (var category in categories)
-        {
-            if (!string.IsNullOrEmpty(userCategory))
-            {
-                if (category.Name.Equals(userCategory, StringComparison.OrdinalIgnoreCase))
-                {
-                    return category.Name;
-                }
-
-                if (category.Alias != null && category.Alias.Any(alias =>
-                    alias.Equals(userCategory, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return category.Name;
-                }
-            }
-        }
-        return ""; // Return empty string if no match found
-    }
 }
-

@@ -5,6 +5,7 @@ using SharedLibrary.Model;
 namespace BudgetAutomation.Engine.AtoTypes;
 
 [JsonSerializable(typeof(ApiResponse))]
+[JsonSerializable(typeof(LogExpenseRequest))]
 [JsonSerializable(typeof(LogExpenseResponse))]
 [JsonSerializable(typeof(RemoveExpenseResponse))]
 [JsonSerializable(typeof(UserConfigurationDto))]

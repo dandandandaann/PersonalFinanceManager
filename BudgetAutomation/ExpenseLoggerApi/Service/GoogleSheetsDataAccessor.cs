@@ -1,4 +1,6 @@
-﻿using ExpenseLoggerApi.Interface;
+﻿using ExpenseLoggerApi.Constants;
+using ExpenseLoggerApi.Interface;
+using ExpenseLoggerApi.Misc;
 using Google;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
@@ -18,7 +20,7 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
 
         var sheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == sheetName);
 
-        if(sheet == null)
+        if (sheet == null)
         {
             var templateSheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == "Template");
 
@@ -40,6 +42,7 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
 
             return response.Replies.First().DuplicateSheet.Properties.SheetId.Value;
         }
+
         return sheet.Properties.SheetId.Value;
     }
 
@@ -68,7 +71,7 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
     {
         var lastItem = (await FindFirstEmptyRowAsync(spreadsheetId, sheetName, column, startRow)) - 1;
 
-        if(lastItem < startRow)
+        if (lastItem < startRow)
         {
             logger.LogInformation("Nenhum item encontrado na coluna {Column} da planilha '{SheetName}'.", column, sheetName);
             throw new InvalidOperationException("No item found in column of the spreadsheet.");
@@ -109,7 +112,7 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
                     SheetId = sheetId,
                     Dimension = "ROWS",
                     StartIndex = rowIndex - 1,
-                    EndIndex = rowIndex       
+                    EndIndex = rowIndex
                 }
             }
         };
@@ -140,12 +143,13 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
             await updateRequest.ExecuteAsync();
             logger.LogDebug("BatchUpdateValues executed successfully.");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             logger.LogError(ex, "Error executing BatchUpdateValues for spreadsheet {SpreadsheetId}.", spreadsheetId);
             throw;
         }
     }
+
     public async Task<SpreadsheetValidationResponse> ValidateSpreadsheetIdAsync(SpreadsheetValidationRequest request)
     {
         var response = new SpreadsheetValidationResponse();
@@ -174,7 +178,6 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
             response.Message = "Planilha não encontrada";
             response.ErrorCode = ErrorCodeEnum.ResourceNotFound;
             return response;
-
         }
         catch (Exception ex)
         {

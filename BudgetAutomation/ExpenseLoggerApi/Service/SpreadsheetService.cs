@@ -17,27 +17,23 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
     }
     public async Task<RemoveExpenseResponse> RemoveLastExpense(string spreadsheetId)
     {
-        const int startRow = SpreadsheetDefaults.StartRow;
-        const string searchColumn = SpreadsheetDefaults.SearchColumn;
-
-        var sheetName = DateTime.Now.ToString("MM-yyyy");
-        logger.LogInformation("Removing expense process for sheet '{SheetName}' in spreadsheet '{SpreadsheetId}'.",
-            sheetName, spreadsheetId);
+        var transactionsSheet = SpreadsheetConstants.Sheets.Transactions;
+        logger.LogInformation("Removing expense process in spreadsheet '{SpreadsheetId}'.", spreadsheetId);
 
         try
         {
-            var sheetId = await sheetsAccessor.GetSheetIdByNameAsync(spreadsheetId, sheetName);
+            var sheetId = await sheetsAccessor.GetSheetIdByNameAsync(spreadsheetId, transactionsSheet);
 
-            var lastRow = await sheetsAccessor.FindLastItemAsync(spreadsheetId, sheetName, searchColumn, startRow);
+            var lastRow = await sheetsAccessor.FindLastItemAsync(
+                spreadsheetId, transactionsSheet, SpreadsheetConstants.Column.Description, SpreadsheetConstants.DataStartRow);
 
-            if (lastRow < startRow)
+            if (lastRow < SpreadsheetConstants.DataStartRow)
             {
-                logger.LogWarning("No expenses found to remove in sheet '{SheetName}' in spreadsheet '{SpreadsheetId}'.",
-                    sheetName, spreadsheetId);
+                logger.LogWarning("No expenses found to remove in spreadsheet '{SpreadsheetId}'.", transactionsSheet);
                 throw new InvalidOperationException("No expense found.");
             }
 
-            var values = await sheetsAccessor.ReadRowValuesAsync(spreadsheetId, sheetName, lastRow);
+            var values = await sheetsAccessor.ReadRowValuesAsync(spreadsheetId, transactionsSheet, lastRow);
 
             if (values == null || values.Count == 0)
             {
@@ -48,15 +44,11 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
             // Apaga a linha só depois de garantir os dados
             await sheetsAccessor.DeleteRowAsync(spreadsheetId, sheetId, lastRow);
 
-            var description = values.ElementAtOrDefault((int)ExpenseColumnIndex.Description)?.ToString().Trim();
-            var amount = values.ElementAtOrDefault((int)ExpenseColumnIndex.Amount)?.ToString().Trim();
-            var category = values.ElementAtOrDefault((int)ExpenseColumnIndex.Category)?.ToString().Trim();
-
             var expense = new Expense
             {
-                Description = description,
-                Amount = amount,
-                Category = category
+                Description = values.ElementAtOrDefault((int)ExpenseColumnIndex.Description)?.ToString().Trim(),
+                Amount = values.ElementAtOrDefault((int)ExpenseColumnIndex.Amount)?.ToString().Trim(),
+                Category = values.ElementAtOrDefault((int)ExpenseColumnIndex.Category)?.ToString().Trim()
             };
 
             return new RemoveExpenseResponse
