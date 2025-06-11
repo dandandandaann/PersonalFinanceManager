@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 using SharedLibrary.Dto;
 using SharedLibrary.Model;
 using SharedLibrary.Settings;
-using Telegram.Bot.Types.Payments;
 
 namespace BudgetAutomation.Engine.ApiClient;
 
@@ -34,19 +33,18 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
 
         var endpointUri = new Uri(_httpClient.BaseAddress!, "log-expense");
 
-        var queryParams = new Dictionary<string, string?>
-        {
-            ["spreadsheetId"] = spreadsheetId,
-            ["description"] = expense.Description,
-            ["amount"] = expense.Amount,
-            ["category"] = expense.Category
-        };
 
-        var request = new HttpRequestMessage
-        (
-            HttpMethod.Put,
-            QueryHelpers.AddQueryString(endpointUri.ToString(), queryParams)
-        );
+        var logExpenseRequest = new LogExpenseRequest
+        {
+            SpreadsheetId = spreadsheetId,
+            Description = expense.Description,
+            Amount = expense.Amount,
+            Category = expense.Category
+        };
+        var content = JsonContent.Create(logExpenseRequest, AppJsonSerializerContext.Default.LogExpenseRequest);
+
+        var request = new HttpRequestMessage( HttpMethod.Put, endpointUri);
+        request.Content = content;
 
         var response = await _httpClient.SendAsync(request, cancellationToken);
 
