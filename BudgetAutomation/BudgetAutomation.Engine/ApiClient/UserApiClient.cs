@@ -64,7 +64,6 @@ public class UserApiClient : IUserApiClient
                     typeof(UserSignupResponse), telegramId);
                 return new UserSignupResponse { Success = false };
             }
-
             // --
 
             _logger.LogInformation("Signup successful for TelegramId {TelegramId}. User ID: {UserId}",

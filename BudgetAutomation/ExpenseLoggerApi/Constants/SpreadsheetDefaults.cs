@@ -16,4 +16,11 @@ public static class SpreadsheetConstants
         public const string DateCreated = "M";
         public const string Source = "O";
     }
+
+    public static class Sheets
+    {
+        public const string Transactions = "Transações";
+        public const string Categories = "Categorias";
+    }
+
 }
