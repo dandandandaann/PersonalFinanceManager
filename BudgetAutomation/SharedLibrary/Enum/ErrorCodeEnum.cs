@@ -13,17 +13,21 @@ public enum ErrorCodeEnum
     InvalidInput = 101,
     RequestBodyMissing = 107,
 
-    // Resource Specific
-    ResourceNotFound = 200,
-    UserAlreadyExists = 201,
-    // EmailAlreadyTaken = 202, // If you have unique email constraint
-    // UsernameAlreadyTaken = 203, // If you have unique username constraint
-
     // Operation Specific
     ConfigurationUpdateFailed = 300,
     OperationNotPermitted = 301,
 
+    // Generic Resource
+    UnauthorizedAccess = 403,
+    ResourceNotFound = 404,
+
+    // Resource Specific
+    UserAlreadyExists = 501,
+    TransactionsSheetNotFound = 511,
+    // EmailAlreadyTaken = 502, // If you have unique email constraint
+    // UsernameAlreadyTaken = 503, // If you have unique username constraint
+
     // External Dependencies
-    DatabaseError = 400, // Can be generic or more specific
-    ThirdPartyServiceError = 401
+    DatabaseError = 600, // Can be generic or more specific
+    ThirdPartyServiceError = 601
 }

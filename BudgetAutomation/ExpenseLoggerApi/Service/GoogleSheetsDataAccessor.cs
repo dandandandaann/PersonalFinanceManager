@@ -1,9 +1,10 @@
-﻿using ExpenseLoggerApi.Constants;
+﻿using System.Net;
 using ExpenseLoggerApi.Interface;
 using ExpenseLoggerApi.Misc;
 using Google;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
+using SharedLibrary.Constants;
 using SharedLibrary.Dto;
 using SharedLibrary.Enum;
 
@@ -16,32 +17,28 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
         var request = sheetsService.Spreadsheets.Get(spreadsheetId);
 
         request.Fields = "sheets(properties(title,sheetId))"; // Request only titles and sheetIds within sheets
-        var spreadsheet = await request.ExecuteAsync();
+
+        Spreadsheet? spreadsheet;
+        try
+        {
+            spreadsheet = await request.ExecuteAsync();
+        }
+        catch (GoogleApiException ex) when (ex.Error.Code == (int)HttpStatusCode.Forbidden)
+        {
+            throw new UnauthorizedAccessException(ex.Error.Message);
+        }
+        catch (GoogleApiException ex) when (ex.Error.Code == (int)HttpStatusCode.NotFound)
+        {
+            spreadsheet = null;
+        }
+
+        if (spreadsheet is null || !spreadsheet.Sheets.Any())
+            throw new SpreadsheetNotFoundException($"Spreadsheet id '{spreadsheetId}' not found.");
 
         var sheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == sheetName);
 
-        if (sheet == null)
-        {
-            var templateSheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == "Template");
-
-            var duplicateRequest = new DuplicateSheetRequest
-            {
-                SourceSheetId = templateSheet?.Properties.SheetId,
-                NewSheetName = sheetName
-            };
-
-            var duplicateSheetRequest = new Request { DuplicateSheet = duplicateRequest };
-            var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
-            {
-                Requests = new List<Request> { duplicateSheetRequest }
-            };
-
-            var response = await sheetsService.Spreadsheets
-                .BatchUpdate(batchUpdateRequest, spreadsheetId)
-                .ExecuteAsync();
-
-            return response.Replies.First().DuplicateSheet.Properties.SheetId.Value;
-        }
+        if (sheet?.Properties.SheetId is null or 0)
+            throw new SheetNotFoundException($"Sheet '{sheetName}' not found in Spreadsheet id '{spreadsheetId}'.");
 
         return sheet.Properties.SheetId.Value;
     }
@@ -73,7 +70,7 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
 
         if (lastItem < startRow)
         {
-            logger.LogInformation("Nenhum item encontrado na coluna {Column} da planilha '{SheetName}'.", column, sheetName);
+            logger.LogInformation("No item found in column '{Column}' of Spreadsheet '{SheetName}'.", column, sheetName);
             throw new InvalidOperationException("No item found in column of the spreadsheet.");
         }
 
@@ -152,39 +149,22 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
 
     public async Task<SpreadsheetValidationResponse> ValidateSpreadsheetIdAsync(SpreadsheetValidationRequest request)
     {
-        var response = new SpreadsheetValidationResponse();
-
         if (string.IsNullOrWhiteSpace(request.SpreadsheetId))
         {
-            response.Success = false;
-            response.Message = "O Id da planilha está vazio ou nulo";
-            response.ErrorCode = ErrorCodeEnum.InvalidInput;
-            return response;
+            return new SpreadsheetValidationResponse
+            {
+                Success = false,
+                Message = "Spreadsheet Id is null or empty.",
+                ErrorCode = ErrorCodeEnum.InvalidInput,
+            };
         }
 
-        try
-        {
-            var spreadsheetGet = sheetsService.Spreadsheets.Get(request.SpreadsheetId);
-            var spreadsheet = await spreadsheetGet.ExecuteAsync();
+        await GetSheetIdByNameAsync(request.SpreadsheetId, SpreadsheetConstants.Sheets.Transactions);
 
-            response.Success = spreadsheet?.SpreadsheetId == request.SpreadsheetId;
-            response.Message = response.Success ? "Planilha válida." : "Id da planilha não corresponde.";
-
-            return response;
-        }
-        catch (GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
+        return new SpreadsheetValidationResponse
         {
-            response.Success = false;
-            response.Message = "Planilha não encontrada";
-            response.ErrorCode = ErrorCodeEnum.ResourceNotFound;
-            return response;
-        }
-        catch (Exception ex)
-        {
-            response.Success = false;
-            response.Message = $"Erro ao validar a planilha: {ex.Message}";
-            response.ErrorCode = ErrorCodeEnum.UnknownError;
-            return response;
-        }
+            Success = true,
+            Message = "Empty spreadsheet."
+        };
     }
 }
