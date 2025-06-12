@@ -14,19 +14,23 @@ public class TextMessageHandler(
     IEnumerable<ICommand> commandImplementations,
     IEnumerable<CommandAliasBase> commandAliasImplementations) : ITextMessageHandler
 {
+    private static readonly string[] CommandsAllowedAsPlainText = [LogCommand.StaticCommandName];
+
     public async Task<Message> HandleTextMessageAsync(Message message, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(message.Text);
         var messageText = message.Text;
 
-        // TODO: this is odd, try to change it
         string[] parts = messageText.Split([' '], 2, StringSplitOptions.RemoveEmptyEntries);
 
-        var commandsByName = commandImplementations.Concat(commandAliasImplementations).ToDictionary(
-            cmd => cmd.CommandName.ToLowerInvariant(),
-            cmd => cmd
-        );
+        var commandsByName =
+            commandImplementations.Concat(commandAliasImplementations)
+                .Where(x => CommandsAllowedAsPlainText.Contains(x.CommandName))
+                .ToDictionary(
+                    cmd => cmd.CommandName.ToLowerInvariant(),
+                    cmd => cmd
+                );
 
         if (parts.Length > 0)
         {
@@ -47,13 +51,15 @@ public class TextMessageHandler(
 
         if (!hasState) // Default message
         {
-            var replyMessage = await sender.ReplyAsync(message.Chat, "Comando não reconhecido.", cancellationToken: cancellationToken);
+            var replyMessage =
+                await sender.ReplyAsync(message.Chat, "Comando não reconhecido.", cancellationToken: cancellationToken);
 
             if (commandsByName.TryGetValue(StartCommand.StaticCommandName, out var startCommand))
             {
                 logger.LogInformation("Default response with {CommandName} command.", startCommand.CommandName);
                 return await startCommand.HandleAsync(message, cancellationToken);
             }
+
             logger.LogError("Not able to find {CommandName} command to send as default message.", StartCommand.StaticCommandName);
             return replyMessage;
         }
