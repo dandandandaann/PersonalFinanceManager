@@ -69,10 +69,10 @@ public static class LambdaToApiResponseMapper
 
         if (bodyString != null)
         {
-            return Results.Content(bodyString, contentType, Encoding.UTF8, lambdaResponse.StatusCode);
+            return Microsoft.AspNetCore.Http.Results.Content(bodyString, contentType, Encoding.UTF8, lambdaResponse.StatusCode);
         }
 
-        return Results.StatusCode(lambdaResponse.StatusCode);
+        return Microsoft.AspNetCore.Http.Results.StatusCode(lambdaResponse.StatusCode);
     }
 }
 

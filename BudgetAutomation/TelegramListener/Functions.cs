@@ -2,10 +2,9 @@ using Amazon.Lambda.Core;
 using Amazon.Lambda.Annotations;
 using Amazon.Lambda.Annotations.APIGateway;
 using Amazon.Lambda.APIGatewayEvents;
-using SharedLibrary.Lambda;
-using SharedLibrary.Lambda.LocalDevelopment;
 using Telegram.Bot.Types;
 using TelegramListener.Service;
+using Results = SharedLibrary.Lambda.Results;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -51,10 +50,10 @@ public class Functions
         catch (Exception e)
         {
             context.Logger.LogError(e.ToString());
-            return ApiGatewayResult.InternalServerError();
+            return Results.InternalServerError();
         }
 
-        return ApiGatewayResult.Ok("Webhook setup complete");
+        return Results.Ok("Webhook setup complete");
     }
 
     [LambdaFunction(
@@ -74,13 +73,13 @@ public class Functions
         if (!authenticator.IsAuthorized(token))
         {
             logger.LogWarning("Unauthorized webhook attempt with invalid token: {SuppliedToken}", token);
-            return ApiGatewayResult.Unauthorized("Unauthorized");
+            return Results.Unauthorized("Unauthorized");
         }
 
         if (update == null!)
         {
             logger.LogError("Received null update payload.");
-            return ApiGatewayResult.BadRequest();
+            return Results.BadRequest();
         }
 
         try
@@ -89,16 +88,16 @@ public class Functions
 
             if (!result)
             {
-                return ApiGatewayResult.InternalServerError("Failed to process update.");
+                return Results.InternalServerError("Failed to process update.");
             }
         }
         catch (Exception e)
         {
             logger.LogError(e, "Unexpected error invoking TelegramUpdateProcessor.");
-            return ApiGatewayResult.InternalServerError("An unexpected error occurred.");
+            return Results.InternalServerError("An unexpected error occurred.");
         }
 
         // Return OK to Telegram immediately AFTER successfully queuing
-        return ApiGatewayResult.Ok();
+        return Results.Ok();
     }
 }

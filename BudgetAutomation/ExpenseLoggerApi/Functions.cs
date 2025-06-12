@@ -6,8 +6,7 @@ using ExpenseLoggerApi.Misc;
 using ExpenseLoggerApi.Service;
 using SharedLibrary.Dto;
 using SharedLibrary.Enum;
-using SharedLibrary.Lambda;
-using SharedLibrary.Lambda.LocalDevelopment;
+using Results = SharedLibrary.Lambda.Results;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -58,17 +57,17 @@ public class Functions
                 request.Amount,
                 request.Category
             );
-            return ApiGatewayResult.Ok(new LogExpenseResponse { Success = true, expense = expense });
+            return Results.Ok(new LogExpenseResponse { Success = true, expense = expense });
         }
         catch (ArgumentException ex) when (ex.ParamName == "amount")
         {
             logger.LogWarning("LogExpenseAsyncAsync: Invalid amount format provided: {Amount}", request.Amount);
-            return ApiGatewayResult.Ok(new LogExpenseResponse { Success = false });
+            return Results.Ok(new LogExpenseResponse { Success = false });
         }
         catch (Exception ex) when (ex is SheetNotFoundException or SpreadsheetNotFoundException)
         {
             logger.LogWarning(ex.Message);
-            return ApiGatewayResult.Ok(new RemoveExpenseResponse
+            return Results.Ok(new RemoveExpenseResponse
             {
                 Success = false,
                 Message = "Spreadsheet or sheet doesn't exist.",
@@ -78,7 +77,7 @@ public class Functions
         catch (UnauthorizedAccessException ex)
         {
             logger.LogWarning(ex.Message);
-            return ApiGatewayResult.Ok(new RemoveExpenseResponse
+            return Results.Ok(new RemoveExpenseResponse
             {
                 Success = false,
                 Message = "Not able to access the spreadsheet.",
@@ -88,7 +87,7 @@ public class Functions
         catch (Exception ex)
         {
             logger.LogError(ex, "LogExpenseAsyncAsync: Failed to log expense for SpreadsheetId: {SpreadsheetId}", request.SpreadsheetId);
-            return ApiGatewayResult.InternalServerError("An error occurred while logging the expense.");
+            return Results.InternalServerError("An error occurred while logging the expense.");
         }
     }
 
@@ -104,12 +103,12 @@ public class Functions
         try
         {
             var response = await sheetService.ValidateSpreadsheetId(request.SpreadsheetId);
-            return ApiGatewayResult.Ok(response);
+            return Results.Ok(response);
         }
         catch (SpreadsheetNotFoundException ex)
         {
             context.Logger.LogWarning(ex.Message);
-            return ApiGatewayResult.Ok(new RemoveExpenseResponse
+            return Results.Ok(new RemoveExpenseResponse
             {
                 Success = false,
                 Message = "Spreadsheet doesn't exist.",
@@ -119,7 +118,7 @@ public class Functions
         catch (SheetNotFoundException ex)
         {
             context.Logger.LogWarning(ex.Message);
-            return ApiGatewayResult.Ok(new RemoveExpenseResponse
+            return Results.Ok(new RemoveExpenseResponse
             {
                 Success = false,
                 Message = "Sheet doesn't exist.",
@@ -129,7 +128,7 @@ public class Functions
         catch (UnauthorizedAccessException ex)
         {
             context.Logger.LogWarning(ex.Message);
-            return ApiGatewayResult.Ok(new RemoveExpenseResponse
+            return Results.Ok(new RemoveExpenseResponse
             {
                 Success = false,
                 Message = "Not able to access the spreadsheet.",
@@ -139,7 +138,7 @@ public class Functions
         catch (Exception ex)
         {
             context.Logger.LogError(ex, "Error while validating the spreadsheet.");
-            return ApiGatewayResult.InternalServerError("Internal error while validating the spreadsheet.");
+            return Results.InternalServerError("Internal error while validating the spreadsheet.");
         }
     }
     [HttpApi(LambdaHttpMethod.Delete, "/undo")]
@@ -153,12 +152,12 @@ public class Functions
         try
         {
             var response = await removeLogger.RemoveLastExpense(spreadsheetId);
-            return ApiGatewayResult.Ok(response);
+            return Results.Ok(response);
         }
         catch (Exception ex) when (ex is SheetNotFoundException or SpreadsheetNotFoundException)
         {
             logger.LogWarning(ex.Message);
-            return ApiGatewayResult.Ok(new RemoveExpenseResponse
+            return Results.Ok(new RemoveExpenseResponse
             {
                 Success = false,
                 Message = "Spreadsheet or sheet doesn't exist.",
@@ -168,7 +167,7 @@ public class Functions
         catch (UnauthorizedAccessException ex)
         {
             logger.LogWarning(ex.Message);
-            return ApiGatewayResult.Ok(new RemoveExpenseResponse
+            return Results.Ok(new RemoveExpenseResponse
             {
                 Success = false,
                 Message = "Not able to access the spreadsheet.",
@@ -178,7 +177,7 @@ public class Functions
         catch(Exception ex)
         {
             logger.LogError(ex, "RemoveLastExpenseAsync: Failed to remove expense for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
-            return ApiGatewayResult.InternalServerError("An erroroccurred while removing the expense");
+            return Results.InternalServerError("An erroroccurred while removing the expense");
         }
     }
 }
