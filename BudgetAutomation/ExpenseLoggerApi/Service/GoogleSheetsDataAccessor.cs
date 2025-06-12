@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using ExpenseLoggerApi.Constants;
 using ExpenseLoggerApi.Interface;
 using ExpenseLoggerApi.Misc;
 using Google;
@@ -36,7 +37,7 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
 
         var sheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == sheetName);
 
-        if (sheet?.Properties.SheetId == null)
+        if (sheet?.Properties.SheetId is null or 0)
             throw new SheetNotFoundException($"Sheet '{sheetName}' not found in Spreadsheet id '{spreadsheetId}'.");
 
         return sheet.Properties.SheetId.Value;
@@ -148,39 +149,24 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
 
     public async Task<SpreadsheetValidationResponse> ValidateSpreadsheetIdAsync(SpreadsheetValidationRequest request)
     {
-        var response = new SpreadsheetValidationResponse();
-
         if (string.IsNullOrWhiteSpace(request.SpreadsheetId))
         {
-            response.Success = false;
-            response.Message = "O Id da planilha está vazio ou nulo";
-            response.ErrorCode = ErrorCodeEnum.InvalidInput;
-            return response;
+            return new SpreadsheetValidationResponse
+            {
+                Success = false,
+                Message = "O Id da planilha está vazio ou nulo",
+                ErrorCode = ErrorCodeEnum.InvalidInput,
+            };
         }
 
-        try
-        {
-            var spreadsheetGet = sheetsService.Spreadsheets.Get(request.SpreadsheetId);
-            var spreadsheet = await spreadsheetGet.ExecuteAsync();
+        await GetSheetIdByNameAsync(request.SpreadsheetId, SpreadsheetConstants.Sheets.Transactions);
+        // var spreadsheetGet = sheetsService.Spreadsheets.Get(request.SpreadsheetId);
+        // var spreadsheet = await spreadsheetGet.ExecuteAsync();
 
-            response.Success = spreadsheet?.SpreadsheetId == request.SpreadsheetId;
-            response.Message = response.Success ? "Planilha válida." : "Id da planilha não corresponde.";
-
-            return response;
-        }
-        catch (GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
+        return new SpreadsheetValidationResponse
         {
-            response.Success = false;
-            response.Message = "Planilha não encontrada";
-            response.ErrorCode = ErrorCodeEnum.ResourceNotFound;
-            return response;
-        }
-        catch (Exception ex)
-        {
-            response.Success = false;
-            response.Message = $"Erro ao validar a planilha: {ex.Message}";
-            response.ErrorCode = ErrorCodeEnum.UnknownError;
-            return response;
-        }
+            Success = true,
+            Message = "Planilha válida."
+        };
     }
 }

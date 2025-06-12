@@ -23,6 +23,7 @@ public enum ErrorCodeEnum
 
     // Resource Specific
     UserAlreadyExists = 501,
+    SheetNotFound = 511,
     // EmailAlreadyTaken = 502, // If you have unique email constraint
     // UsernameAlreadyTaken = 503, // If you have unique username constraint
 

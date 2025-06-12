@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Dto;
 using SharedLibrary.Enum;
-using SharedLibrary.Lambda.LocalDevelopment;
 using SharedLibrary.Settings;
 
 var builder = WebApplication.CreateSlimBuilder(args);
@@ -91,6 +90,36 @@ app.MapPost("/validate-spreadsheet",
         {
             var response = await sheetService.ValidateSpreadsheetId(request.SpreadsheetId);
             return Results.Ok(response);
+        }
+        catch (SpreadsheetNotFoundException ex)
+        {
+            app.Logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Spreadsheet doesn't exist.",
+                ErrorCode = ErrorCodeEnum.ResourceNotFound
+            });
+        }
+        catch (SheetNotFoundException ex)
+        {
+            app.Logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Sheet doesn't exist.",
+                ErrorCode = ErrorCodeEnum.SheetNotFound
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            app.Logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Not able to access the spreadsheet.",
+                ErrorCode = ErrorCodeEnum.UnauthorizedAccess
+            });
         }
         catch (Exception ex)
         {

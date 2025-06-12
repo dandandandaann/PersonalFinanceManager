@@ -6,6 +6,7 @@ using ExpenseLoggerApi.Misc;
 using ExpenseLoggerApi.Service;
 using SharedLibrary.Dto;
 using SharedLibrary.Enum;
+using SharedLibrary.Lambda;
 using SharedLibrary.Lambda.LocalDevelopment;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -104,6 +105,36 @@ public class Functions
         {
             var response = await sheetService.ValidateSpreadsheetId(request.SpreadsheetId);
             return ApiGatewayResult.Ok(response);
+        }
+        catch (SpreadsheetNotFoundException ex)
+        {
+            context.Logger.LogWarning(ex.Message);
+            return ApiGatewayResult.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Spreadsheet doesn't exist.",
+                ErrorCode = ErrorCodeEnum.ResourceNotFound
+            });
+        }
+        catch (SheetNotFoundException ex)
+        {
+            context.Logger.LogWarning(ex.Message);
+            return ApiGatewayResult.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Sheet doesn't exist.",
+                ErrorCode = ErrorCodeEnum.SheetNotFound
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            context.Logger.LogWarning(ex.Message);
+            return ApiGatewayResult.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Not able to access the spreadsheet.",
+                ErrorCode = ErrorCodeEnum.UnauthorizedAccess
+            });
         }
         catch (Exception ex)
         {

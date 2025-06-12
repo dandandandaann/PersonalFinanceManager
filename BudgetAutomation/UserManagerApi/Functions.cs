@@ -6,6 +6,7 @@ using SharedLibrary.Dto;
 using SharedLibrary.Lambda.LocalDevelopment;
 using SharedLibrary.Model;
 using SharedLibrary.Enum;
+using SharedLibrary.Lambda;
 using UserManagerApi.Service;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
