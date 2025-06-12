@@ -17,6 +17,11 @@ public static class Utility
         {
             prefixLength = commandWithSlash.Length;
         }
+        // Check if it starts with "command" (case-insensitive)
+        else if (text.StartsWith(commandName, StringComparison.OrdinalIgnoreCase))
+        {
+            prefixLength = commandName.Length;
+        }
         else
         {
             // Doesn't start with the command at all
