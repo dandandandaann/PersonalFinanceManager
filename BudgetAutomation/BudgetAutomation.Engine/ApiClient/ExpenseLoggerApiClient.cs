@@ -4,6 +4,7 @@ using BudgetAutomation.Engine.Interface;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Dto;
+using SharedLibrary.Enum;
 using SharedLibrary.Model;
 using SharedLibrary.Settings;
 
@@ -33,7 +34,6 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
 
         var endpointUri = new Uri(_httpClient.BaseAddress!, "log-expense");
 
-
         var logExpenseRequest = new LogExpenseRequest
         {
             SpreadsheetId = spreadsheetId,
@@ -54,8 +54,6 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
             return new LogExpenseResponse { Success = false };
         }
 
-        response.EnsureSuccessStatusCode();
-
         _logger.LogInformation("Log expense request sent. Response code: {StatusCode}", response.StatusCode);
 
         if (response.Content is { Headers.ContentType.MediaType: "application/json" })
@@ -64,7 +62,7 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
                 AppJsonSerializerContext.Default.LogExpenseResponse,
                 cancellationToken);
 
-            if (responseExpense?.expense != null)
+            if (responseExpense is not null)
             {
                 return responseExpense;
             }
@@ -81,7 +79,7 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
             _logger.LogError("Received status code {StatusCode}, but content was null or not JSON.", response.StatusCode);
         }
 
-        return new LogExpenseResponse();
+        return new LogExpenseResponse { Success = false };
     }
 
     public async Task<SpreadsheetValidationResponse> ValidateSpreadsheet(
@@ -126,7 +124,7 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
         return result;
     }
 
-    public async Task<RemoveExpenseResponse> RemoveExpenseAsync(
+    public async Task<RemoveExpenseResponse> RemoveLastExpenseAsync(
         string spreadsheetId, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Sending request /undo");

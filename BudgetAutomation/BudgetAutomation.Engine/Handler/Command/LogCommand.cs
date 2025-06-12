@@ -5,6 +5,7 @@ using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Misc;
 using BudgetAutomation.Engine.Model;
 using BudgetAutomation.Engine.Service;
+using SharedLibrary.Enum;
 using SharedLibrary.Model;
 using SharedLibrary.Telegram;
 
@@ -93,14 +94,33 @@ public partial class LogCommand(
         {
             var response = await expenseApiClient.LogExpenseAsync(spreadsheetId, expense, cancellationToken);
 
-            if(!response.Success)
+            if (!response.Success)
             {
-                return await sender.ReplyAsync(chat,
-                    "O registro falhou. A planilha pode não existir.",
-                    "User log failed (not found or API error).",
-                    logLevel: LogLevel.Warning,
-                    cancellationToken: cancellationToken);
+                switch (response.ErrorCode)
+                {
+                    case ErrorCodeEnum.ResourceNotFound:
+                        return await sender.ReplyAsync(chat,
+                            "O registro falhou porque a planilha ou uma das abas necessárias não existem." +
+                            "Tente configurar a planilha novamente.",
+                            "User log failed spreadsheet or sheet was not found.",
+                            logLevel: LogLevel.Warning,
+                            cancellationToken: cancellationToken);
+                    case ErrorCodeEnum.UnauthorizedAccess:
+                        return await sender.ReplyAsync(chat,
+                            "O registro falhou porque o sistema não tem permissão na planilha. " +
+                            "Verifique se a planilha está compartilhada corretamente.",
+                            "User log failed due to unauthorized access.",
+                            logLevel: LogLevel.Warning,
+                            cancellationToken: cancellationToken);
+                    default:
+                        return await sender.ReplyAsync(chat,
+                            "O registro falhou. Tente novamente.",
+                            "User log failed due to API error.",
+                            logLevel: LogLevel.Warning,
+                            cancellationToken: cancellationToken);
+                }
             }
+
             return await sender.ReplyAsync(chat,
                 $"Despesa registrada\n{response.expense}",
                 "Logged expense.",

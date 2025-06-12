@@ -1,4 +1,4 @@
-﻿using ExpenseLoggerApi.Constants;
+﻿using System.Net;
 using ExpenseLoggerApi.Interface;
 using ExpenseLoggerApi.Misc;
 using Google;
@@ -16,32 +16,28 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
         var request = sheetsService.Spreadsheets.Get(spreadsheetId);
 
         request.Fields = "sheets(properties(title,sheetId))"; // Request only titles and sheetIds within sheets
-        var spreadsheet = await request.ExecuteAsync();
+
+        Spreadsheet? spreadsheet;
+        try
+        {
+            spreadsheet = await request.ExecuteAsync();
+        }
+        catch (GoogleApiException ex) when (ex.Error.Code == (int)HttpStatusCode.Forbidden)
+        {
+            throw new UnauthorizedAccessException(ex.Error.Message);
+        }
+        catch (GoogleApiException ex) when (ex.Error.Code == (int)HttpStatusCode.NotFound)
+        {
+            spreadsheet = null;
+        }
+
+        if (spreadsheet is null || !spreadsheet.Sheets.Any())
+            throw new SpreadsheetNotFoundException($"Spreadsheet id '{spreadsheetId}' not found.");
 
         var sheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == sheetName);
 
-        if (sheet == null)
-        {
-            var templateSheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == "Template");
-
-            var duplicateRequest = new DuplicateSheetRequest
-            {
-                SourceSheetId = templateSheet?.Properties.SheetId,
-                NewSheetName = sheetName
-            };
-
-            var duplicateSheetRequest = new Request { DuplicateSheet = duplicateRequest };
-            var batchUpdateRequest = new BatchUpdateSpreadsheetRequest
-            {
-                Requests = new List<Request> { duplicateSheetRequest }
-            };
-
-            var response = await sheetsService.Spreadsheets
-                .BatchUpdate(batchUpdateRequest, spreadsheetId)
-                .ExecuteAsync();
-
-            return response.Replies.First().DuplicateSheet.Properties.SheetId.Value;
-        }
+        if (sheet?.Properties.SheetId == null)
+            throw new SheetNotFoundException($"Sheet '{sheetName}' not found in Spreadsheet id '{spreadsheetId}'.");
 
         return sheet.Properties.SheetId.Value;
     }

@@ -1,8 +1,11 @@
 using ExpenseLoggerApi.Extension;
+using ExpenseLoggerApi.Misc;
 using ExpenseLoggerApi.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Dto;
+using SharedLibrary.Enum;
+using SharedLibrary.Lambda.LocalDevelopment;
 using SharedLibrary.Settings;
 
 var builder = WebApplication.CreateSlimBuilder(args);
@@ -35,7 +38,7 @@ app.MapGet("", () => "ExpenseLogger Api is running!");
 
 app.MapPut("/log-expense",
     async ([FromServices] ExpenseLoggerService sheetsLogger,
-        [FromBody] LogExpenseRequest request ) =>
+        [FromBody] LogExpenseRequest request) =>
     {
         try
         {
@@ -44,7 +47,7 @@ app.MapPut("/log-expense",
                 request.Description,
                 request.Amount,
                 request.Category
-                );
+            );
 
             return Results.Ok(new LogExpenseResponse { Success = true, expense = expense });
         }
@@ -52,6 +55,26 @@ app.MapPut("/log-expense",
         {
             app.Logger.LogWarning("Invalid amount format provided: {Amount}", request.Amount);
             return Results.Ok(new LogExpenseResponse { Success = false });
+        }
+        catch (Exception ex) when (ex is SheetNotFoundException or SpreadsheetNotFoundException)
+        {
+            app.Logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Spreadsheet or sheet doesn't exist.",
+                ErrorCode = ErrorCodeEnum.ResourceNotFound
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            app.Logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Not able to access the spreadsheet.",
+                ErrorCode = ErrorCodeEnum.UnauthorizedAccess
+            });
         }
         catch (Exception ex)
         {
@@ -72,7 +95,7 @@ app.MapPost("/validate-spreadsheet",
         catch (Exception ex)
         {
             app.Logger.LogError(ex, "Error while validating the spreadsheet.");
-            return Results.Problem(detail:"Internal error while validating the spreadsheet.", statusCode: 500);
+            return Results.Problem(detail: "Internal error while validating the spreadsheet.", statusCode: 500);
         }
     });
 
@@ -84,7 +107,28 @@ app.MapDelete("/undo",
         {
             var response = await removeLogger.RemoveLastExpense(spreadsheetId);
             return Results.Ok(response);
-        }catch(Exception ex)
+        }
+        catch (Exception ex) when (ex is SheetNotFoundException or SpreadsheetNotFoundException)
+        {
+            app.Logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Spreadsheet or sheet doesn't exist.",
+                ErrorCode = ErrorCodeEnum.ResourceNotFound
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            app.Logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Not able to access the spreadsheet.",
+                ErrorCode = ErrorCodeEnum.UnauthorizedAccess
+            });
+        }
+        catch (Exception ex)
         {
             app.Logger.LogError(ex, "Failed to remove expense");
             return Results.Problem(detail: "An error occured while logging the expense.", statusCode: 500);
