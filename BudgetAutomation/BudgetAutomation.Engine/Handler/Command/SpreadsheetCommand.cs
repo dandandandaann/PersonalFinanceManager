@@ -26,20 +26,25 @@ public partial class SpreadsheetCommand(
 
         try
         {
-            if (!Utility.TryExtractCommandArguments(message.Text, CommandName, SpreadsheetIdRegex, out var spreadsheetId))
-            {
-                if (string.IsNullOrWhiteSpace(spreadsheetId))
-                {
-                    return await sender.ReplyAsync(message.Chat,
-                        "Por favor envie o ID da sua planilha com esse comando.",
-                        "User tried configuring spreadsheet id with empty arguments.",
-                        logLevel: LogLevel.Information,
-                        cancellationToken: cancellationToken);
-                }
+            Utility.TryExtractCommandArguments(message.Text, CommandName, null, out var arguments);
 
+            if (string.IsNullOrWhiteSpace(arguments))
+            {
                 return await sender.ReplyAsync(message.Chat,
-                    "ID de planilha inválido, tente novamente.",
-                    $"User tried configuring spreadsheet id with bad arguments: '{spreadsheetId}'.",
+                    "Por favor envie o ID ou o endereço da sua planilha com esse comando.",
+                    "User tried configuring spreadsheet id with empty arguments.",
+                    logLevel: LogLevel.Information,
+                    cancellationToken: cancellationToken);
+            }
+
+            var spreadsheetId = ExtractSpreadsheetIdFromInput(arguments);
+
+            if (spreadsheetId is null || !SpreadsheetIdRegex().IsMatch(spreadsheetId))
+            {
+                return await sender.ReplyAsync(message.Chat,
+                    "Planilha inválida.\n" +
+                    "Verifique o endereço enviado e tente novamente.",
+                    $"User tried configuring spreadsheet id with bad arguments: '{arguments}'.",
                     logLevel: LogLevel.Information,
                     cancellationToken: cancellationToken);
             }
@@ -123,6 +128,20 @@ public partial class SpreadsheetCommand(
     {
         throw new NotImplementedException();
     }
+
+    private static string? ExtractSpreadsheetIdFromInput(string input)
+    {
+        var trimmedInput = input.Trim();
+        var match = SpreadsheetUrlRegex().Match(trimmedInput);
+
+        if (match.Success)
+            return match.Groups[1].Value;
+
+        return trimmedInput;
+    }
+
+    [GeneratedRegex(@"/spreadsheets/d/([a-zA-Z0-9_-]{40,})")]
+    private static partial Regex SpreadsheetUrlRegex();
 
     [GeneratedRegex("^[a-zA-Z0-9_-]{40,}$")]
     private static partial Regex SpreadsheetIdRegex();
