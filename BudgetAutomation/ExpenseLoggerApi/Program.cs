@@ -108,7 +108,7 @@ app.MapPost("/validate-spreadsheet",
             {
                 Success = false,
                 Message = "Sheet doesn't exist.",
-                ErrorCode = ErrorCodeEnum.SheetNotFound
+                ErrorCode = ErrorCodeEnum.TransactionsSheetNotFound
             });
         }
         catch (UnauthorizedAccessException ex)

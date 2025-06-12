@@ -122,7 +122,7 @@ public class Functions
             {
                 Success = false,
                 Message = "Sheet doesn't exist.",
-                ErrorCode = ErrorCodeEnum.SheetNotFound
+                ErrorCode = ErrorCodeEnum.TransactionsSheetNotFound
             });
         }
         catch (UnauthorizedAccessException ex)

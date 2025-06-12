@@ -1,10 +1,10 @@
 ﻿using System.Net;
-using ExpenseLoggerApi.Constants;
 using ExpenseLoggerApi.Interface;
 using ExpenseLoggerApi.Misc;
 using Google;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
+using SharedLibrary.Constants;
 using SharedLibrary.Dto;
 using SharedLibrary.Enum;
 
@@ -70,7 +70,7 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
 
         if (lastItem < startRow)
         {
-            logger.LogInformation("Nenhum item encontrado na coluna {Column} da planilha '{SheetName}'.", column, sheetName);
+            logger.LogInformation("No item found in column '{Column}' of Spreadsheet '{SheetName}'.", column, sheetName);
             throw new InvalidOperationException("No item found in column of the spreadsheet.");
         }
 
@@ -154,19 +154,17 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
             return new SpreadsheetValidationResponse
             {
                 Success = false,
-                Message = "O Id da planilha está vazio ou nulo",
+                Message = "Spreadsheet Id is null or empty.",
                 ErrorCode = ErrorCodeEnum.InvalidInput,
             };
         }
 
         await GetSheetIdByNameAsync(request.SpreadsheetId, SpreadsheetConstants.Sheets.Transactions);
-        // var spreadsheetGet = sheetsService.Spreadsheets.Get(request.SpreadsheetId);
-        // var spreadsheet = await spreadsheetGet.ExecuteAsync();
 
         return new SpreadsheetValidationResponse
         {
             Success = true,
-            Message = "Planilha válida."
+            Message = "Empty spreadsheet."
         };
     }
 }

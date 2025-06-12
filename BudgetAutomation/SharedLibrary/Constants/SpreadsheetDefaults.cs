@@ -1,4 +1,4 @@
-﻿namespace ExpenseLoggerApi.Constants;
+﻿namespace SharedLibrary.Constants;
 
 public static class SpreadsheetConstants
 {
