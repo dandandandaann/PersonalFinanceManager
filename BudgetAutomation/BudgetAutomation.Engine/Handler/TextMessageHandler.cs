@@ -1,4 +1,5 @@
-﻿using BudgetAutomation.Engine.Handler.Command.Alias;
+﻿using BudgetAutomation.Engine.Handler.Command;
+using BudgetAutomation.Engine.Handler.Command.Alias;
 using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Model;
 using BudgetAutomation.Engine.Service;
@@ -45,15 +46,25 @@ public class TextMessageHandler(
         (bool hasState, ChatState? chatState) = await chatStateService.HasState(message.Chat.Id);
 
         if (!hasState) // Default message
-            return await sender.ReplyAsync(message.Chat, "Você disse:\n" + messageText, cancellationToken: cancellationToken);
+        {
+            var replyMessage = await sender.ReplyAsync(message.Chat, "Comando não reconhecido.", cancellationToken: cancellationToken);
+
+            if (commandsByName.TryGetValue(StartCommand.StaticCommandName, out var startCommand))
+            {
+                logger.LogInformation("Default response with {CommandName} command.", startCommand.CommandName);
+                return await startCommand.HandleAsync(message, cancellationToken);
+            }
+            logger.LogError("Not able to find {CommandName} command to send as default message.", StartCommand.StaticCommandName);
+            return replyMessage;
+        }
 
         if (chatState?.ActiveCommand != null)
         {
-            if (commandsByName.TryGetValue(chatState.ActiveCommand.ToLowerInvariant(), out var statefulCommand))
+            if (commandsByName.TryGetValue(chatState.ActiveCommand.ToLowerInvariant(), out var commandSavedInState))
             {
                 logger.LogInformation("Handling text as continuation for command: {CommandName}, State: {State}",
-                    statefulCommand.CommandName, chatState.State);
-                return await statefulCommand.HandleAsync(message, chatState, cancellationToken);
+                    commandSavedInState.CommandName, chatState.State);
+                return await commandSavedInState.HandleAsync(message, chatState, cancellationToken);
             }
         }
 
