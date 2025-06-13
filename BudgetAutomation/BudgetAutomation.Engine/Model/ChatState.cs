@@ -49,10 +49,10 @@ public class ChatState
     public ChatState() { }
 
     public ChatState(long chatId, string? state = null)
-#pragma warning restore CS8618, CS9264
     {
         ChatId = chatId.ToString();
         State = state;
         Timestamp = DateTime.UtcNow;
     }
+#pragma warning restore CS8618, CS9264
 }

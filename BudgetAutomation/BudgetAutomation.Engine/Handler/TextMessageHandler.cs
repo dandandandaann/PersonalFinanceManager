@@ -44,12 +44,12 @@ public class TextMessageHandler(
             }
         }
 
-        UserManagerService.EnsureUserSignedIn();
-
         (bool hasState, ChatState? chatState) = await chatStateService.HasState(message.Chat.Id);
 
         if (!hasState) // Default message
         {
+            UserManagerService.EnsureUserSignedIn();
+
             var replyMessage =
                 await sender.ReplyAsync(message.Chat, "Comando não reconhecido.", cancellationToken: cancellationToken);
 
@@ -73,8 +73,6 @@ public class TextMessageHandler(
             }
         }
 
-        // TODO: handle state
-        logger.LogError("Chat state is null or not implemented: {ChatState}", chatState?.State);
-        throw new NotImplementedException();
+        throw new NotImplementedException($"Chat state is null or not implemented for state: {chatState?.State}.");
     }
 }

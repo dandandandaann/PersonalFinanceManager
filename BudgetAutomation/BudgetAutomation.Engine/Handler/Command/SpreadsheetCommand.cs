@@ -14,7 +14,7 @@ public partial class SpreadsheetCommand(
     ISenderGateway sender,
     IUserManagerService userManagerService,
     IExpenseLoggerApiClient expenseLoggerApiClient,
-    ChatStateService chatStateService) : ICommand
+    IChatStateService chatStateService) : ICommand
 {
     public string CommandName => StaticCommandName;
 
@@ -43,7 +43,6 @@ public partial class SpreadsheetCommand(
             }
 
             return await ConfigureSpreadsheetAsync(message.Chat, arguments, cancellationToken);
-
         }
         catch (Exception ex) when (ex is InvalidUserInputException or UnauthorizedAccessException)
         {
@@ -61,15 +60,30 @@ public partial class SpreadsheetCommand(
 
     public async Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken)
     {
-        UserManagerService.EnsureUserSignedIn();
-
-        ArgumentException.ThrowIfNullOrEmpty(message.Text);
-
-        await chatStateService.ClearState(message.Chat.Id);
-
-        if (chatState.State == ChatStateEnum.AwaitingArguments.ToString())
+        try
         {
-            return await ConfigureSpreadsheetAsync(message.Chat, message.Text, cancellationToken);
+            UserManagerService.EnsureUserSignedIn();
+
+            ArgumentException.ThrowIfNullOrEmpty(message.Text);
+
+            await chatStateService.ClearState(message.Chat.Id);
+
+            if (chatState.State == ChatStateEnum.AwaitingArguments.ToString())
+            {
+                return await ConfigureSpreadsheetAsync(message.Chat, message.Text, cancellationToken);
+            }
+        }
+        catch (Exception ex) when (ex is InvalidUserInputException or UnauthorizedAccessException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            return await sender.ReplyAsync(message.Chat,
+                "Ocorreu um erro ao tentar configurar a planilha. Tente novamente mais tarde.",
+                $"Exception during spreadsheet command: {ex}",
+                logLevel: LogLevel.Error,
+                cancellationToken: cancellationToken);
         }
 
         throw new NotImplementedException($"Spreadsheet state {chatState} not implemented.");

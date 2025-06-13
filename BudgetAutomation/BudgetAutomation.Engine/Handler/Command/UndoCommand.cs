@@ -1,4 +1,5 @@
-﻿using BudgetAutomation.Engine.Interface;
+﻿using BudgetAutomation.Engine.Handler.Command.Alias;
+using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Model;
 using BudgetAutomation.Engine.Service;
 using SharedLibrary.Enum;
@@ -16,6 +17,15 @@ public partial class UndoCommand(
     public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
         UserManagerService.EnsureUserSignedIn();
+
+        if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
+        {
+            return await sender.ReplyAsync(message.Chat,
+                $"Por favor configure sua planilha com o commando /{PlanilhaCommandAlias.StaticCommandName} " +
+                $"antes de usar o comando /{CommandName}.",
+                cancellationToken: cancellationToken);
+        }
+
         var chat = message.Chat;
 
         ArgumentNullException.ThrowIfNull(message.Text);
