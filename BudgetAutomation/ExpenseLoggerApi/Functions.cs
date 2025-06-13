@@ -96,7 +96,7 @@ public class Functions
                    "arn:aws:iam::795287297286:policy/Configurations_Read",
         MemorySize = 128,
         Timeout = 15)]
-    [HttpApi(LambdaHttpMethod.Put, "/validate-spreadsheet")]
+    [HttpApi(LambdaHttpMethod.Post, "/validate-spreadsheet")]
     public async Task<APIGatewayHttpApiV2ProxyResponse> ValidateSpreadsheetAsync(ILambdaContext context,
         [FromServices] SpreadsheetService sheetService, [FromBody] SpreadsheetValidationRequest request)
     {

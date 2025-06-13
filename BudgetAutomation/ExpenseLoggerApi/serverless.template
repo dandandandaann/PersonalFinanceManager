@@ -81,10 +81,10 @@
       "Metadata": {
         "Tool": "Amazon.Lambda.Annotations",
         "SyncedEvents": [
-          "RootPut"
+          "RootPost"
         ],
         "SyncedEventProperties": {
-          "RootPut": [
+          "RootPost": [
             "Path",
             "Method"
           ]
@@ -102,11 +102,11 @@
         "PackageType": "Zip",
         "Handler": "ExpenseLoggerApi::ExpenseLoggerApi.Functions_ValidateSpreadsheetAsync_Generated::ValidateSpreadsheetAsync",
         "Events": {
-          "RootPut": {
+          "RootPost": {
             "Type": "HttpApi",
             "Properties": {
               "Path": "/validate-spreadsheet",
-              "Method": "PUT"
+              "Method": "POST"
             }
           }
         }
