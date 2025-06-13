@@ -31,7 +31,7 @@ public class ExpenseLoggerService(
         // Parse amount manually to pt-BR to send back in the response
         expense.Amount = doubleAmount.ToString("0.00", CultureInfo.InvariantCulture).Replace(",", "").Replace(".", ",");
 
-        var sheetName = SpreadsheetConstants.Sheets.Transactions;
+        var sheetName = SpreadsheetConstants.Transactions.SheetName;
         logger.LogInformation("Starting expense logging process in spreadsheet '{SpreadsheetId}'.", spreadsheetId);
 
         try
@@ -39,7 +39,8 @@ public class ExpenseLoggerService(
             var sheetId = await sheetsAccessor.GetSheetIdByNameAsync(spreadsheetId, sheetName);
 
             var row = await sheetsAccessor.FindFirstEmptyRowAsync(
-                spreadsheetId, sheetName, SpreadsheetConstants.TransactionColumn.Description, SpreadsheetConstants.TransactionColumn.DataStartRow
+                spreadsheetId, sheetName,
+                SpreadsheetConstants.Transactions.Column.Description, SpreadsheetConstants.Transactions.DataStartRow
             );
 
             await sheetsAccessor.InsertRowAsync(spreadsheetId, sheetId, row);
@@ -48,38 +49,38 @@ public class ExpenseLoggerService(
             [
                 new()
                 {
-                    Range = $"{sheetName}!{SpreadsheetConstants.TransactionColumn.Description}{row}", Values = Value(expense.Description)
+                    Range = $"{sheetName}!{SpreadsheetConstants.Transactions.Column.Description}{row}", Values = Value(expense.Description)
                 },
                 new()
                 {
-                    Range = $"{sheetName}!{SpreadsheetConstants.TransactionColumn.Category}{row}", Values = Value(expense.Category)
+                    Range = $"{sheetName}!{SpreadsheetConstants.Transactions.Column.Category}{row}", Values = Value(expense.Category)
                 },
                 new()
                 {
                     // let spreadsheet format the number
-                    Range = $"{sheetName}!{SpreadsheetConstants.TransactionColumn.Amount}{row}", Values = Value(doubleAmount)
+                    Range = $"{sheetName}!{SpreadsheetConstants.Transactions.Column.Amount}{row}", Values = Value(doubleAmount)
                 },
                 new()
                 {
-                    Range = $"{sheetName}!{SpreadsheetConstants.TransactionColumn.TotalFormula}{row}",
+                    Range = $"{sheetName}!{SpreadsheetConstants.Transactions.Column.TotalFormula}{row}",
                     Values = Value(
-                        $"=IF(ISBLANK({SpreadsheetConstants.TransactionColumn.Amount}{row}); 0; " +
-                        $"IF(ISBLANK({SpreadsheetConstants.TransactionColumn.ExchangeRate}{row}); {SpreadsheetConstants.TransactionColumn.Amount}{row}; " +
-                        $"{SpreadsheetConstants.TransactionColumn.Amount}{row}*{SpreadsheetConstants.TransactionColumn.ExchangeRate}{row}))")
+                        $"=IF(ISBLANK({SpreadsheetConstants.Transactions.Column.Amount}{row}); 0; " +
+                        $"IF(ISBLANK({SpreadsheetConstants.Transactions.Column.ExchangeRate}{row}); {SpreadsheetConstants.Transactions.Column.Amount}{row}; " +
+                        $"{SpreadsheetConstants.Transactions.Column.Amount}{row}*{SpreadsheetConstants.Transactions.Column.ExchangeRate}{row}))")
                 },
                 new()
                 {
-                    Range = $"{sheetName}!{SpreadsheetConstants.TransactionColumn.Date}{row}",
+                    Range = $"{sheetName}!{SpreadsheetConstants.Transactions.Column.Date}{row}",
                     Values = Value(DateTime.UtcNow.AddHours(SpreadsheetConstants.DateTimeZone).Date.ToOADate())
                 },
                 new()
                 {
-                    Range = $"{sheetName}!{SpreadsheetConstants.TransactionColumn.DateCreated}{row}",
+                    Range = $"{sheetName}!{SpreadsheetConstants.Transactions.Column.DateCreated}{row}",
                     Values = Value(DateTime.UtcNow.AddHours(SpreadsheetConstants.DateTimeZone).ToOADate())
                 },
                 new()
                 {
-                    Range = $"{sheetName}!{SpreadsheetConstants.TransactionColumn.Source}{row}", Values = Value("Telegram")
+                    Range = $"{sheetName}!{SpreadsheetConstants.Transactions.Column.Source}{row}", Values = Value("Telegram")
                 }
             ];
 

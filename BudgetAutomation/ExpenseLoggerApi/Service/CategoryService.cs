@@ -42,9 +42,9 @@ public class CategoryService(ISheetsDataAccessor sheetsAccessor, ILogger<Categor
         {
             return await sheetsAccessor.ReadColumnValuesAsync(
                 spreadsheetId,
-                SpreadsheetConstants.Sheets.Categories,
-                SpreadsheetConstants.CategoryColumn.Description,
-                SpreadsheetConstants.CategoryColumn.DataStartRow
+                SpreadsheetConstants.Categories.SheetName,
+                SpreadsheetConstants.Categories.Column.Category,
+                SpreadsheetConstants.Categories.DataStartRow
             );
         }
         catch (Exception ex)
@@ -58,24 +58,24 @@ public class CategoryService(ISheetsDataAccessor sheetsAccessor, ILogger<Categor
     {
         try
         {
-            var range = $"{SpreadsheetConstants.Sheets.Categorizer}!" +
-                        $"{SpreadsheetConstants.CategorizadorColumn.Category}{SpreadsheetConstants.CategorizadorColumn.DataStartRow}:" +
-                        $"{SpreadsheetConstants.CategorizadorColumn.DescriptionPattern}";
+            var range = $"{SpreadsheetConstants.Categorizator.SheetName}!" +
+                        $"{SpreadsheetConstants.Categorizator.Column.Category}{SpreadsheetConstants.Categorizator.DataStartRow}:" +
+                        $"{SpreadsheetConstants.Categorizator.Column.DescriptionPattern}";
 
             var response = await sheetsAccessor.ReadColumnValuesAsync(
                 spreadsheetId,
-                SpreadsheetConstants.Sheets.Categorizer,
-                SpreadsheetConstants.CategorizadorColumn.Category,
-                SpreadsheetConstants.CategorizadorColumn.DataStartRow);;
+                SpreadsheetConstants.Categorizator.SheetName,
+                SpreadsheetConstants.Categorizator.Column.Category,
+                SpreadsheetConstants.Categorizator.DataStartRow);;
 
             var categories = response.ToList();
 
             // TODO: join both requests in 1 call
             var patterns = await sheetsAccessor.ReadColumnValuesAsync(
                 spreadsheetId,
-                SpreadsheetConstants.Sheets.Categorizer,
-                SpreadsheetConstants.CategorizadorColumn.DescriptionPattern,
-                SpreadsheetConstants.CategorizadorColumn.DataStartRow
+                SpreadsheetConstants.Categorizator.SheetName,
+                SpreadsheetConstants.Categorizator.Column.DescriptionPattern,
+                SpreadsheetConstants.Categorizator.DataStartRow
             );
 
             return categories

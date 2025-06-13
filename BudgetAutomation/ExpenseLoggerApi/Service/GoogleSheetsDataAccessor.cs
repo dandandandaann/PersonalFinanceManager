@@ -174,7 +174,7 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
             };
         }
 
-        await GetSheetIdByNameAsync(request.SpreadsheetId, SpreadsheetConstants.Sheets.Transactions);
+        await GetSheetIdByNameAsync(request.SpreadsheetId, SpreadsheetConstants.Transactions.SheetName);
 
         return new SpreadsheetValidationResponse
         {

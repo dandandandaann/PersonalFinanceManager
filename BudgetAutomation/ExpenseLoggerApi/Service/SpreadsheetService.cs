@@ -18,7 +18,7 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
     }
     public async Task<RemoveExpenseResponse> RemoveLastExpenseAsync(string spreadsheetId)
     {
-        var transactionsSheet = SpreadsheetConstants.Sheets.Transactions;
+        var transactionsSheet = SpreadsheetConstants.Transactions.SheetName;
         logger.LogInformation("Removing expense process in spreadsheet '{SpreadsheetId}'.", spreadsheetId);
 
         try
@@ -26,9 +26,9 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
             var sheetId = await sheetsAccessor.GetSheetIdByNameAsync(spreadsheetId, transactionsSheet);
 
             var lastRow = await sheetsAccessor.FindLastItemAsync(
-                spreadsheetId, transactionsSheet, SpreadsheetConstants.TransactionColumn.Description, SpreadsheetConstants.TransactionColumn.DataStartRow);
+                spreadsheetId, transactionsSheet, SpreadsheetConstants.Transactions.Column.Description, SpreadsheetConstants.Transactions.DataStartRow);
 
-            if (lastRow < SpreadsheetConstants.TransactionColumn.DataStartRow)
+            if (lastRow < SpreadsheetConstants.Transactions.DataStartRow)
             {
                 logger.LogWarning("No expenses found to remove in spreadsheet '{SpreadsheetId}'.", transactionsSheet);
                 throw new InvalidOperationException("No expense found.");
@@ -47,9 +47,9 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
 
             var expense = new Expense
             {
-                Description = values.ElementAtOrDefault(SpreadsheetConstants.TransactionColumn.Description.LetterToColumnIndex()).ToString().Trim(),
-                Amount = values.ElementAtOrDefault(SpreadsheetConstants.TransactionColumn.Amount.LetterToColumnIndex()).ToString().Trim(),
-                Category = values.ElementAt(SpreadsheetConstants.TransactionColumn.Category.LetterToColumnIndex()).ToString().Trim()
+                Description = values.ElementAtOrDefault(SpreadsheetConstants.Transactions.Column.Description.LetterToColumnIndex()).ToString().Trim(),
+                Amount = values.ElementAtOrDefault(SpreadsheetConstants.Transactions.Column.Amount.LetterToColumnIndex()).ToString().Trim(),
+                Category = values.ElementAt(SpreadsheetConstants.Transactions.Column.Category.LetterToColumnIndex()).ToString().Trim()
             };
 
             return new RemoveExpenseResponse
@@ -69,7 +69,7 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
     public async Task<ExpenseResponse> GetLastExpenseAsync(string spreadsheetId)
     {
 
-        var transactionsSheet = SpreadsheetConstants.Sheets.Transactions;
+        var transactionsSheet = SpreadsheetConstants.Transactions.SheetName;
         logger.LogInformation("Removing expense process in spreadsheet '{SpreadsheetId}'.", spreadsheetId);
 
         try
@@ -77,9 +77,9 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
             var sheetId = await sheetsAccessor.GetSheetIdByNameAsync(spreadsheetId, transactionsSheet);
 
             var lastRow = await sheetsAccessor.FindLastItemAsync(
-                spreadsheetId, transactionsSheet, SpreadsheetConstants.TransactionColumn.Description, SpreadsheetConstants.TransactionColumn.DataStartRow);
+                spreadsheetId, transactionsSheet, SpreadsheetConstants.Transactions.Column.Description, SpreadsheetConstants.Transactions.DataStartRow);
 
-            if (lastRow < SpreadsheetConstants.TransactionColumn.DataStartRow)
+            if (lastRow < SpreadsheetConstants.Transactions.DataStartRow)
             {
                 logger.LogWarning("No expenses found in spreadsheet '{SpreadsheetId}'.", transactionsSheet);
                 throw new InvalidOperationException("No expense found.");
@@ -95,9 +95,9 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
 
             var expense = new Expense
             {
-                Description = values.ElementAtOrDefault(SpreadsheetConstants.TransactionColumn.Description.LetterToColumnIndex()).ToString().Trim(),
-                Amount = values.ElementAtOrDefault(SpreadsheetConstants.TransactionColumn.Amount.LetterToColumnIndex()).ToString().Trim(),
-                Category = values.ElementAt(SpreadsheetConstants.TransactionColumn.Category.LetterToColumnIndex()).ToString().Trim()
+                Description = values.ElementAtOrDefault(SpreadsheetConstants.Transactions.Column.Description.LetterToColumnIndex()).ToString().Trim(),
+                Amount = values.ElementAtOrDefault(SpreadsheetConstants.Transactions.Column.Amount.LetterToColumnIndex()).ToString().Trim(),
+                Category = values.ElementAt(SpreadsheetConstants.Transactions.Column.Category.LetterToColumnIndex()).ToString().Trim()
             };
 
             return new ExpenseResponse
