@@ -218,20 +218,19 @@ public class ExpenseLoggerServiceTests : IDisposable
     [Fact]
     public async Task DecideCategory_ShouldReturnUserCategory_EvenIfDescriptionMentionsAlias()
     {
-        List<Category> customCategories = new()
-    {
-        new Category
-        {
-            Name = "Locomoção",
-            Alias = new[] { "uber", "ônibus", "metro" }
-        },
-        new Category
-        {
-            Name = "Outros",
-            Alias = new [] { "outros", "outro" }
-        }
-
-    };
+        // List<Category> customCategories = new()
+        // {
+        //     new Category
+        //     {
+        //         Name = "Locomoção",
+        //         Alias = new[] { "uber", "ônibus", "metro" }
+        //     },
+        //     new Category
+        //     {
+        //         Name = "Outros",
+        //         Alias = new[] { "outros", "outro" }
+        //     }
+        // };
         var description = "log Uber 12,50 outros";
         var userCategory = "outros";
         var amount = "12.50";
@@ -265,11 +264,11 @@ public class ExpenseLoggerServiceTests : IDisposable
     public void DecideCategory_InvalidUserCategory_ShouldReturnEmptyString()
     {
         // Arrange
-        var categories = new List<Category>
-    {
-        new() { Name = "Groceries", Alias = new[] { "food", "supermarket" } },
-        new() { Name = "Utilities", Alias = new[] { "bills" } }
-    };
+        // var categories = new List<Category>
+        // {
+        //     new() { Name = "Groceries", Alias = new[] { "food", "supermarket" } },
+        //     new() { Name = "Utilities", Alias = new[] { "bills" } }
+        // };
 
         var service = new ExpenseLoggerService(
             _mockSheetsAccessor.Object,
