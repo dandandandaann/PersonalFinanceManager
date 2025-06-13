@@ -131,6 +131,21 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
         return values;
     }
 
+    public async Task<IList<string>> ReadColumnValuesAsync(string spreadsheetId, string sheetName, string column, int startRow)
+    {
+        var range = $"{sheetName}!{column}{startRow}:{column}";
+        var request = sheetsService.Spreadsheets.Values.Get(spreadsheetId, range);
+        var response = await request.ExecuteAsync();
+
+        if (response.Values == null)
+            return new List<string>();
+
+        return response.Values
+            .Where(row => row.Count > 0 && !string.IsNullOrWhiteSpace(row[0]?.ToString()))
+            .Select(row => row[0].ToString()!)
+            .ToList();
+    }
+
     public async Task BatchUpdateValuesAsync(string spreadsheetId, BatchUpdateValuesRequest request)
     {
         logger.LogDebug("Executing BatchUpdateValues for spreadsheet {SpreadsheetId}.", spreadsheetId);

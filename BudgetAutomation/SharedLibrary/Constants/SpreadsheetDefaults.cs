@@ -2,11 +2,12 @@
 
 public static class SpreadsheetConstants
 {
-    public const int DataStartRow = 2;
     public const double DateTimeZone = -3;
 
-    public static class Column
+    public static class TransactionColumn
     {
+        public const int DataStartRow = 2;
+
         public const string Date = "B";
         public const string Description = "C";
         public const string Category = "D";
@@ -16,6 +17,13 @@ public static class SpreadsheetConstants
 
         public const string DateCreated = "M";
         public const string Source = "O";
+    }
+
+    public static class CategoryColumn
+    {
+        public const int DataStartRow = 2;
+
+        public const string Description = "A";
     }
 
     public static class Sheets

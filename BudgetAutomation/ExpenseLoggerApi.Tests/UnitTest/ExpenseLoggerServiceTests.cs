@@ -5,6 +5,7 @@ namespace UnitTest.UnitTest;
 public class ExpenseLoggerServiceTests : IDisposable
 {
     private readonly Mock<ISheetsDataAccessor> _mockSheetsAccessor;
+    private readonly Mock<ICategoryService> _mockCategoryService;
     private readonly Mock<ILogger<ExpenseLoggerService>> _mockLogger;
     private const string SpreadsheetId = "test-spreadsheet-id";
     private readonly ExpenseLoggerService _service;
@@ -17,19 +18,16 @@ public class ExpenseLoggerServiceTests : IDisposable
     {
         _mockSheetsAccessor = new Mock<ISheetsDataAccessor>();
         _mockLogger = new Mock<ILogger<ExpenseLoggerService>>();
+        _mockCategoryService = new Mock<ICategoryService>();
 
-        List<Category> categories =
-        [
-            new() { Name = "Groceries", Alias = ["food", "supermarket"] },
-            new() { Name = "Utilities", Alias = ["bills"] },
-            new() { Name = "Transport" } // No aliases
-        ];
+        _mockCategoryService.Setup(s => s.DecideCategoryAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync("Test Category");
 
         _expectedSheetName = DateTime.Now.ToString("MM-yyyy");
 
         _service = new ExpenseLoggerService(
             _mockSheetsAccessor.Object,
-            categories,
+            _mockCategoryService.Object,
             _mockLogger.Object
         );
     }
@@ -242,7 +240,7 @@ public class ExpenseLoggerServiceTests : IDisposable
 
         var customService = new ExpenseLoggerService(
             _mockSheetsAccessor.Object,
-            customCategories,
+            _mockCategoryService.Object,
             _mockLogger.Object
         );
 
@@ -275,7 +273,7 @@ public class ExpenseLoggerServiceTests : IDisposable
 
         var service = new ExpenseLoggerService(
             _mockSheetsAccessor.Object,
-            categories,
+            _mockCategoryService.Object,
             _mockLogger.Object
         );
 
