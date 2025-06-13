@@ -68,11 +68,7 @@ public partial class LogCommand(
                 cancellationToken);
         }
 
-        return await sender.ReplyAsync(message.Chat, $"Estado de registro {chatState.State} não implementado.",
-            $"Log state {chatState} not implemented.",
-            logLevel: LogLevel.Error,
-            cancellationToken: cancellationToken
-        );
+        throw new NotImplementedException($"Log state {chatState} not implemented.");
     }
 
     private async Task<Message> LogExpenseAsync(Chat chat, string spreadsheetId, string expenseArguments,
