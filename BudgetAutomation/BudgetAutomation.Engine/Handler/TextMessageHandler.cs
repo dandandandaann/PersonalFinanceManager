@@ -26,7 +26,6 @@ public class TextMessageHandler(
 
         var commandsByName =
             commandImplementations.Concat(commandAliasImplementations)
-                .Where(x => CommandsAllowedAsPlainText.Contains(x.CommandName))
                 .ToDictionary(
                     cmd => cmd.CommandName.ToLowerInvariant(),
                     cmd => cmd
@@ -38,7 +37,7 @@ public class TextMessageHandler(
             commandsByName.TryGetValue(potentialCommandName, out var commandToExecute);
 
             // If a command is identified directly from the text
-            if (commandToExecute != null)
+            if (commandToExecute != null && CommandsAllowedAsPlainText.Contains(commandToExecute.CommandName))
             {
                 logger.LogInformation("Handling text as direct command: {CommandName}", commandToExecute.CommandName);
                 return await commandToExecute.HandleAsync(message, cancellationToken);

@@ -15,14 +15,27 @@ public class StartCommand(ISenderGateway sender) : ICommand
     {
         var startMessage = "Escolha uma das opções";
 
+        var keyboardRows = new List<List<InlineKeyboardButton>>();
         var buttons = new List<InlineKeyboardButton>();
 
         if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
-            buttons.Add(InlineKeyboardButton.WithCallbackData(text: "⚙️ Planilha", callbackData: SpreadsheetCommand.StaticCommandName));
-        else
-            buttons.Add(InlineKeyboardButton.WithCallbackData(text: "💳 Registrar Despesa", callbackData: LogCommand.StaticCommandName));
+        {
+            var spreadsheetButton = InlineKeyboardButton.WithCallbackData("⚙️ Configurar Planilha", $"/{SpreadsheetCommand.StaticCommandName}");
 
-        var inlineKeyboard = new InlineKeyboardMarkup(buttons);
+            keyboardRows.Add([spreadsheetButton]);
+        }
+        else
+        {
+            var logButton = InlineKeyboardButton.WithCallbackData("💳 Registrar despesa", $"/{LogCommand.StaticCommandName}");
+            var lastItemButton = InlineKeyboardButton.WithCallbackData("🧾 Ver última despesa", $"/{LastItemCommand.StaticCommandName}");
+            var undoButton = InlineKeyboardButton.WithCallbackData("🗑️ Deletar última despesa", $"/{UndoCommand.StaticCommandName}");
+
+            keyboardRows.Add([logButton]);
+            keyboardRows.Add([lastItemButton]);
+            keyboardRows.Add([undoButton]);
+        }
+
+        var inlineKeyboard = new InlineKeyboardMarkup(keyboardRows);
 
         return await sender.ReplyAsync(
             chat: message.Chat,

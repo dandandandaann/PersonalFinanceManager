@@ -1,4 +1,5 @@
 ﻿using ExpenseLoggerApi.Interface;
+using ExpenseLoggerApi.Misc;
 using SharedLibrary.Constants;
 using SharedLibrary.Dto;
 using SharedLibrary.Enum;
@@ -15,7 +16,7 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
 
         return response;
     }
-    public async Task<RemoveExpenseResponse> RemoveLastExpense(string spreadsheetId)
+    public async Task<RemoveExpenseResponse> RemoveLastExpenseAsync(string spreadsheetId)
     {
         var transactionsSheet = SpreadsheetConstants.Sheets.Transactions;
         logger.LogInformation("Removing expense process in spreadsheet '{SpreadsheetId}'.", spreadsheetId);
@@ -46,9 +47,9 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
 
             var expense = new Expense
             {
-                Description = values.ElementAtOrDefault((int)ExpenseColumnIndex.Description)?.ToString().Trim(),
-                Amount = values.ElementAtOrDefault((int)ExpenseColumnIndex.Amount)?.ToString().Trim(),
-                Category = values.ElementAtOrDefault((int)ExpenseColumnIndex.Category)?.ToString().Trim()
+                Description = values.ElementAtOrDefault(SpreadsheetConstants.Column.Description.LetterToColumnIndex()).ToString().Trim(),
+                Amount = values.ElementAtOrDefault(SpreadsheetConstants.Column.Amount.LetterToColumnIndex()).ToString().Trim(),
+                Category = values.ElementAt(SpreadsheetConstants.Column.Category.LetterToColumnIndex()).ToString().Trim()
             };
 
             return new RemoveExpenseResponse
@@ -61,6 +62,54 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to remove last logged expense.");
+            throw;
+        }
+    }
+
+    public async Task<ExpenseResponse> GetLastExpenseAsync(string spreadsheetId)
+    {
+
+        var transactionsSheet = SpreadsheetConstants.Sheets.Transactions;
+        logger.LogInformation("Removing expense process in spreadsheet '{SpreadsheetId}'.", spreadsheetId);
+
+        try
+        {
+            var sheetId = await sheetsAccessor.GetSheetIdByNameAsync(spreadsheetId, transactionsSheet);
+
+            var lastRow = await sheetsAccessor.FindLastItemAsync(
+                spreadsheetId, transactionsSheet, SpreadsheetConstants.Column.Description, SpreadsheetConstants.DataStartRow);
+
+            if (lastRow < SpreadsheetConstants.DataStartRow)
+            {
+                logger.LogWarning("No expenses found in spreadsheet '{SpreadsheetId}'.", transactionsSheet);
+                throw new InvalidOperationException("No expense found.");
+            }
+
+            var values = await sheetsAccessor.ReadRowValuesAsync(spreadsheetId, transactionsSheet, lastRow);
+
+            if (values == null || values.Count == 0)
+            {
+                logger.LogWarning("Empty or invalid row");
+                throw new InvalidOperationException("Could not retrieve expense data.");
+            }
+
+            var expense = new Expense
+            {
+                Description = values.ElementAtOrDefault(SpreadsheetConstants.Column.Description.LetterToColumnIndex()).ToString().Trim(),
+                Amount = values.ElementAtOrDefault(SpreadsheetConstants.Column.Amount.LetterToColumnIndex()).ToString().Trim(),
+                Category = values.ElementAt(SpreadsheetConstants.Column.Category.LetterToColumnIndex()).ToString().Trim()
+            };
+
+            return new ExpenseResponse
+            {
+                Success = true,
+                expense = expense
+            };
+
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to get last logged expense.");
             throw;
         }
     }

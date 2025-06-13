@@ -129,12 +129,12 @@ app.MapPost("/validate-spreadsheet",
     });
 
 app.MapDelete("/undo",
-    async ([FromServices] SpreadsheetService removeLogger,
+    async ([FromServices] SpreadsheetService spreadsheetService,
         [FromQuery] string spreadsheetId) =>
     {
         try
         {
-            var response = await removeLogger.RemoveLastExpense(spreadsheetId);
+            var response = await spreadsheetService.RemoveLastExpenseAsync(spreadsheetId);
             return Results.Ok(response);
         }
         catch (Exception ex) when (ex is SheetNotFoundException or SpreadsheetNotFoundException)
@@ -163,4 +163,42 @@ app.MapDelete("/undo",
             return Results.Problem(detail: "An error occured while logging the expense.", statusCode: 500);
         }
     });
+
+app.MapGet("/lastitem",
+    async ([FromServices] SpreadsheetService spreadsheetService,
+        [FromQuery] string spreadsheetId) =>
+    {
+        try
+        {
+            var response = await spreadsheetService.GetLastExpenseAsync(spreadsheetId);
+            return Results.Ok(response);
+        }
+        catch (Exception ex) when (ex is SheetNotFoundException or SpreadsheetNotFoundException)
+        {
+            app.Logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Spreadsheet or sheet doesn't exist.",
+                ErrorCode = ErrorCodeEnum.ResourceNotFound
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            app.Logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Not able to access the spreadsheet.",
+                ErrorCode = ErrorCodeEnum.UnauthorizedAccess
+            });
+        }
+        catch(Exception ex)
+        {
+            app.Logger.LogError(ex, "GetLastExpenseAsync: Failed to get expense for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
+            return Results.Problem("An error occurred while getting the expense");
+        }
+    });
+
+
 app.Run();

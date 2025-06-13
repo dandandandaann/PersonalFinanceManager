@@ -141,9 +141,10 @@ public class Functions
             return Results.InternalServerError("Internal error while validating the spreadsheet.");
         }
     }
+
     [HttpApi(LambdaHttpMethod.Delete, "/undo")]
     public async Task<APIGatewayHttpApiV2ProxyResponse> RemoveLastExpenseAsync(ILambdaContext context,
-        [FromServices] SpreadsheetService removeLogger,
+        [FromServices] SpreadsheetService spreadsheetService,
         [FromQuery] string spreadsheetId)
     {
         var logger = context.Logger;
@@ -151,7 +152,7 @@ public class Functions
 
         try
         {
-            var response = await removeLogger.RemoveLastExpense(spreadsheetId);
+            var response = await spreadsheetService.RemoveLastExpenseAsync(spreadsheetId);
             return Results.Ok(response);
         }
         catch (Exception ex) when (ex is SheetNotFoundException or SpreadsheetNotFoundException)
@@ -177,7 +178,47 @@ public class Functions
         catch(Exception ex)
         {
             logger.LogError(ex, "RemoveLastExpenseAsync: Failed to remove expense for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
-            return Results.InternalServerError("An erroroccurred while removing the expense");
+            return Results.InternalServerError("An error occurred while removing the expense");
+        }
+    }
+
+    [HttpApi(LambdaHttpMethod.Get, "/lastitem")]
+    public async Task<APIGatewayHttpApiV2ProxyResponse> GetLastExpenseAsync(ILambdaContext context,
+        [FromServices] SpreadsheetService spreadsheetService,
+        [FromQuery] string spreadsheetId)
+    {
+        var logger = context.Logger;
+        logger.LogInformation("GetLastExpenseAsync: Received request for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
+
+        try
+        {
+            var response = await spreadsheetService.GetLastExpenseAsync(spreadsheetId);
+            return Results.Ok(response);
+        }
+        catch (Exception ex) when (ex is SheetNotFoundException or SpreadsheetNotFoundException)
+        {
+            logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Spreadsheet or sheet doesn't exist.",
+                ErrorCode = ErrorCodeEnum.ResourceNotFound
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Not able to access the spreadsheet.",
+                ErrorCode = ErrorCodeEnum.UnauthorizedAccess
+            });
+        }
+        catch(Exception ex)
+        {
+            logger.LogError(ex, "GetLastExpenseAsync: Failed to get expense for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
+            return Results.InternalServerError("An error occurred while getting the expense");
         }
     }
 }

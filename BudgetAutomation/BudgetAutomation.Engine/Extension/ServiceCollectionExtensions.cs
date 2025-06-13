@@ -86,10 +86,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommand, SignupCommand>();
         services.AddScoped<ICommand, SpreadsheetCommand>();
         services.AddScoped<ICommand, UndoCommand>();
+        services.AddScoped<ICommand, LastItemCommand>();
 
         // Register commands alias
         services.AddScoped<CommandAliasBase, RegistrarCommandAlias>();
         services.AddScoped<CommandAliasBase, PlanilhaCommandAlias>();
+        services.AddScoped<CommandAliasBase, CadastrarCommandAlias>();
+        services.AddScoped<CommandAliasBase, CancelarCommandAlias>();
 
         // Register mappers
         services.AddSingleton<ReplyMarkupMapper>();
