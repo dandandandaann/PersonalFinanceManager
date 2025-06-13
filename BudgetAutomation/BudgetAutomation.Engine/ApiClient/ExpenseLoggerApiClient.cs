@@ -167,4 +167,47 @@ public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
 
         return responseExpense;
     }
+
+    public async Task<ExpenseResponse> GetLastExpenseAsync(string spreadsheetId, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Sending request /lastitem");
+
+        var endpointUri = new Uri(_httpClient.BaseAddress!, "lastitem");
+
+        var queryParams = new Dictionary<string, string?>
+        {
+            ["spreadsheetId"] = spreadsheetId
+        };
+
+        var request = new HttpRequestMessage
+        (
+            HttpMethod.Get,
+            QueryHelpers.AddQueryString(endpointUri.ToString(), queryParams)
+        );
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogError("Failed to retrieve expense in Spreadsheet {SpreadsheetId}. Response code: {StatusCode}",
+                spreadsheetId, response.StatusCode);
+            return new ExpenseResponse { Success = false };
+        }
+
+        _logger.LogInformation("Get last expense request sent. Response code: {StatusCode}", response.StatusCode);
+
+        var responseExpense = await response.Content.ReadFromJsonAsync(
+            AppJsonSerializerContext.Default.ExpenseResponse,
+            cancellationToken);
+
+        if (responseExpense == null)
+        {
+            _logger.LogError("Received successful status code but failed to deserialize {ResponseObject} from response body.",
+                typeof(ExpenseResponse));
+
+            return new ExpenseResponse { Success = false };
+        }
+
+        return responseExpense;
+    }
 }

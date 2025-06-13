@@ -79,7 +79,16 @@ public class UpdateHandler(
             Chat = callbackQuery.Message.Chat,
             Date = DateTime.UtcNow,
             Text = callbackQuery.Data,
-            Type = MessageType.Text
+            Type = MessageType.Text,
+            Entities =
+            [
+                new MessageEntity
+                {
+                    Length = callbackQuery.Data?.Length ?? 0,
+                    Type = MessageEntityType.BotCommand,
+                    Offset = 0,
+                }
+            ]
         };
 
         await messageHandler.HandleMessageAsync(simulatedMessage, cancellationToken);

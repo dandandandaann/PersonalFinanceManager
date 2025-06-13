@@ -122,7 +122,7 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
 
     public async Task<IList<object>> ReadRowValuesAsync(string spreadsheetId, string sheetName, int rowIndex)
     {
-        var range = $"{sheetName}!B{rowIndex}:I{rowIndex}";
+        var range = $"{sheetName}!A{rowIndex}:O{rowIndex}";
         var request = sheetsService.Spreadsheets.Values.Get(spreadsheetId, range);
         var response = await request.ExecuteAsync();
 
