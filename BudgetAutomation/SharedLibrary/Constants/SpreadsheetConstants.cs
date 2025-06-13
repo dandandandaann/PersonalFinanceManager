@@ -26,10 +26,19 @@ public static class SpreadsheetConstants
         public const string Description = "A";
     }
 
+    public static class CategorizadorColumn
+    {
+        public const int DataStartRow = 2;
+
+        public const string Category = "A";
+        public const string DescriptionPattern = "B";
+    }
+
     public static class Sheets
     {
         public const string Transactions = "Transações";
         public const string Categories = "Categorias";
+        public const string Categorizer = "Categorizador";
     }
 
 }

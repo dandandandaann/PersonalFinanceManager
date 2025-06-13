@@ -19,13 +19,15 @@ public class CategoryService(ISheetsDataAccessor sheetsAccessor, ILogger<Categor
             {
                 return matchedCategory;
             }
+
+            return string.Empty;
         }
 
-        // If no user category or invalid, try to match from description
-        var allCategories = await GetCategoriesAsync(spreadsheetId);
-        foreach (var category in allCategories)
+        // If no user category, try to match from auto-categorization rules
+        var autoCategories = await GetAutoCategoriesAsync(spreadsheetId);
+        foreach (var (category, pattern) in autoCategories)
         {
-            if (description.Contains(category, StringComparison.OrdinalIgnoreCase))
+            if (description.Contains(pattern, StringComparison.OrdinalIgnoreCase))
             {
                 return category;
             }
@@ -48,6 +50,42 @@ public class CategoryService(ISheetsDataAccessor sheetsAccessor, ILogger<Categor
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to retrieve categories from spreadsheet {SpreadsheetId}", spreadsheetId);
+            throw;
+        }
+    }
+
+    private async Task<IList<(string Category, string Pattern)>> GetAutoCategoriesAsync(string spreadsheetId)
+    {
+        try
+        {
+            var range = $"{SpreadsheetConstants.Sheets.Categorizer}!" +
+                        $"{SpreadsheetConstants.CategorizadorColumn.Category}{SpreadsheetConstants.CategorizadorColumn.DataStartRow}:" +
+                        $"{SpreadsheetConstants.CategorizadorColumn.DescriptionPattern}";
+
+            var response = await sheetsAccessor.ReadColumnValuesAsync(
+                spreadsheetId,
+                SpreadsheetConstants.Sheets.Categorizer,
+                SpreadsheetConstants.CategorizadorColumn.Category,
+                SpreadsheetConstants.CategorizadorColumn.DataStartRow);;
+
+            var categories = response.ToList();
+
+            // TODO: join both requests in 1 call
+            var patterns = await sheetsAccessor.ReadColumnValuesAsync(
+                spreadsheetId,
+                SpreadsheetConstants.Sheets.Categorizer,
+                SpreadsheetConstants.CategorizadorColumn.DescriptionPattern,
+                SpreadsheetConstants.CategorizadorColumn.DataStartRow
+            );
+
+            return categories
+                .Zip(patterns, (category, pattern) => (category, pattern))
+                .Where(x => !string.IsNullOrWhiteSpace(x.category) && !string.IsNullOrWhiteSpace(x.pattern))
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to retrieve auto-categorization rules from spreadsheet {SpreadsheetId}", spreadsheetId);
             throw;
         }
     }
