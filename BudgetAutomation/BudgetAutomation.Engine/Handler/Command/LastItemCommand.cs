@@ -62,7 +62,7 @@ public class LastItemCommand(
         }
 
         return await sender.ReplyAsync(chat,
-            $"Última despesa registrada:\n{response.expense}",
+            $"Última despesa registrada\n{response.expense}",
             cancellationToken: cancellationToken);
     }
 

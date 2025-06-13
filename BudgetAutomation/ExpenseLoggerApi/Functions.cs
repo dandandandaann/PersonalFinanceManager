@@ -142,6 +142,11 @@ public class Functions
         }
     }
 
+    [LambdaFunction(
+        Policies = "AWSLambdaBasicExecutionRole, " +
+                   "arn:aws:iam::795287297286:policy/Configurations_Read",
+        MemorySize = 128,
+        Timeout = 15)]
     [HttpApi(LambdaHttpMethod.Delete, "/undo")]
     public async Task<APIGatewayHttpApiV2ProxyResponse> RemoveLastExpenseAsync(ILambdaContext context,
         [FromServices] SpreadsheetService spreadsheetService,
@@ -182,6 +187,11 @@ public class Functions
         }
     }
 
+    [LambdaFunction(
+        Policies = "AWSLambdaBasicExecutionRole, " +
+                   "arn:aws:iam::795287297286:policy/Configurations_Read",
+        MemorySize = 128,
+        Timeout = 15)]
     [HttpApi(LambdaHttpMethod.Get, "/lastitem")]
     public async Task<APIGatewayHttpApiV2ProxyResponse> GetLastExpenseAsync(ILambdaContext context,
         [FromServices] SpreadsheetService spreadsheetService,

@@ -1,5 +1,8 @@
-﻿if ((Split-Path -Leaf (Get-Location)) -ne "UserManagerApi") {
+﻿if ((Split-Path -Leaf (Get-Location)) -eq "BudgetAutomation") {
     Set-Location UserManagerApi
+}
+else {
+    Set-Location "..\UserManagerApi"
 }
 
 Write-Host "Starting build..."

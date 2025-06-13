@@ -1,5 +1,8 @@
-﻿if ((Split-Path -Leaf (Get-Location)) -ne "BudgetAutomation.Engine") {
+﻿if ((Split-Path -Leaf (Get-Location)) -eq "BudgetAutomation") {
     Set-Location "BudgetAutomation.Engine"
+}
+else {
+    Set-Location "..\BudgetAutomation.Engine"
 }
 
 Write-Host "Starting build..."

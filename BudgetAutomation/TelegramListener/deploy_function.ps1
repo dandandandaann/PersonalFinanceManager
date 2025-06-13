@@ -1,5 +1,8 @@
-﻿if ((Split-Path -Leaf (Get-Location)) -ne "TelegramListener") {
+﻿if ((Split-Path -Leaf (Get-Location)) -eq "BudgetAutomation") {
     Set-Location TelegramListener
+}
+else {
+    Set-Location "..\TelegramListener"
 }
 
 Write-Host "Starting build..."

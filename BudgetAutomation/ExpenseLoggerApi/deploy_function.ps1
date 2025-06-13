@@ -1,5 +1,8 @@
-﻿if ((Split-Path -Leaf (Get-Location)) -ne "ExpenseLoggerApi") {
+﻿if ((Split-Path -Leaf (Get-Location)) -eq "BudgetAutomation") {
     Set-Location ExpenseLoggerApi
+}
+else {
+    Set-Location "..\ExpenseLoggerApi"
 }
 
 Write-Host "Starting build..."

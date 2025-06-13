@@ -111,6 +111,78 @@
           }
         }
       }
+    },
+    "ExpenseLoggerApiFunctionsRemoveLastExpenseAsyncGenerated": {
+      "Type": "AWS::Serverless::Function",
+      "Metadata": {
+        "Tool": "Amazon.Lambda.Annotations",
+        "SyncedEvents": [
+          "RootDelete"
+        ],
+        "SyncedEventProperties": {
+          "RootDelete": [
+            "Path",
+            "Method"
+          ]
+        }
+      },
+      "Properties": {
+        "Runtime": "dotnet8",
+        "CodeUri": ".",
+        "MemorySize": 128,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambdaBasicExecutionRole",
+          "arn:aws:iam::795287297286:policy/Configurations_Read"
+        ],
+        "PackageType": "Zip",
+        "Handler": "ExpenseLoggerApi::ExpenseLoggerApi.Functions_RemoveLastExpenseAsync_Generated::RemoveLastExpenseAsync",
+        "Events": {
+          "RootDelete": {
+            "Type": "HttpApi",
+            "Properties": {
+              "Path": "/undo",
+              "Method": "DELETE"
+            }
+          }
+        }
+      }
+    },
+    "ExpenseLoggerApiFunctionsGetLastExpenseAsyncGenerated": {
+      "Type": "AWS::Serverless::Function",
+      "Metadata": {
+        "Tool": "Amazon.Lambda.Annotations",
+        "SyncedEvents": [
+          "RootGet"
+        ],
+        "SyncedEventProperties": {
+          "RootGet": [
+            "Path",
+            "Method"
+          ]
+        }
+      },
+      "Properties": {
+        "Runtime": "dotnet8",
+        "CodeUri": ".",
+        "MemorySize": 128,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambdaBasicExecutionRole",
+          "arn:aws:iam::795287297286:policy/Configurations_Read"
+        ],
+        "PackageType": "Zip",
+        "Handler": "ExpenseLoggerApi::ExpenseLoggerApi.Functions_GetLastExpenseAsync_Generated::GetLastExpenseAsync",
+        "Events": {
+          "RootGet": {
+            "Type": "HttpApi",
+            "Properties": {
+              "Path": "/lastitem",
+              "Method": "GET"
+            }
+          }
+        }
+      }
     }
   }
 }
