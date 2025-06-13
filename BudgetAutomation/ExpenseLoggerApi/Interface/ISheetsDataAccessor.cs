@@ -26,7 +26,7 @@ namespace ExpenseLoggerApi.Interface
         Task InsertRowAsync(string spreadsheetId, int sheetId, int rowIndex);
         Task DeleteRowAsync(string spreadsheetId, int sheetId, int rowIndex);
         Task<IList<object>> ReadRowValuesAsync(string spreadsheetId, string sheetName, int rowIndex);
-
+        Task<IList<string>> ReadColumnValuesAsync(string spreadsheetId, string sheetName, string column, int startRow);
 
         /// <summary>
         /// Performs a batch update of cell values in a spreadsheet.

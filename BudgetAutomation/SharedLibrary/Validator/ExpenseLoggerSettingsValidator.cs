@@ -23,10 +23,6 @@ public class ExpenseLoggerSettingsValidator : IValidateOptions<ExpenseLoggerSett
         {
             failures.Add($"{nameof(options.credentials)} is missing or empty.");
         }
-        if (options.Categories == null || options.Categories.Length == 0)
-        {
-            failures.Add($"{nameof(options.Categories)} is missing or empty.");
-        }
 
         return failures.Count > 0 ? ValidateOptionsResult.Fail(failures) : ValidateOptionsResult.Success;
     }

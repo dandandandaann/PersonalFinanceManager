@@ -126,7 +126,7 @@ public partial class SpreadsheetCommand(
                 case ErrorCodeEnum.TransactionsSheetNotFound:
                     return await sender.ReplyAsync(messageChat,
                         $"Falha ao configurar a planilha.\n" +
-                        $"A planilha enviada não contém a aba de {SpreadsheetConstants.Sheets.Transactions}.",
+                        $"A planilha enviada não contém a aba de {SpreadsheetConstants.Transactions.SheetName}.",
                         "Spreadsheet not found.",
                         logLevel: LogLevel.Information,
                         cancellationToken: cancellationToken);

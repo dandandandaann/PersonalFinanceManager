@@ -64,6 +64,7 @@ public static class ServiceCollectionExtensions
 
         // Register Services
         services.AddScoped<SpreadsheetService>();
+        services.AddScoped<ICategoryService, CategoryService>();
         services.AddSingleton<GoogleSheetsClientFactory>();
         services.AddSingleton<SheetsService>(sp =>
         {
@@ -79,7 +80,7 @@ public static class ServiceCollectionExtensions
 
             return new ExpenseLoggerService(
                 sp.GetRequiredService<ISheetsDataAccessor>(),
-                settings.Categories,
+                sp.GetRequiredService<ICategoryService>(),
                 sp.GetRequiredService<ILogger<ExpenseLoggerService>>()
             );
         });
