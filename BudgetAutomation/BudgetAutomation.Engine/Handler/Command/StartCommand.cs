@@ -18,11 +18,17 @@ public class StartCommand(ISenderGateway sender) : ICommand
         var keyboardRows = new List<List<InlineKeyboardButton>>();
         var buttons = new List<InlineKeyboardButton>();
 
-        if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
+        if (!UserManagerService.UserSignedIn)
         {
-            var spreadsheetButton = InlineKeyboardButton.WithCallbackData("⚙️ Configurar Planilha", $"/{SpreadsheetCommand.StaticCommandName}");
+            var button = InlineKeyboardButton.WithCallbackData(":👤 Cadastrar no sistema", $"/{SignupCommand.StaticCommandName}");
 
-            keyboardRows.Add([spreadsheetButton]);
+            keyboardRows.Add([button]);
+        }
+        else if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
+        {
+            var button = InlineKeyboardButton.WithCallbackData("⚙️ Configurar Planilha", $"/{SpreadsheetCommand.StaticCommandName}");
+
+            keyboardRows.Add([button]);
         }
         else
         {
@@ -30,9 +36,7 @@ public class StartCommand(ISenderGateway sender) : ICommand
             var lastItemButton = InlineKeyboardButton.WithCallbackData("🧾 Ver última despesa", $"/{LastItemCommand.StaticCommandName}");
             var undoButton = InlineKeyboardButton.WithCallbackData("🗑️ Deletar última despesa", $"/{UndoCommand.StaticCommandName}");
 
-            keyboardRows.Add([logButton]);
-            keyboardRows.Add([lastItemButton]);
-            keyboardRows.Add([undoButton]);
+            keyboardRows.AddRange([[logButton], [lastItemButton], [undoButton]]);
         }
 
         var inlineKeyboard = new InlineKeyboardMarkup(keyboardRows);
