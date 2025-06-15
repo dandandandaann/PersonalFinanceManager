@@ -9,6 +9,7 @@
         <InvariantGlobalization>true</InvariantGlobalization>
         <PublishReadyToRun>true</PublishReadyToRun>
         <UserSecretsId>1c668b0f-a8a8-4b41-9f04-b1323480dc4d</UserSecretsId>
+        <RootNamespace>ExpenseLoggerApi</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
