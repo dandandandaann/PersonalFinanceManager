@@ -13,7 +13,7 @@ namespace BudgetAutomation.Engine.Handler.Command;
 
 public partial class LogCommand(
     ISenderGateway sender,
-    IExpenseLoggerApiClient expenseApiClient,
+    ISpreadsheetManagerApiClient expenseApiClient,
     IChatStateService chatStateService)
     : ICommand
 {

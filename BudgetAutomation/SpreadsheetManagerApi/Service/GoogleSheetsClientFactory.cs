@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
-using ExpenseLoggerApi.Model;
+using SpreadsheetManagerApi.Model;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 
-namespace ExpenseLoggerApi.Service;
+namespace SpreadsheetManagerApi.Service;
 
 public class GoogleSheetsClientFactory(ILogger<GoogleSheetsClientFactory> logger)
 {

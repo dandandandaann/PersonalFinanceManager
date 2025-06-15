@@ -1,10 +1,10 @@
 ﻿using System.Globalization;
-using ExpenseLoggerApi.Interface;
+using SpreadsheetManagerApi.Interface;
 using Google.Apis.Sheets.v4.Data;
 using SharedLibrary.Constants;
 using SharedLibrary.Model;
 
-namespace ExpenseLoggerApi.Service;
+namespace SpreadsheetManagerApi.Service;
 
 public class ExpenseLoggerService(
     ISheetsDataAccessor sheetsAccessor,

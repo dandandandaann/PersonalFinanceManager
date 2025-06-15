@@ -1,7 +1,7 @@
-using ExpenseLoggerApi.Interface;
+using SpreadsheetManagerApi.Interface;
 using SharedLibrary.Constants;
 
-namespace ExpenseLoggerApi.Service;
+namespace SpreadsheetManagerApi.Service;
 
 public class CategoryService(ISheetsDataAccessor sheetsAccessor, ILogger<CategoryService> logger) : ICategoryService
 {

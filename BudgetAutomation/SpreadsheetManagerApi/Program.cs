@@ -1,6 +1,6 @@
-using ExpenseLoggerApi.Extension;
-using ExpenseLoggerApi.Misc;
-using ExpenseLoggerApi.Service;
+using SpreadsheetManagerApi.Extension;
+using SpreadsheetManagerApi.Misc;
+using SpreadsheetManagerApi.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Dto;
@@ -19,7 +19,7 @@ var app = builder.Build();
 
 app.Use(async (context, next) =>
 {
-    var settings = context.RequestServices.GetRequiredService<IOptions<ExpenseLoggerSettings>>().Value;
+    var settings = context.RequestServices.GetRequiredService<IOptions<SpreadsheetManagerSettings>>().Value;
 
     if (!context.Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != settings.googleApiKey)
     {
@@ -33,7 +33,7 @@ app.Use(async (context, next) =>
 
 app.UseRateLimiter();
 
-app.MapGet("", () => "ExpenseLogger Api is running!");
+app.MapGet("", () => "SpreadsheetManager Api is running!");
 
 app.MapPut("/log-expense",
     async ([FromServices] ExpenseLoggerService sheetsLogger,

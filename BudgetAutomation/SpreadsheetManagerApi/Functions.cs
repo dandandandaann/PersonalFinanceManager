@@ -2,15 +2,15 @@ using Amazon.Lambda.Annotations;
 using Amazon.Lambda.Annotations.APIGateway;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
-using ExpenseLoggerApi.Misc;
-using ExpenseLoggerApi.Service;
+using SpreadsheetManagerApi.Misc;
+using SpreadsheetManagerApi.Service;
 using SharedLibrary.Dto;
 using SharedLibrary.Enum;
 using Results = SharedLibrary.Lambda.Results;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
-namespace ExpenseLoggerApi;
+namespace SpreadsheetManagerApi;
 
 /// <summary>
 /// Handles Spreadsheet manipulation operations.
@@ -32,7 +32,7 @@ public class Functions
     [HttpApi(LambdaHttpMethod.Get, "/")]
     public string Default()
     {
-        return "ExpenseLogger is running!";
+        return "SpreadsheetManager is running!";
     }
 
     [LambdaFunction(

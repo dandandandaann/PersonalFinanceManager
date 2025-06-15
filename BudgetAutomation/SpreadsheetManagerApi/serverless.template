@@ -3,7 +3,7 @@
   "Transform": "AWS::Serverless-2016-10-31",
   "Description": "This template is partially managed by Amazon.Lambda.Annotations (v1.6.1.0).",
   "Resources": {
-    "ExpenseLoggerApiFunctionsDefaultGenerated": {
+    "SpreadsheetManagerApiFunctionsDefaultGenerated": {
       "Type": "AWS::Serverless::Function",
       "Metadata": {
         "Tool": "Amazon.Lambda.Annotations",
@@ -27,7 +27,7 @@
           "arn:aws:iam::795287297286:policy/Configurations_Read"
         ],
         "PackageType": "Zip",
-        "Handler": "SpreadsheetManagerApi::ExpenseLoggerApi.Functions_Default_Generated::Default",
+        "Handler": "SpreadsheetManagerApi::SpreadsheetManagerApi.Functions_Default_Generated::Default",
         "Events": {
           "RootGet": {
             "Type": "HttpApi",
@@ -39,7 +39,7 @@
         }
       }
     },
-    "ExpenseLoggerApiFunctionsLogExpenseAsyncGenerated": {
+    "SpreadsheetManagerApiFunctionsLogExpenseAsyncGenerated": {
       "Type": "AWS::Serverless::Function",
       "Metadata": {
         "Tool": "Amazon.Lambda.Annotations",
@@ -64,7 +64,7 @@
           "arn:aws:iam::795287297286:policy/Configurations_Read"
         ],
         "PackageType": "Zip",
-        "Handler": "SpreadsheetManagerApi::ExpenseLoggerApi.Functions_LogExpenseAsync_Generated::LogExpenseAsync",
+        "Handler": "SpreadsheetManagerApi::SpreadsheetManagerApi.Functions_LogExpenseAsync_Generated::LogExpenseAsync",
         "Events": {
           "RootPut": {
             "Type": "HttpApi",
@@ -76,7 +76,7 @@
         }
       }
     },
-    "ExpenseLoggerApiFunctionsValidateSpreadsheetAsyncGenerated": {
+    "SpreadsheetManagerApiFunctionsValidateSpreadsheetAsyncGenerated": {
       "Type": "AWS::Serverless::Function",
       "Metadata": {
         "Tool": "Amazon.Lambda.Annotations",
@@ -100,7 +100,7 @@
           "arn:aws:iam::795287297286:policy/Configurations_Read"
         ],
         "PackageType": "Zip",
-        "Handler": "SpreadsheetManagerApi::ExpenseLoggerApi.Functions_ValidateSpreadsheetAsync_Generated::ValidateSpreadsheetAsync",
+        "Handler": "SpreadsheetManagerApi::SpreadsheetManagerApi.Functions_ValidateSpreadsheetAsync_Generated::ValidateSpreadsheetAsync",
         "Events": {
           "RootPost": {
             "Type": "HttpApi",
@@ -112,7 +112,7 @@
         }
       }
     },
-    "ExpenseLoggerApiFunctionsRemoveLastExpenseAsyncGenerated": {
+    "SpreadsheetManagerApiFunctionsRemoveLastExpenseAsyncGenerated": {
       "Type": "AWS::Serverless::Function",
       "Metadata": {
         "Tool": "Amazon.Lambda.Annotations",
@@ -136,7 +136,7 @@
           "arn:aws:iam::795287297286:policy/Configurations_Read"
         ],
         "PackageType": "Zip",
-        "Handler": "SpreadsheetManagerApi::ExpenseLoggerApi.Functions_RemoveLastExpenseAsync_Generated::RemoveLastExpenseAsync",
+        "Handler": "SpreadsheetManagerApi::SpreadsheetManagerApi.Functions_RemoveLastExpenseAsync_Generated::RemoveLastExpenseAsync",
         "Events": {
           "RootDelete": {
             "Type": "HttpApi",
@@ -148,7 +148,7 @@
         }
       }
     },
-    "ExpenseLoggerApiFunctionsGetLastExpenseAsyncGenerated": {
+    "SpreadsheetManagerApiFunctionsGetLastExpenseAsyncGenerated": {
       "Type": "AWS::Serverless::Function",
       "Metadata": {
         "Tool": "Amazon.Lambda.Annotations",
@@ -172,7 +172,7 @@
           "arn:aws:iam::795287297286:policy/Configurations_Read"
         ],
         "PackageType": "Zip",
-        "Handler": "SpreadsheetManagerApi::ExpenseLoggerApi.Functions_GetLastExpenseAsync_Generated::GetLastExpenseAsync",
+        "Handler": "SpreadsheetManagerApi::SpreadsheetManagerApi.Functions_GetLastExpenseAsync_Generated::GetLastExpenseAsync",
         "Events": {
           "RootGet": {
             "Type": "HttpApi",

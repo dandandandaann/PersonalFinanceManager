@@ -8,19 +8,19 @@ RUN apt-get update && apt-get install -y clang zlib1g-dev --no-install-recommend
 WORKDIR /src
 
 # Copy csproj and restore dependencies first for layer caching
-COPY ["ExpenseLoggerApi/ExpenseLoggerApi.csproj", "."]
+COPY ["SpreadsheetManagerApi/SpreadsheetManagerApi.csproj", "."]
 
 # Copy the referenced projects
 COPY ["SharedLibrary/SharedLibrary.csproj", "SharedLibrary/"]
 
-RUN dotnet restore "ExpenseLoggerApi.csproj" -r linux-x64
+RUN dotnet restore "SpreadsheetManagerApi.csproj" -r linux-x64
 
 # Copy the rest of the source code
 COPY . .
-WORKDIR /src/ExpenseLoggerApi
+WORKDIR /src/SpreadsheetManagerApi
 
 # Publish the application using Native AOT for linux-arm64
-RUN dotnet publish "ExpenseLoggerApi.csproj" \
+RUN dotnet publish "SpreadsheetManagerApi.csproj" \
     -r linux-amd64 \
     -c Release \
     -o /app/publish \
@@ -39,4 +39,4 @@ ENV ASPNETCORE_HTTP_PORTS=5001
 EXPOSE 5001
 
 # Entrypoint is the native executable
-ENTRYPOINT ["./ExpenseLoggerApi"]
+ENTRYPOINT ["./SpreadsheetManagerApi"]

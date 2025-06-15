@@ -9,7 +9,7 @@ namespace BudgetAutomation.Engine.Handler.Command;
 
 public class LastItemCommand(
     ISenderGateway sender,
-    IExpenseLoggerApiClient expenseLoggerApiClient) : ICommand
+    ISpreadsheetManagerApiClient SpreadsheetManagerApiClient) : ICommand
 {
     public string CommandName => StaticCommandName;
     public static string StaticCommandName => "lastitem";
@@ -42,7 +42,7 @@ public class LastItemCommand(
         }
 
         var response =
-            await expenseLoggerApiClient.GetLastExpenseAsync(UserManagerService.Configuration.SpreadsheetId, cancellationToken);
+            await SpreadsheetManagerApiClient.GetLastExpenseAsync(UserManagerService.Configuration.SpreadsheetId, cancellationToken);
 
         if (!response.Success)
         {

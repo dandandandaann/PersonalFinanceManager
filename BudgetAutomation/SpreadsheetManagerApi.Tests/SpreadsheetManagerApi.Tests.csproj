@@ -24,7 +24,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\ExpenseLoggerApi\SpreadsheetManagerApi.csproj" />
 		<ProjectReference Include="..\SpreadsheetManagerApi\SpreadsheetManagerApi.csproj" />
 	</ItemGroup>
 

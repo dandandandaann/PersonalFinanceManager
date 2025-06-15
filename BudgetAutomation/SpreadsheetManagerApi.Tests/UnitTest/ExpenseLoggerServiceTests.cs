@@ -1,23 +1,25 @@
-﻿using SharedLibrary.Model;
+﻿using SpreadsheetManagerApi.Interface;
+using SpreadsheetManagerApi.Service;
+using SharedLibrary.Model;
 
 namespace UnitTest.UnitTest;
 
-public class SpreadsheetManagerApiServiceTests : IDisposable
+public class ExpenseLoggerServiceTests : IDisposable
 {
     private readonly Mock<ISheetsDataAccessor> _mockSheetsAccessor;
     private readonly Mock<ICategoryService> _mockCategoryService;
-    private readonly Mock<ILogger<SpreadsheetManagerApiService>> _mockLogger;
+    private readonly Mock<ILogger<ExpenseLoggerService>> _mockLogger;
     private const string SpreadsheetId = "test-spreadsheet-id";
-    private readonly SpreadsheetManagerApiService _service;
+    private readonly ExpenseLoggerService _service;
     private readonly string _expectedSheetName;
 
     // Consider using TimeProvider for more robust date testing if needed
     // private readonly TimeProvider _frozenTimeProvider;
 
-    public SpreadsheetManagerApiServiceTests()
+    public ExpenseLoggerServiceTests()
     {
         _mockSheetsAccessor = new Mock<ISheetsDataAccessor>();
-        _mockLogger = new Mock<ILogger<SpreadsheetManagerApiService>>();
+        _mockLogger = new Mock<ILogger<ExpenseLoggerService>>();
         _mockCategoryService = new Mock<ICategoryService>();
 
         _mockCategoryService.Setup(s => s.DecideCategoryAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
@@ -25,7 +27,7 @@ public class SpreadsheetManagerApiServiceTests : IDisposable
 
         _expectedSheetName = DateTime.Now.ToString("MM-yyyy");
 
-        _service = new SpreadsheetManagerApiService(
+        _service = new ExpenseLoggerService(
             _mockSheetsAccessor.Object,
             _mockCategoryService.Object,
             _mockLogger.Object
@@ -237,7 +239,7 @@ public class SpreadsheetManagerApiServiceTests : IDisposable
         var expectedCategory = "Outros";
         var expectedRow = 40;
 
-        var customService = new SpreadsheetManagerApiService(
+        var customService = new ExpenseLoggerService(
             _mockSheetsAccessor.Object,
             _mockCategoryService.Object,
             _mockLogger.Object
@@ -270,7 +272,7 @@ public class SpreadsheetManagerApiServiceTests : IDisposable
         //     new() { Name = "Utilities", Alias = new[] { "bills" } }
         // };
 
-        var service = new SpreadsheetManagerApiService(
+        var service = new ExpenseLoggerService(
             _mockSheetsAccessor.Object,
             _mockCategoryService.Object,
             _mockLogger.Object
@@ -280,7 +282,7 @@ public class SpreadsheetManagerApiServiceTests : IDisposable
         var description = "Movie ticket";
 
         // Act
-        var result = typeof(SpreadsheetManagerApiService)
+        var result = typeof(ExpenseLoggerService)
             .GetMethod("DecideCategory", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
             ?.Invoke(service, new object[] { userCategory, description });
 

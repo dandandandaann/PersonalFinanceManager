@@ -1,8 +1,8 @@
 namespace SharedLibrary.Settings
 {
-    public class ExpenseLoggerApiClientSettings
+    public class SpreadsheetManagerApiClientSettings
     {
-        public const string Configuration = "ExpenseLoggerApiClient";
+        public const string Configuration = "SpreadsheetManagerApiClient";
 
         public string Url { get; set; } = string.Empty;
         public string Key { get; set; } = string.Empty;

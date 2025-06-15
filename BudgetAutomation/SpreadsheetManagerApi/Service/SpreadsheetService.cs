@@ -1,11 +1,11 @@
-﻿using ExpenseLoggerApi.Interface;
-using ExpenseLoggerApi.Misc;
+﻿using SpreadsheetManagerApi.Interface;
+using SpreadsheetManagerApi.Misc;
 using SharedLibrary.Constants;
 using SharedLibrary.Dto;
 using SharedLibrary.Enum;
 using SharedLibrary.Model;
 
-namespace ExpenseLoggerApi.Service;
+namespace SpreadsheetManagerApi.Service;
 
 public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<SpreadsheetService> logger)
 {

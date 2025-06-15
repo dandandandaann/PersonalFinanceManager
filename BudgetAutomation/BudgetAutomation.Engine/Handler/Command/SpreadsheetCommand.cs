@@ -13,7 +13,7 @@ namespace BudgetAutomation.Engine.Handler.Command;
 public partial class SpreadsheetCommand(
     ISenderGateway sender,
     IUserManagerService userManagerService,
-    IExpenseLoggerApiClient expenseLoggerApiClient,
+    ISpreadsheetManagerApiClient SpreadsheetManagerApiClient,
     IChatStateService chatStateService) : ICommand
 {
     public string CommandName => StaticCommandName;
@@ -103,7 +103,7 @@ public partial class SpreadsheetCommand(
                 cancellationToken: cancellationToken);
         }
 
-        var validationResponse = await expenseLoggerApiClient.ValidateSpreadsheet(spreadsheetId, cancellationToken);
+        var validationResponse = await SpreadsheetManagerApiClient.ValidateSpreadsheet(spreadsheetId, cancellationToken);
 
         if (!validationResponse.Success)
         {

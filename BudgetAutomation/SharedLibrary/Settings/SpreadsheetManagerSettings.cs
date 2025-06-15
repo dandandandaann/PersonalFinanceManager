@@ -2,9 +2,9 @@
 
 namespace SharedLibrary.Settings;
 
-public class ExpenseLoggerSettings
+public class SpreadsheetManagerSettings
 {
-    public const string Configuration = "ExpenseLogger";
+    public const string Configuration = "SpreadsheetManager";
 
     public string credentials { get; set; } = string.Empty;
     public string googleApiKey { get; set; } = string.Empty;

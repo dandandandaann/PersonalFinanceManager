@@ -1,4 +1,4 @@
-namespace ExpenseLoggerApi.Interface;
+namespace SpreadsheetManagerApi.Interface;
 
 public interface ICategoryService
 {

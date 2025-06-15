@@ -1,6 +1,6 @@
-using ExpenseLoggerApi.Extension;
+using SpreadsheetManagerApi.Extension;
 
-namespace ExpenseLoggerApi;
+namespace SpreadsheetManagerApi;
 
 [Amazon.Lambda.Annotations.LambdaStartup]
 public class Startup

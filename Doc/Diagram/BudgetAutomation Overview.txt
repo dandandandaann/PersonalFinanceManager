@@ -9,8 +9,8 @@ flowchart TD
     TB["Telegram Bot"] --> TL["Telegram Listener"]
     TL --> SQS["SQS Queue"]
     SQS --> E["Engine"]
-    E <-.-> UM["User Manager"] & EL["Expense Logger"] & DBC["Chat State DB"]
-    EL -.-> DBU["Spreadsheet"]
+    E <-.-> UM["User Manager"] & SM["Spreadsheet Manager"] & DBC["Chat State DB"]
+    SM -.-> DBU["Spreadsheet"]
     UM -.-> S["User DB"]
     TB@{ icon: "fa:face-grimace", form: "rounded", pos: "b"}
     SQS@{ shape: cyl}

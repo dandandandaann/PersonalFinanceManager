@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Google.Apis.Sheets.v4.Data;
 
-namespace ExpenseLoggerApi.AotTypes;
+namespace SpreadsheetManagerApi.AotTypes;
 
 // dummy class with attributes to preserve the necessary types:
 internal static class GoogleApiTypesForAot

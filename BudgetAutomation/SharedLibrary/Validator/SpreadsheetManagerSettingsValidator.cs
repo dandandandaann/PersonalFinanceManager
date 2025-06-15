@@ -3,9 +3,9 @@ using SharedLibrary.Settings;
 
 namespace SharedLibrary.Validator;
 
-public class ExpenseLoggerSettingsValidator : IValidateOptions<ExpenseLoggerSettings>
+public class SpreadsheetManagerSettingsValidator : IValidateOptions<SpreadsheetManagerSettings>
 {
-    public ValidateOptionsResult Validate(string? name, ExpenseLoggerSettings options)
+    public ValidateOptionsResult Validate(string? name, SpreadsheetManagerSettings options)
     {
         var failures = new List<string>();
 

@@ -1,8 +1,8 @@
 ﻿if ((Split-Path -Leaf (Get-Location)) -eq "BudgetAutomation") {
-    Set-Location ExpenseLoggerApi
+    Set-Location SpreadsheetManagerApi
 }
 else {
-    Set-Location "..\ExpenseLoggerApi"
+    Set-Location "..\SpreadsheetManagerApi"
 }
 
 Write-Host "Starting build..."

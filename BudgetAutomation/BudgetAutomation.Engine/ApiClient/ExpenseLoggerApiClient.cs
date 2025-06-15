@@ -10,14 +10,14 @@ using SharedLibrary.Settings;
 
 namespace BudgetAutomation.Engine.ApiClient;
 
-public class ExpenseLoggerApiClient : IExpenseLoggerApiClient
+public class SpreadsheetManagerApiClient : ISpreadsheetManagerApiClient
 {
     private readonly HttpClient _httpClient;
-    private readonly ILogger<ExpenseLoggerApiClient> _logger;
+    private readonly ILogger<SpreadsheetManagerApiClient> _logger;
 
-    public ExpenseLoggerApiClient(HttpClient httpClient,
-        IOptions<ExpenseLoggerApiClientSettings> options,
-        ILogger<ExpenseLoggerApiClient> logger)
+    public SpreadsheetManagerApiClient(HttpClient httpClient,
+        IOptions<SpreadsheetManagerApiClientSettings> options,
+        ILogger<SpreadsheetManagerApiClient> logger)
     {
         _httpClient = httpClient;
         _logger = logger;

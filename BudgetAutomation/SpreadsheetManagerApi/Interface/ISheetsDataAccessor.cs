@@ -2,7 +2,7 @@
 using SharedLibrary.Dto;
 using SharedLibrary.Model;
 
-namespace ExpenseLoggerApi.Interface
+namespace SpreadsheetManagerApi.Interface
 {
     /// <summary>
     /// Defines operations for accessing and modifying data within a Google Sheet.

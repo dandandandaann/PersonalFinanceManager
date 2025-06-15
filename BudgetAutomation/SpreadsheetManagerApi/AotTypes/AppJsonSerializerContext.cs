@@ -2,7 +2,7 @@
 using Amazon.Lambda.APIGatewayEvents;
 using SharedLibrary.Dto;
 
-namespace ExpenseLoggerApi.AotTypes;
+namespace SpreadsheetManagerApi.AotTypes;
 
 [JsonSerializable(typeof(LogExpenseResponse))]
 [JsonSerializable(typeof(RemoveExpenseResponse))]

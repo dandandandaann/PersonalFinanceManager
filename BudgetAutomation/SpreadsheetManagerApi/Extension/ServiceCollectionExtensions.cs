@@ -1,14 +1,14 @@
 ﻿using System.Threading.RateLimiting;
 using Amazon.Lambda.Serialization.SystemTextJson;
-using ExpenseLoggerApi.AotTypes;
-using ExpenseLoggerApi.Interface;
-using ExpenseLoggerApi.Service;
+using SpreadsheetManagerApi.AotTypes;
+using SpreadsheetManagerApi.Interface;
+using SpreadsheetManagerApi.Service;
 using Google.Apis.Sheets.v4;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Settings;
 using SharedLibrary.Validator;
 
-namespace ExpenseLoggerApi.Extension;
+namespace SpreadsheetManagerApi.Extension;
 
 public static class ServiceCollectionExtensions
 {
@@ -16,8 +16,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddLogging(builder => builder.AddLambdaLogger());
 
-        services.Configure<ExpenseLoggerSettings>(config.GetSection(ExpenseLoggerSettings.Configuration));
-        services.AddSingleton<IValidateOptions<ExpenseLoggerSettings>, ExpenseLoggerSettingsValidator>();
+        services.Configure<SpreadsheetManagerSettings>(config.GetSection(SpreadsheetManagerSettings.Configuration));
+        services.AddSingleton<IValidateOptions<SpreadsheetManagerSettings>, SpreadsheetManagerSettingsValidator>();
 
         // TODO: fix Rate Limiting on lambda
         // Add Rate Limiting
@@ -26,7 +26,7 @@ public static class ServiceCollectionExtensions
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
             {
                 // Get settings via IOptions within the rate limiter setup
-                var settings = httpContext.RequestServices.GetRequiredService<IOptions<ExpenseLoggerSettings>>().Value;
+                var settings = httpContext.RequestServices.GetRequiredService<IOptions<SpreadsheetManagerSettings>>().Value;
 
                 if (!int.TryParse(settings.maxDailyRequest, out var rateLimit))
                 {
@@ -69,14 +69,14 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<SheetsService>(sp =>
         {
             var factory = sp.GetRequiredService<GoogleSheetsClientFactory>();
-            var settings = sp.GetRequiredService<IOptions<ExpenseLoggerSettings>>().Value;
+            var settings = sp.GetRequiredService<IOptions<SpreadsheetManagerSettings>>().Value;
 
             return factory.CreateSheetsService(settings.credentials);
         });
         services.AddSingleton<ISheetsDataAccessor, GoogleSheetsDataAccessor>();
         services.AddScoped<ExpenseLoggerService>(sp =>
         {
-            var settings = sp.GetRequiredService<IOptions<ExpenseLoggerSettings>>().Value;
+            var settings = sp.GetRequiredService<IOptions<SpreadsheetManagerSettings>>().Value;
 
             return new ExpenseLoggerService(
                 sp.GetRequiredService<ISheetsDataAccessor>(),

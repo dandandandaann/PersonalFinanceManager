@@ -1,6 +1,6 @@
 ﻿using System.Net;
-using ExpenseLoggerApi.Interface;
-using ExpenseLoggerApi.Misc;
+using SpreadsheetManagerApi.Interface;
+using SpreadsheetManagerApi.Misc;
 using Google;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
@@ -8,7 +8,7 @@ using SharedLibrary.Constants;
 using SharedLibrary.Dto;
 using SharedLibrary.Enum;
 
-namespace ExpenseLoggerApi.Service;
+namespace SpreadsheetManagerApi.Service;
 
 public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<GoogleSheetsDataAccessor> logger) : ISheetsDataAccessor
 {

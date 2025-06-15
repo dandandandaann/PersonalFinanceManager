@@ -1,4 +1,4 @@
-﻿namespace ExpenseLoggerApi.Misc;
+﻿namespace SpreadsheetManagerApi.Misc;
 
 public static class Utility
 {

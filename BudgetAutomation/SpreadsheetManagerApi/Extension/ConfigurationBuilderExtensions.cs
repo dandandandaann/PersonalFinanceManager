@@ -1,7 +1,7 @@
 ﻿using SharedLibrary.LocalTesting;
 using SharedLibrary.Settings;
 
-namespace ExpenseLoggerApi.Extension;
+namespace SpreadsheetManagerApi.Extension;
 
 public static class ConfigurationBuilderExtensions
 {
