@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+        <AWSProjectType>Lambda</AWSProjectType>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <PublishReadyToRun>true</PublishReadyToRun>
+        <UserSecretsId>1c668b0f-a8a8-4b41-9f04-b1323480dc4d</UserSecretsId>
+        <RootNamespace>SpreadsheetManagerApi</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Amazon.Lambda.Core" Version="2.5.1" />
+        <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.7.1" />
+        <PackageReference Include="Amazon.Lambda.Annotations" Version="1.6.1" />
+        <PackageReference Include="Amazon.Extensions.Configuration.SystemsManager" Version="7.0.0" />
+        <PackageReference Include="Amazon.Lambda.AspNetCoreServer.Hosting" Version="1.8.0" />
+        <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
+        <PackageReference Include="Google.Apis.Sheets.v4" Version="1.69.0.3694" />
+        <PackageReference Include="Microsoft.AspNetCore.RateLimiting" Version="7.0.0-rc.2.22476.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <TrimmerRootAssembly Include="Newtonsoft.Json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="SpreadsheetManagerApi.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\SharedLibrary.Lambda\SharedLibrary.Lambda.csproj" />
+        <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
+    </ItemGroup>
+
+</Project>

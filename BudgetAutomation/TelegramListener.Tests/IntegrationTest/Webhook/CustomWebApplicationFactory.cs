@@ -32,7 +32,7 @@
 //                 {
 //                     ["BotConfiguration:WebhookToken"] = TestWebhookToken,
 //                     ["BotConfiguration:Token"] = "dummy-telegram-api-token",
-//                     ["ExpenseLoggerApi:Url"] = "http://localhost:9999"
+//                     ["SpreadsheetManagerApi:Url"] = "http://localhost:9999"
 //                 });
 //             });
 //

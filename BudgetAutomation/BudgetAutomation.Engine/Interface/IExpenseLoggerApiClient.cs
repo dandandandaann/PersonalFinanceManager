@@ -4,7 +4,7 @@ using SharedLibrary.Model;
 namespace BudgetAutomation.Engine.Interface;
 
 
-public interface IExpenseLoggerApiClient
+public interface ISpreadsheetManagerApiClient
 {
     Task<LogExpenseResponse> LogExpenseAsync(string spreadsheetId, Expense expense, CancellationToken cancellationToken = default);
     Task<SpreadsheetValidationResponse> ValidateSpreadsheet(string spreadsheetId, CancellationToken cancellationToken = default);

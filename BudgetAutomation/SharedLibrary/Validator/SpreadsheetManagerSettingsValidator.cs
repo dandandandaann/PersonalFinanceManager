@@ -3,9 +3,9 @@ using SharedLibrary.Settings;
 
 namespace SharedLibrary.Validator;
 
-public class SpreadsheetManagerApiClientSettingsValidator : IValidateOptions<SpreadsheetManagerApiClientSettings>
+public class SpreadsheetManagerSettingsValidator : IValidateOptions<SpreadsheetManagerApiSettings>
 {
-    public ValidateOptionsResult Validate(string? name, SpreadsheetManagerApiClientSettings options)
+    public ValidateOptionsResult Validate(string? name, SpreadsheetManagerApiSettings options)
     {
         var failures = new List<string>();
 
@@ -15,14 +15,13 @@ public class SpreadsheetManagerApiClientSettingsValidator : IValidateOptions<Spr
             return ValidateOptionsResult.Fail(failures);
         }
 
-        if (string.IsNullOrWhiteSpace(options.Key))
+        if (string.IsNullOrWhiteSpace(options.googleApiKey))
         {
-            failures.Add($"{nameof(options.Key)} is missing or empty.");
+            failures.Add($"{nameof(options.googleApiKey)} is missing or empty.");
         }
-
-        if (string.IsNullOrWhiteSpace(options.Url))
+        if (string.IsNullOrWhiteSpace(options.credentials))
         {
-            failures.Add($"{nameof(options.Url)} is missing or empty.");
+            failures.Add($"{nameof(options.credentials)} is missing or empty.");
         }
 
         return failures.Count > 0 ? ValidateOptionsResult.Fail(failures) : ValidateOptionsResult.Success;

@@ -48,8 +48,8 @@ public static class ServiceCollectionExtensions
         services.Configure<TelegramBotSettings>(settingsSection);
         services.AddSingleton<IValidateOptions<TelegramBotSettings>, TelegramBotSettingsValidator>();
 
-        services.Configure<ExpenseLoggerApiClientSettings>(config.GetSection(ExpenseLoggerApiClientSettings.Configuration));
-        services.AddSingleton<IValidateOptions<ExpenseLoggerApiClientSettings>, ExpenseLoggerApiClientSettingsValidator>();
+        services.Configure<SpreadsheetManagerApiClientSettings>(config.GetSection(SpreadsheetManagerApiClientSettings.Configuration));
+        services.AddSingleton<IValidateOptions<SpreadsheetManagerApiClientSettings>, SpreadsheetManagerApiClientSettingsValidator>();
 
         services.Configure<UserApiClientSettings>(config.GetSection(UserApiClientSettings.Configuration));
         services.AddSingleton<IValidateOptions<UserApiClientSettings>, UserApiClientSettingsValidator>();
@@ -64,7 +64,7 @@ public static class ServiceCollectionExtensions
             });
 
         // Register Api clients
-        services.AddHttpClient<IExpenseLoggerApiClient, ExpenseLoggerApiClient>();
+        services.AddHttpClient<ISpreadsheetManagerApiClient, SpreadsheetManagerApiClient>();
         services.AddHttpClient<IUserApiClient, UserApiClient>();
 
         // Register services

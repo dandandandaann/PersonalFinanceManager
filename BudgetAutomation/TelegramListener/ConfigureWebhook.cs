@@ -9,7 +9,6 @@ namespace TelegramListener;
 
 public class ConfigureWebhook(
     IServiceProvider serviceProvider,
-    IOptions<TelegramListenerSettings> listenerOptions,
     IOptions<TelegramBotSettings> telegramBotOptions)
 {
     public async Task SetupWebhookAsync(string apiDomain, ILambdaLogger logger,
