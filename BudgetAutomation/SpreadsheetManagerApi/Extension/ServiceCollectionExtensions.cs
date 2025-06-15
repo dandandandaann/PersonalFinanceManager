@@ -16,8 +16,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddLogging(builder => builder.AddLambdaLogger());
 
-        services.Configure<SpreadsheetManagerSettings>(config.GetSection(SpreadsheetManagerSettings.Configuration));
-        services.AddSingleton<IValidateOptions<SpreadsheetManagerSettings>, SpreadsheetManagerSettingsValidator>();
+        services.Configure<SpreadsheetManagerApiSettings>(config.GetSection(SpreadsheetManagerApiSettings.Configuration));
+        services.AddSingleton<IValidateOptions<SpreadsheetManagerApiSettings>, SpreadsheetManagerSettingsValidator>();
 
         // TODO: fix Rate Limiting on lambda
         // Add Rate Limiting
@@ -26,7 +26,7 @@ public static class ServiceCollectionExtensions
             options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
             {
                 // Get settings via IOptions within the rate limiter setup
-                var settings = httpContext.RequestServices.GetRequiredService<IOptions<SpreadsheetManagerSettings>>().Value;
+                var settings = httpContext.RequestServices.GetRequiredService<IOptions<SpreadsheetManagerApiSettings>>().Value;
 
                 if (!int.TryParse(settings.maxDailyRequest, out var rateLimit))
                 {
@@ -69,21 +69,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<SheetsService>(sp =>
         {
             var factory = sp.GetRequiredService<GoogleSheetsClientFactory>();
-            var settings = sp.GetRequiredService<IOptions<SpreadsheetManagerSettings>>().Value;
+            var settings = sp.GetRequiredService<IOptions<SpreadsheetManagerApiSettings>>().Value;
 
             return factory.CreateSheetsService(settings.credentials);
         });
         services.AddSingleton<ISheetsDataAccessor, GoogleSheetsDataAccessor>();
-        services.AddScoped<ExpenseLoggerService>(sp =>
-        {
-            var settings = sp.GetRequiredService<IOptions<SpreadsheetManagerSettings>>().Value;
-
-            return new ExpenseLoggerService(
-                sp.GetRequiredService<ISheetsDataAccessor>(),
-                sp.GetRequiredService<ICategoryService>(),
-                sp.GetRequiredService<ILogger<ExpenseLoggerService>>()
-            );
-        });
+        services.AddScoped<ExpenseLoggerService>();
 
         return services;
     }

@@ -3,9 +3,9 @@ using SharedLibrary.Settings;
 
 namespace SharedLibrary.Validator;
 
-public class SpreadsheetManagerSettingsValidator : IValidateOptions<SpreadsheetManagerSettings>
+public class SpreadsheetManagerSettingsValidator : IValidateOptions<SpreadsheetManagerApiSettings>
 {
-    public ValidateOptionsResult Validate(string? name, SpreadsheetManagerSettings options)
+    public ValidateOptionsResult Validate(string? name, SpreadsheetManagerApiSettings options)
     {
         var failures = new List<string>();
 

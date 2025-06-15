@@ -1,10 +1,8 @@
-﻿using SharedLibrary.Model;
+﻿namespace SharedLibrary.Settings;
 
-namespace SharedLibrary.Settings;
-
-public class SpreadsheetManagerSettings
+public class SpreadsheetManagerApiSettings
 {
-    public const string Configuration = "SpreadsheetManager";
+    public const string Configuration = "SpreadsheetManagerApi";
 
     public string credentials { get; set; } = string.Empty;
     public string googleApiKey { get; set; } = string.Empty;

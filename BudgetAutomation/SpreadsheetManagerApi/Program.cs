@@ -19,7 +19,7 @@ var app = builder.Build();
 
 app.Use(async (context, next) =>
 {
-    var settings = context.RequestServices.GetRequiredService<IOptions<SpreadsheetManagerSettings>>().Value;
+    var settings = context.RequestServices.GetRequiredService<IOptions<SpreadsheetManagerApiSettings>>().Value;
 
     if (!context.Request.Headers.TryGetValue("X-Api-Key", out var extractedApiKey) || extractedApiKey != settings.googleApiKey)
     {
