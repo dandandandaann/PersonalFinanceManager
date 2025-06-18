@@ -25,6 +25,7 @@ public class Functions
     }
 
     [LambdaFunction(
+        ResourceName = "Default",
         Policies = "AWSLambdaBasicExecutionRole, " +
                    "arn:aws:iam::795287297286:policy/Configurations_Read",
         MemorySize = 128,
@@ -36,6 +37,7 @@ public class Functions
     }
 
     [LambdaFunction(
+        ResourceName = "LogExpense",
         Policies = "AWSLambdaBasicExecutionRole, " +
                    "arn:aws:iam::aws:policy/AmazonSQSReadOnlyAccess, " +
                    "arn:aws:iam::795287297286:policy/Configurations_Read",
@@ -92,6 +94,7 @@ public class Functions
     }
 
     [LambdaFunction(
+        ResourceName = "ValidateSpreadsheet",
         Policies = "AWSLambdaBasicExecutionRole, " +
                    "arn:aws:iam::795287297286:policy/Configurations_Read",
         MemorySize = 128,
@@ -143,6 +146,7 @@ public class Functions
     }
 
     [LambdaFunction(
+        ResourceName = "RemoveLastExpense",
         Policies = "AWSLambdaBasicExecutionRole, " +
                    "arn:aws:iam::795287297286:policy/Configurations_Read",
         MemorySize = 128,
@@ -188,6 +192,7 @@ public class Functions
     }
 
     [LambdaFunction(
+        ResourceName = "GetLastExpense",
         Policies = "AWSLambdaBasicExecutionRole, " +
                    "arn:aws:iam::795287297286:policy/Configurations_Read",
         MemorySize = 128,

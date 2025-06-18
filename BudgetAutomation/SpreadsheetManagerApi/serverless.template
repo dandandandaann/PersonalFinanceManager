@@ -3,7 +3,7 @@
   "Transform": "AWS::Serverless-2016-10-31",
   "Description": "This template is partially managed by Amazon.Lambda.Annotations (v1.6.1.0).",
   "Resources": {
-    "SpreadsheetManagerApiFunctionsDefaultGenerated": {
+    "Default": {
       "Type": "AWS::Serverless::Function",
       "Metadata": {
         "Tool": "Amazon.Lambda.Annotations",
@@ -39,7 +39,7 @@
         }
       }
     },
-    "SpreadsheetManagerApiFunctionsLogExpenseAsyncGenerated": {
+    "LogExpense": {
       "Type": "AWS::Serverless::Function",
       "Metadata": {
         "Tool": "Amazon.Lambda.Annotations",
@@ -76,7 +76,7 @@
         }
       }
     },
-    "SpreadsheetManagerApiFunctionsValidateSpreadsheetAsyncGenerated": {
+    "ValidateSpreadsheet": {
       "Type": "AWS::Serverless::Function",
       "Metadata": {
         "Tool": "Amazon.Lambda.Annotations",
@@ -112,7 +112,7 @@
         }
       }
     },
-    "SpreadsheetManagerApiFunctionsRemoveLastExpenseAsyncGenerated": {
+    "RemoveLastExpense": {
       "Type": "AWS::Serverless::Function",
       "Metadata": {
         "Tool": "Amazon.Lambda.Annotations",
@@ -148,7 +148,7 @@
         }
       }
     },
-    "SpreadsheetManagerApiFunctionsGetLastExpenseAsyncGenerated": {
+    "GetLastExpense": {
       "Type": "AWS::Serverless::Function",
       "Metadata": {
         "Tool": "Amazon.Lambda.Annotations",
@@ -182,6 +182,14 @@
             }
           }
         }
+      }
+    }
+  },
+  "Outputs": {
+    "ApiURL": {
+      "Description": "API endpoint URL for Prod environment",
+      "Value": {
+        "Fn::Sub": "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/"
       }
     }
   }
