@@ -22,61 +22,33 @@ namespace BudgetAutomation.Engine.Handler.Command
     {
         public string CommandName => StaticCommandName;
 
-        public static string StaticCommandName => "spreadsheetinfo";
+        public static string StaticCommandName => "spreadsheeturl";
 
         public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
         {
             UserManagerService.EnsureUserSignedIn();
 
-            if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
-            {
-                return await sender.ReplyAsync(message.Chat,
-                    $"Por favor configure sua planilha com o commando /{PlanilhaCommandAlias.StaticCommandName} " +
-                    $"antes de usar o comando /{CommandName}.",
-                    cancellationToken: cancellationToken);
-            }
-
             var chat = message.Chat;
-
-            ArgumentNullException.ThrowIfNull(message.Text);
 
             var spreadsheetId = UserManagerService.Configuration.SpreadsheetId;
 
             if (string.IsNullOrWhiteSpace(spreadsheetId))
             {
                 return await sender.ReplyAsync(chat,
-                    "Você ainda não configurou sua planilha. Use o comando /planilha primeiro.",
-                    "User attempted to undo without configuring a spreadsheet.",
-                    logLevel: LogLevel.Warning,
-                    cancellationToken: cancellationToken);
+                "Você ainda não configurou uma planilha.\n" +
+                $"Use o comando /{SpreadsheetCommand.StaticCommandName} para configurar uma.",
+                "User requested spreadsheet info without configuring one.",
+                cancellationToken: cancellationToken);
             }
 
-            var response =
-                await spreadsheetManagerApiClient.ReturnSpreadsheet(UserManagerService.Configuration.SpreadsheetId, cancellationToken);
+            var spreadsheetUrl = $"https://docs.google.com/spreadsheets/d/{spreadsheetId}";
 
-            if (!response.Success)
-            {
-                switch (response.ErrorCode)
-                {
-                    case ErrorCodeEnum.ResourceNotFound:
-                        return await sender.ReplyAsync(chat,
-                            "O comando falhou porque a planilha não existem." +
-                            "Tente novamente.",
-                            "User log failed spreadsheet was not found.",
-                            logLevel: LogLevel.Warning,
-                            cancellationToken: cancellationToken);
-                    default:
-                        return await sender.ReplyAsync(chat,
-                            "O comando falhou. Tente novamente.",
-                            "User log failed due to API error.",
-                            logLevel: LogLevel.Warning,
-                            cancellationToken: cancellationToken);
-                }
-            }
+            ArgumentNullException.ThrowIfNull(message.Text);
 
             return await sender.ReplyAsync(chat,
-                $"Planilha:{response.SpreadsheetId}",
-                cancellationToken: cancellationToken);
+               $"Sua planilha configurada é:\n{spreadsheetUrl}",
+               "Spreadsheet info returned successfully.",
+               cancellationToken: cancellationToken);
         }
 
     public Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken)

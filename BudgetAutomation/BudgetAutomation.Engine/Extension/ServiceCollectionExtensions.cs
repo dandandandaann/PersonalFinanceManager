@@ -87,6 +87,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommand, SpreadsheetCommand>();
         services.AddScoped<ICommand, UndoCommand>();
         services.AddScoped<ICommand, LastItemCommand>();
+        services.AddScoped<ICommand, ReturnSpreadsheetCommand>();
 
         // Register commands alias
         services.AddScoped<CommandAliasBase, RegistrarCommandAlias>();
