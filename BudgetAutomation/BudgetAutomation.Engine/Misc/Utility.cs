@@ -10,7 +10,8 @@ public static class Utility
     {
         arguments = "";
         var commandWithSlash = "/" + commandName;
-        var prefixLength = -1;
+        var prefixLength = 0;
+        var startsWithCommand = true;
 
         // Check if it starts with "/command" (case-insensitive)
         if (text.StartsWith(commandWithSlash, StringComparison.OrdinalIgnoreCase))
@@ -24,27 +25,30 @@ public static class Utility
         }
         else
         {
-            // Doesn't start with the command at all
-            return false;
+            // Doesn't start with the command, so it's only arguments
+            startsWithCommand = false;
+            arguments = text;
         }
 
-        // The message is exactly the command without arguments (e.g., "/log" or "log")
-        if (text.Length == prefixLength)
+        if (startsWithCommand)
         {
-            arguments = string.Empty;
-            return true;
+            // The message is exactly the command without arguments (e.g., "/log" or "log")
+            if (text.Length == prefixLength)
+            {
+                arguments = string.Empty;
+                return true;
+            }
+
+            // This is not the command (e.g. "/logging" is not "/log")
+            if (text[prefixLength] != ' ')
+                return false;
+
+            arguments = text.Substring(prefixLength + 1).Trim();
         }
-
-        // This is not the command (e.g. "/logging" is not "/log")
-        if (text[prefixLength] != ' ')
-            return false;
-
-        arguments = text.Substring(prefixLength + 1).Trim();
 
         if (validationRegex != null)
             return validationRegex().IsMatch(arguments);
 
         return true;
-
     }
 }

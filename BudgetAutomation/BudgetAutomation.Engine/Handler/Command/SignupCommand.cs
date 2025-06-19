@@ -43,20 +43,7 @@ public partial class SignupCommand(
 
         try
         {
-            Utility.TryExtractCommandArguments(message.Text, CommandName, EmailRegex, out var signupArguments);
-
-            if (string.IsNullOrWhiteSpace(signupArguments))
-            {
-                await chatStateService.SetStateAsync(message.Chat.Id, ChatStateEnum.AwaitingArguments, CommandName);
-                
-                return await sender.ReplyAsync(message.Chat,
-                    "Por favor digite seu e-mail para o cadastro.",
-                    $"User tried signing up with invalid arguments: '{signupArguments}'.",
-                    logLevel: LogLevel.Information,
-                    cancellationToken: cancellationToken);
-            }
-
-            return await SignupAsync(message, signupArguments, cancellationToken);
+            return await SignupAsync(message, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -72,10 +59,22 @@ public partial class SignupCommand(
         }
     }
 
-    private async Task<Message> SignupAsync(Message message, string signupArguments, CancellationToken cancellationToken)
+    private async Task<Message> SignupAsync(Message message, CancellationToken cancellationToken)
     {
+        if (!Utility.TryExtractCommandArguments(message.Text, CommandName, EmailRegex, out var signupArguments) ||
+            string.IsNullOrWhiteSpace(signupArguments))
+        {
+            await chatStateService.SetStateAsync(message.Chat.Id, ChatStateEnum.AwaitingArguments, CommandName);
+
+            return await sender.ReplyAsync(message.Chat,
+                "Por favor digite seu e-mail para o cadastro.",
+                $"User tried signing up with invalid arguments: '{signupArguments}'.",
+                logLevel: LogLevel.Information,
+                cancellationToken: cancellationToken);
+        }
+
         var response = await userApiClient.SignupUserAsync(
-            message.From.Id, message.From.Username, signupArguments, cancellationToken);
+            message.From.Id, email: signupArguments, username: message.From.Username, cancellationToken);
 
         if (!response.Success)
         {
@@ -114,7 +113,7 @@ public partial class SignupCommand(
 
             if (chatState.State == ChatStateEnum.AwaitingArguments.ToString())
             {
-                return await SignupAsync(message, message.Text, cancellationToken);
+                return await SignupAsync(message, cancellationToken);
             }
         }
         catch (Exception ex)
