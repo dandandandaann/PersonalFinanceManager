@@ -94,6 +94,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CommandAliasBase, PlanilhaCommandAlias>();
         services.AddScoped<CommandAliasBase, CadastrarCommandAlias>();
         services.AddScoped<CommandAliasBase, CancelarCommandAlias>();
+        services.AddScoped<CommandAliasBase, PlanilhaUrlCommandAlias>();
 
         // Register mappers
         services.AddSingleton<ReplyMarkupMapper>();
