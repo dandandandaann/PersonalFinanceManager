@@ -1,8 +1,10 @@
 ﻿using BudgetAutomation.Engine.Mapper;
 using Telegram.Bot;
-using SharedLibrary.Telegram;
 using SharedLibrary.Telegram.Enums;
 using SharedLibrary.Telegram.Types.ReplyMarkups;
+using Chat = SharedLibrary.Telegram.Chat;
+using Message = SharedLibrary.Telegram.Message;
+using MessageEntity = SharedLibrary.Telegram.MessageEntity;
 
 namespace BudgetAutomation.Engine.Service;
 
@@ -53,7 +55,7 @@ public class SenderGateway(ITelegramBotClient botClient, ReplyMarkupMapper reply
             parseMode: System.Enum.Parse<Telegram.Bot.Types.Enums.ParseMode>(parseMode.ToString()),
             // replyParameters: replyParameters,
             replyMarkup: replyMarkup == null ? null : replyMarkupMapper.Map(replyMarkup),
-            // linkPreviewOptions: linkPreviewOptions,
+            // linkPreviewOptions: new LinkPreviewOptions {IsDisabled = true},
             messageThreadId: messageThreadId,
             // entities: entities,
             disableNotification: disableNotification,

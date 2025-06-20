@@ -2,6 +2,9 @@
 using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Model;
 using SharedLibrary.Telegram;
+using Telegram.Bot.Types.Enums;
+using MessageEntity = Telegram.Bot.Types.MessageEntity;
+using MessageEntityType = SharedLibrary.Telegram.Enums.MessageEntityType;
 
 namespace BudgetAutomation.Engine.Handler.Command.Alias;
 
@@ -28,10 +31,18 @@ public abstract class CommandAliasBase(IEnumerable<ICommand> commandImplementati
     {
         ArgumentException.ThrowIfNullOrEmpty(message.Text);
 
-        message.Entities = null;
+        message.Entities =
+        [
+            new SharedLibrary.Telegram.MessageEntity
+            {
+                Offset = 0,
+                Length = TargetCommandName.Length + 1,
+                Type = MessageEntityType.BotCommand
+            }
+        ];
 
         var pattern = new Regex($@"^(?:/?){CommandName}\b");
-        message.Text = pattern.Replace(message.Text, TargetCommandName);
+        message.Text = pattern.Replace(message.Text, $"/{TargetCommandName}");
 
         return message;
     }
@@ -44,6 +55,7 @@ public abstract class CommandAliasBase(IEnumerable<ICommand> commandImplementati
         {
             name = name.Substring(0, name.Length - classSuffix.Length);
         }
+
         return name.ToLowerInvariant();
     }
 }

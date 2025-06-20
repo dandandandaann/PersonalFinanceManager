@@ -1,11 +1,12 @@
 ﻿using System.Text.RegularExpressions;
+using SharedLibrary.Constants;
 
 namespace BudgetAutomation.Engine.Misc;
 
 public static class Utility
 {
     public static bool TryExtractCommandArguments(
-        string text, string commandName, Func<Regex>? validationRegex, out string arguments
+        string text, string commandName, out string arguments, Func<Regex>? validationRegex = null
     )
     {
         arguments = "";
@@ -50,5 +51,20 @@ public static class Utility
             return validationRegex().IsMatch(arguments);
 
         return true;
+    }
+
+    public static string GetGreetingByTimeOfDay()
+    {
+        var utcNow = DateTime.UtcNow;
+        var offset = TimeSpan.FromHours(SpreadsheetConstants.DateTimeZone);
+        var localTime = utcNow + offset;
+        var hour = localTime.Hour;
+
+        return hour switch
+        {
+            >= 6 and < 12 => "Bom dia",
+            >= 12 and < 18 => "Boa tarde",
+            _ => "Boa noite"
+        };
     }
 }

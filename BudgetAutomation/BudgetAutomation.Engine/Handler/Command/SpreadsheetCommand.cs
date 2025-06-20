@@ -28,7 +28,7 @@ public partial class SpreadsheetCommand(
 
         try
         {
-            Utility.TryExtractCommandArguments(message.Text, CommandName, null, out var arguments);
+            Utility.TryExtractCommandArguments(message.Text, CommandName, out var arguments);
 
             if (string.IsNullOrWhiteSpace(arguments))
             {
@@ -64,8 +64,6 @@ public partial class SpreadsheetCommand(
             UserManagerService.EnsureUserSignedIn();
 
             ArgumentException.ThrowIfNullOrEmpty(message.Text);
-
-            await chatStateService.ClearState(message.Chat.Id);
 
             if (chatState.State == ChatStateEnum.AwaitingArguments.ToString())
             {
@@ -155,6 +153,8 @@ public partial class SpreadsheetCommand(
                 logLevel: LogLevel.Warning,
                 cancellationToken: cancellationToken);
         }
+
+        await chatStateService.ClearState(messageChat.Id);
 
         return await sender.ReplyAsync(messageChat,
             "Configuração da planilha realizada com sucesso!\n" +

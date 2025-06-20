@@ -54,7 +54,7 @@ public partial class SignupCommand(
 
     private async Task<Message> SignupAsync(Message message, CancellationToken cancellationToken)
     {
-        if (!Utility.TryExtractCommandArguments(message.Text, CommandName, EmailRegex, out var signupArguments) ||
+        if (!Utility.TryExtractCommandArguments(message.Text, CommandName, out var signupArguments, EmailRegex) ||
             string.IsNullOrWhiteSpace(signupArguments))
         {
             await chatStateService.SetStateAsync(message.Chat.Id, ChatStateEnum.AwaitingArguments, CommandName);
@@ -69,7 +69,8 @@ public partial class SignupCommand(
         // Send an initial reply indicating the process has started
         await sender.ReplyAsync(
             message.Chat,
-            "Tentando fazer seu cadastro...", "Processo de cadastro iniciado.",
+            "Tentando fazer seu cadastro...",
+            "Starting signup process.",
             cancellationToken: cancellationToken);
 
 
@@ -87,14 +88,17 @@ public partial class SignupCommand(
                 cancellationToken: cancellationToken);
         }
 
+        await sender.ReplyAsync(
+            message.Chat,
+            "Cadastro realizado com sucesso.", "Signup successful.",
+            cancellationToken: cancellationToken);
+
         var welcomeMessage = new StringBuilder();
-        welcomeMessage.AppendLine("Cadastro realizado com sucesso.");
-        welcomeMessage.AppendLine();
         welcomeMessage.Append("<b>");
         welcomeMessage.Append(response.User?.Username == null ? "Bem vindo(a)!" : $"Bem vindo(a), {response.User.Username}!");
         welcomeMessage.AppendLine("</b>");
-        welcomeMessage.AppendLine($"Por favor digite /{StartCommand.StaticCommandName} para ver os comandos disponíveis " +
-                                  $"ou /{PlanilhaCommandAlias.StaticCommandName} para configurar sua planilha.");
+        welcomeMessage.AppendLine(
+            $"Clique em /{StartCommand.StaticCommandName} ou digite no chat para ver os comandos disponíveis.");
 
         return await sender.ReplyAsync(message.Chat,
             welcomeMessage.ToString(),

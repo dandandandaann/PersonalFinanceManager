@@ -45,7 +45,7 @@ public partial class LogCommand(
             await chatStateService.SetStateAsync(message.Chat.Id, ChatStateEnum.AwaitingArguments, CommandName);
 
             return await sender.ReplyAsync(message.Chat,
-                "Insira os detalhes da sua despesa. Exemplo: 'Almoço 5,50 Comida'",
+                "Insira os detalhes da sua despesa. Exemplo: 'Almoço 15,90 Restaurante'",
                 $"Chat state: {ChatStateEnum.AwaitingArguments}.",
                 cancellationToken: cancellationToken);
         }
@@ -79,8 +79,7 @@ public partial class LogCommand(
         if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
         {
             return await sender.ReplyAsync(chat,
-                $"Por favor configure sua planilha com o commando /{SpreadsheetCommand.StaticCommandName} antes de " +
-                $"usar o comando /{CommandName}.",
+                $"Por favor configure sua planilha com o commando /{SpreadsheetCommand.StaticCommandName} antes de registrar despesas.",
                 cancellationToken: cancellationToken);
         }
 

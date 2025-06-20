@@ -29,7 +29,7 @@ public partial class UtilityTests
         // Arrange
 
         // Act
-        var result = Utility.TryExtractCommandArguments(text, commandName, regex, out _);
+        var result = Utility.TryExtractCommandArguments(text, commandName, out _, regex);
 
         // Assert
         result.ShouldBeTrue();
