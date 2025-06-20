@@ -9,7 +9,7 @@ namespace BudgetAutomation.Engine.Handler.Command;
 
 public partial class UndoCommand(
     ISenderGateway sender,
-    ISpreadsheetManagerApiClient SpreadsheetManagerApiClient) : ICommand
+    ISpreadsheetManagerApiClient spreadsheetManagerApiClient) : ICommand
 {
     public string CommandName => StaticCommandName;
     public static string StaticCommandName => "undo";
@@ -42,7 +42,7 @@ public partial class UndoCommand(
         }
 
         var response =
-            await SpreadsheetManagerApiClient.RemoveLastExpenseAsync(UserManagerService.Configuration.SpreadsheetId,
+            await spreadsheetManagerApiClient.RemoveLastExpenseAsync(UserManagerService.Configuration.SpreadsheetId,
                 cancellationToken);
 
         if (!response.Success)

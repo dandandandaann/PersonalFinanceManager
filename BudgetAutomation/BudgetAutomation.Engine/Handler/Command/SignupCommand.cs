@@ -25,15 +25,8 @@ public partial class SignupCommand(
         ArgumentNullException.ThrowIfNull(message.From);
         ArgumentNullException.ThrowIfNull(message.Text);
 
-        // Send an initial reply indicating the process has started
-        var replyAttempting = sender.ReplyAsync(
-            message.Chat,
-            "Tentando fazer seu cadastro...", "Processo de cadastro iniciado.",
-            cancellationToken: cancellationToken);
-
         if (UserManagerService.UserSignedIn)
         {
-            await replyAttempting;
             return await sender.ReplyAsync(message.Chat,
                 "O cadastro falhou. Você já está logado no sistema.",
                 "User tried to signup failed but is already signed in).",
@@ -72,6 +65,13 @@ public partial class SignupCommand(
                 logLevel: LogLevel.Information,
                 cancellationToken: cancellationToken);
         }
+
+        // Send an initial reply indicating the process has started
+        await sender.ReplyAsync(
+            message.Chat,
+            "Tentando fazer seu cadastro...", "Processo de cadastro iniciado.",
+            cancellationToken: cancellationToken);
+
 
         var response = await userApiClient.SignupUserAsync(
             message.From.Id, email: signupArguments, username: message.From.Username, cancellationToken);

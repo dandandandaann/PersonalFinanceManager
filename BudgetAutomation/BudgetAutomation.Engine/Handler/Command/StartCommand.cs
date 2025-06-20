@@ -20,6 +20,8 @@ public class StartCommand(ISenderGateway sender) : ICommand
 
         if (!UserManagerService.UserSignedIn)
         {
+            startMessage = "";
+
             var button = InlineKeyboardButton.WithCallbackData("👤 Cadastrar no sistema", $"/{SignupCommand.StaticCommandName}");
 
             keyboardRows.Add([button]);
