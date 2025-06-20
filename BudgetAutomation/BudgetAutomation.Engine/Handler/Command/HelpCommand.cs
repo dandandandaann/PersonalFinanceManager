@@ -21,7 +21,11 @@ public class HelpCommand(ISenderGateway sender) : ICommand
         SpreadsheetTemplateUrl,
         SpreadsheetCopy,
         SpreadsheetShare,
-        SpreadsheetConfiguration
+        SpreadsheetConfiguration,
+        Commands,
+        About,
+        Contact,
+        ReportProblem,
     }
 
     public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
@@ -39,24 +43,35 @@ public class HelpCommand(ISenderGateway sender) : ICommand
             if (!UserManagerService.UserSignedIn)
             {
                 // TODO: add more help options
-                var button = InlineKeyboardButton.WithCallbackData("❓ Ajuda", $"/{HelpCommand.StaticCommandName}");
-
-                keyboardRows.Add([button]);
+                // var button = Utility.Button("❓ Ajuda", $"/{HelpCommand.StaticCommandName}");
+                //
+                // keyboardRows.Add([button]);
             }
             else if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
             {
-                var spreadsheetTemplateUrl = InlineKeyboardButton.WithCallbackData("Link do template",
-                    $"/{CommandName} {HelpArgumentEnum.SpreadsheetTemplateUrl}");
-                var spreadsheetCopy = InlineKeyboardButton.WithCallbackData("Copiar a planilha",
-                    $"/{CommandName} {HelpArgumentEnum.SpreadsheetCopy}");
-                var spreadsheetShare = InlineKeyboardButton.WithCallbackData("Compartilhar a planilha",
-                    $"/{CommandName} {HelpArgumentEnum.SpreadsheetShare}");
+                var spreadsheetTemplateUrl = Utility.Button("Link do template", CommandName,
+                    HelpArgumentEnum.SpreadsheetTemplateUrl);
+                var spreadsheetCopy = Utility.Button("Copiar a planilha", CommandName,
+                    HelpArgumentEnum.SpreadsheetCopy);
+                var spreadsheetShare = Utility.Button("Compartilhar a planilha", CommandName,
+                    HelpArgumentEnum.SpreadsheetShare);
 
                 keyboardRows.AddRange([[spreadsheetTemplateUrl], [spreadsheetCopy], [spreadsheetShare]]);
             }
+            else
+            {
+                var contactButton = Utility.Button("Contato", CommandName, HelpArgumentEnum.Contact);
+                var reportProblemButton = Utility.Button("Reportar um problema", CommandName, HelpArgumentEnum.ReportProblem);
 
-            // var startButton = InlineKeyboardButton.WithCallbackData("🔙 Menu anterior", $"/{StartCommand.StaticCommandName}");
-            // keyboardRows.Add([startButton]);
+                keyboardRows.AddRange([
+                    [contactButton],
+                    [reportProblemButton]
+                ]);
+            }
+
+            var commandsButton = Utility.Button("Comandos", CommandName, HelpArgumentEnum.Commands);
+            var aboutButton = Utility.Button("Sobre", CommandName, HelpArgumentEnum.About);
+            keyboardRows.AddRange([[commandsButton], [aboutButton]]);
 
             var inlineKeyboard = new InlineKeyboardMarkup(keyboardRows);
 
@@ -111,6 +126,28 @@ public class HelpCommand(ISenderGateway sender) : ICommand
                 break;
             case HelpArgumentEnum.SpreadsheetConfiguration:
                 helpMessage.Append("TODO: essa opção deveria mandar as opções de configuração de planilha.");
+                break;
+            case HelpArgumentEnum.Commands:
+                parseMode = ParseMode.Html;
+                helpMessage.AppendLine("<b>Comandos:</b>");
+                helpMessage.AppendLine();
+                helpMessage.AppendLine($"Comandos no Telegram são mensagens que começam com /, " +
+                                       $"como por exemplo o /{StartCommand.StaticCommandName}. " +
+                                       $"Eles são usados para enviar instruções específicas para bots como o {BotConstants.Name}.");
+                helpMessage.AppendLine("Você pode executar comandos de 3 maneiras:");
+                helpMessage.AppendLine("<b>•</b> Escrevendo o comando diretamente no chat");
+                helpMessage.AppendLine($"<b>•</b> Clicando no comando que já está escrito -> /{AjudaCommandAlias.StaticCommandName}");
+                helpMessage.AppendLine("<b>•</b> Clicando em algum botão das mensagens que o Bot te enviou");
+                break;
+            case HelpArgumentEnum.About:
+                helpMessage.AppendLine("Este sistema ajuda você a gerenciar suas finanças pessoais de forma simples e integrada ao Google Sheets.");
+                helpMessage.AppendLine($"Desenvolvido por {BotConstants.Creator}.");
+                break;
+            case HelpArgumentEnum.Contact:
+                helpMessage.AppendLine($"Contato do Telegram: {BotConstants.Creator}.");
+                break;
+            case HelpArgumentEnum.ReportProblem:
+                helpMessage.AppendLine($"Se você encontrou algum problema, por favor, entre em contato pelo Telegram: {BotConstants.Creator} e descreva o problema encontrado.");
                 break;
             default:
                 throw new NotImplementedException($"{nameof(HelpArgumentEnum)} option {helpArg} not implemented.");

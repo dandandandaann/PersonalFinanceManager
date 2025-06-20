@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using SharedLibrary.Constants;
+using SharedLibrary.Telegram.Types.ReplyMarkups;
 
 namespace BudgetAutomation.Engine.Misc;
 
@@ -66,5 +67,10 @@ public static class Utility
             >= 12 and < 18 => "Boa tarde",
             _ => "Boa noite"
         };
+    }
+
+    public static InlineKeyboardButton Button(string text, string command, object? argument = null)
+    {
+        return InlineKeyboardButton.WithCallbackData(text, $"/{command} {argument}");
     }
 }
