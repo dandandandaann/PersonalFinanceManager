@@ -25,15 +25,8 @@ public partial class SignupCommand(
         ArgumentNullException.ThrowIfNull(message.From);
         ArgumentNullException.ThrowIfNull(message.Text);
 
-        // Send an initial reply indicating the process has started
-        var replyAttempting = sender.ReplyAsync(
-            message.Chat,
-            "Tentando fazer seu cadastro...", "Processo de cadastro iniciado.",
-            cancellationToken: cancellationToken);
-
         if (UserManagerService.UserSignedIn)
         {
-            await replyAttempting;
             return await sender.ReplyAsync(message.Chat,
                 "O cadastro falhou. Você já está logado no sistema.",
                 "User tried to signup failed but is already signed in).",
@@ -43,20 +36,7 @@ public partial class SignupCommand(
 
         try
         {
-            Utility.TryExtractCommandArguments(message.Text, CommandName, EmailRegex, out var signupArguments);
-
-            if (string.IsNullOrWhiteSpace(signupArguments))
-            {
-                await chatStateService.SetStateAsync(message.Chat.Id, ChatStateEnum.AwaitingArguments, CommandName);
-                
-                return await sender.ReplyAsync(message.Chat,
-                    "Por favor digite seu e-mail para o cadastro.",
-                    $"User tried signing up with invalid arguments: '{signupArguments}'.",
-                    logLevel: LogLevel.Information,
-                    cancellationToken: cancellationToken);
-            }
-
-            return await SignupAsync(message, signupArguments, cancellationToken);
+            return await SignupAsync(message, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -72,10 +52,30 @@ public partial class SignupCommand(
         }
     }
 
-    private async Task<Message> SignupAsync(Message message, string signupArguments, CancellationToken cancellationToken)
+    private async Task<Message> SignupAsync(Message message, CancellationToken cancellationToken)
     {
+        if (!Utility.TryExtractCommandArguments(message.Text, CommandName, out var signupArguments, EmailRegex) ||
+            string.IsNullOrWhiteSpace(signupArguments))
+        {
+            await chatStateService.SetStateAsync(message.Chat.Id, ChatStateEnum.AwaitingArguments, CommandName);
+
+            return await sender.ReplyAsync(message.Chat,
+                "Por favor digite seu e-mail para o cadastro.",
+                $"User tried signing up with invalid arguments: '{signupArguments}'.",
+                logLevel: LogLevel.Information,
+                cancellationToken: cancellationToken);
+        }
+
+        // Send an initial reply indicating the process has started
+        await sender.ReplyAsync(
+            message.Chat,
+            "Tentando fazer seu cadastro...",
+            "Starting signup process.",
+            cancellationToken: cancellationToken);
+
+
         var response = await userApiClient.SignupUserAsync(
-            message.From.Id, message.From.Username, signupArguments, cancellationToken);
+            message.From.Id, email: signupArguments, username: message.From.Username, cancellationToken);
 
         if (!response.Success)
         {
@@ -88,14 +88,17 @@ public partial class SignupCommand(
                 cancellationToken: cancellationToken);
         }
 
+        await sender.ReplyAsync(
+            message.Chat,
+            "Cadastro realizado com sucesso.", "Signup successful.",
+            cancellationToken: cancellationToken);
+
         var welcomeMessage = new StringBuilder();
-        welcomeMessage.AppendLine("Cadastro realizado com sucesso.");
-        welcomeMessage.AppendLine();
         welcomeMessage.Append("<b>");
         welcomeMessage.Append(response.User?.Username == null ? "Bem vindo(a)!" : $"Bem vindo(a), {response.User.Username}!");
         welcomeMessage.AppendLine("</b>");
-        welcomeMessage.AppendLine($"Por favor digite /{StartCommand.StaticCommandName} para ver os comandos disponíveis " +
-                                  $"ou /{PlanilhaCommandAlias.StaticCommandName} para configurar sua planilha.");
+        welcomeMessage.AppendLine(
+            $"Clique em /{StartCommand.StaticCommandName} ou digite no chat para ver os comandos disponíveis.");
 
         return await sender.ReplyAsync(message.Chat,
             welcomeMessage.ToString(),
@@ -114,7 +117,7 @@ public partial class SignupCommand(
 
             if (chatState.State == ChatStateEnum.AwaitingArguments.ToString())
             {
-                return await SignupAsync(message, message.Text, cancellationToken);
+                return await SignupAsync(message, cancellationToken);
             }
         }
         catch (Exception ex)
