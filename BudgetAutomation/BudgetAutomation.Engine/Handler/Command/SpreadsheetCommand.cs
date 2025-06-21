@@ -13,11 +13,10 @@ namespace BudgetAutomation.Engine.Handler.Command;
 public partial class SpreadsheetCommand(
     ISenderGateway sender,
     IUserManagerService userManagerService,
-    ISpreadsheetManagerApiClient SpreadsheetManagerApiClient,
+    ISpreadsheetManagerApiClient spreadsheetManagerApiClient,
     IChatStateService chatStateService) : ICommand
 {
     public string CommandName => StaticCommandName;
-
     // TODO: check if it's possible to have this static property coming from the interface somehow
     public static string StaticCommandName => "spreadsheet";
 
@@ -29,15 +28,15 @@ public partial class SpreadsheetCommand(
 
         try
         {
-            Utility.TryExtractCommandArguments(message.Text, CommandName, null, out var arguments);
+            Utility.TryExtractCommandArguments(message.Text, CommandName, out var arguments);
 
             if (string.IsNullOrWhiteSpace(arguments))
             {
                 await chatStateService.SetStateAsync(message.Chat.Id, ChatStateEnum.AwaitingArguments, CommandName);
 
                 return await sender.ReplyAsync(message.Chat,
-                    "Por favor envie o endereço ou ID da sua planilha com esse comando.",
-                    "User tried configuring spreadsheet id with empty arguments.",
+                    "Por favor compartilhe o link da sua planilha.",
+                    "User called spreadsheet command without arguments.",
                     logLevel: LogLevel.Information,
                     cancellationToken: cancellationToken);
             }
@@ -65,8 +64,6 @@ public partial class SpreadsheetCommand(
             UserManagerService.EnsureUserSignedIn();
 
             ArgumentException.ThrowIfNullOrEmpty(message.Text);
-
-            await chatStateService.ClearState(message.Chat.Id);
 
             if (chatState.State == ChatStateEnum.AwaitingArguments.ToString())
             {
@@ -97,13 +94,13 @@ public partial class SpreadsheetCommand(
         {
             return await sender.ReplyAsync(messageChat,
                 "Planilha inválida.\n" +
-                "Verifique o endereço enviado e tente novamente.",
+                "Verifique o link enviado e tente novamente.",
                 $"User tried configuring spreadsheet id with bad arguments: '{arguments}'.",
                 logLevel: LogLevel.Information,
                 cancellationToken: cancellationToken);
         }
 
-        var validationResponse = await SpreadsheetManagerApiClient.ValidateSpreadsheet(spreadsheetId, cancellationToken);
+        var validationResponse = await spreadsheetManagerApiClient.ValidateSpreadsheet(spreadsheetId, cancellationToken);
 
         if (!validationResponse.Success)
         {
@@ -111,15 +108,15 @@ public partial class SpreadsheetCommand(
             {
                 case ErrorCodeEnum.InvalidInput:
                     return await sender.ReplyAsync(messageChat,
-                        "O endereço da planilha é inválido.\n" +
-                        "Verifique o endereço enviado e tente novamente.",
+                        "O link da planilha é inválido.\n" +
+                        "Verifique o link enviado e tente novamente.",
                         "Invalid spreadsheet id.",
                         logLevel: LogLevel.Information,
                         cancellationToken: cancellationToken);
                 case ErrorCodeEnum.ResourceNotFound:
                     return await sender.ReplyAsync(messageChat,
                         "Não foi possível encontrar a planilha.\n" +
-                        "Verifique o endereço enviado e tente novamente.",
+                        "Verifique o link enviado e tente novamente.",
                         "Spreadsheet not found.",
                         logLevel: LogLevel.Information,
                         cancellationToken: cancellationToken);
@@ -156,6 +153,8 @@ public partial class SpreadsheetCommand(
                 logLevel: LogLevel.Warning,
                 cancellationToken: cancellationToken);
         }
+
+        await chatStateService.ClearState(messageChat.Id);
 
         return await sender.ReplyAsync(messageChat,
             "Configuração da planilha realizada com sucesso!\n" +

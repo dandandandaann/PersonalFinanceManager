@@ -3,6 +3,7 @@
 public static class SpreadsheetConstants
 {
     public const double DateTimeZone = -3;
+    public const string TemplateUrl = "https://docs.google.com/spreadsheets/d/1BLgqw1RPAX2_Qv6w1blPW2L5VTXrfFvWS0S2MDHWqfw/";
 
     public static class Categorizator
     {
