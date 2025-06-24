@@ -64,6 +64,7 @@ public class UpdateHandler(
 
         try
         {
+            // All this does is stop the telegram button loading animation
             await botClient.AnswerCallbackQuery(
                 callbackQueryId: callbackQuery.Id,
                 cancellationToken: cancellationToken);
@@ -71,6 +72,9 @@ public class UpdateHandler(
         catch (ApiRequestException ex) when (ex.Message.Contains("query is too old"))
         {
         }
+
+        var commandText = callbackQuery.Data ?? String.Empty;
+        commandText = commandText.Trim().Split(' ').FirstOrDefault() ?? String.Empty;
 
         var simulatedMessage = new Message
         {
@@ -84,7 +88,7 @@ public class UpdateHandler(
             [
                 new MessageEntity
                 {
-                    Length = callbackQuery.Data?.Length ?? 0,
+                    Length = commandText.Length,
                     Type = MessageEntityType.BotCommand,
                     Offset = 0,
                 }

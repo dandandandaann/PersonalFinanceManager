@@ -87,6 +87,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommand, SpreadsheetCommand>();
         services.AddScoped<ICommand, UndoCommand>();
         services.AddScoped<ICommand, LastItemCommand>();
+        services.AddScoped<ICommand, HelpCommand>();
         services.AddScoped<ICommand, ReturnSpreadsheetCommand>();
 
         // Register commands alias
@@ -94,6 +95,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CommandAliasBase, PlanilhaCommandAlias>();
         services.AddScoped<CommandAliasBase, CadastrarCommandAlias>();
         services.AddScoped<CommandAliasBase, CancelarCommandAlias>();
+        services.AddScoped<CommandAliasBase, MostrarUltimoCommandAlias>();
+        services.AddScoped<CommandAliasBase, AjudaCommandAlias>();
         services.AddScoped<CommandAliasBase, PlanilhaUrlCommandAlias>();
 
         // Register mappers
