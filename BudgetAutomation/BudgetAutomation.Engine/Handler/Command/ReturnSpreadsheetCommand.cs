@@ -4,6 +4,7 @@ using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Misc;
 using BudgetAutomation.Engine.Model;
 using BudgetAutomation.Engine.Service;
+using SharedLibrary.Constants;
 using SharedLibrary.Enum;
 using SharedLibrary.Telegram;
 using System;
@@ -41,7 +42,7 @@ namespace BudgetAutomation.Engine.Handler.Command
                 cancellationToken: cancellationToken);
             }
 
-            var spreadsheetUrl = $"https://docs.google.com/spreadsheets/d/{spreadsheetId}";
+            var spreadsheetUrl = SpreadsheetConstants.Urls.spreadsheetUrl +spreadsheetId;
 
             ArgumentNullException.ThrowIfNull(message.Text);
 
