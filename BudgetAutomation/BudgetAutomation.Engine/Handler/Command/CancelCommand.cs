@@ -20,7 +20,7 @@ public class CancelCommand(ISenderGateway sender, IChatStateService chatStateSer
         await chatStateService.ClearState(message.Chat.Id);
 
         return await sender.ReplyAsync(message.Chat,
-            "Comando de cancelar ação concluído. \nO que você quer fazer a seguir?", cancellationToken: cancellationToken);
+            "Comando de cancelar ação concluído.", cancellationToken: cancellationToken);
     }
 
     public Task<Message> HandleAsync(Message message, ChatState chatState, CancellationToken cancellationToken)

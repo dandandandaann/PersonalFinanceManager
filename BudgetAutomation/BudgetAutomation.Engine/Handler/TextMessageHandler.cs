@@ -1,4 +1,5 @@
-﻿using BudgetAutomation.Engine.Handler.Command;
+﻿using BudgetAutomation.Engine.Enums;
+using BudgetAutomation.Engine.Handler.Command;
 using BudgetAutomation.Engine.Handler.Command.Alias;
 using BudgetAutomation.Engine.Interface;
 using BudgetAutomation.Engine.Model;
@@ -50,17 +51,18 @@ public class TextMessageHandler(
         {
             UserManagerService.EnsureUserSignedIn();
 
-            var replyMessage =
-                await sender.ReplyAsync(message.Chat, "Comando não reconhecido.", cancellationToken: cancellationToken);
-
-            if (commandsByName.TryGetValue(StartCommand.StaticCommandName, out var startCommand))
+            if (commandsByName.TryGetValue(LogCommand.StaticCommandName, out var logCommand))
             {
-                logger.LogInformation("Default response with {CommandName} command.", startCommand.CommandName);
-                return await startCommand.HandleAsync(message, cancellationToken);
+                logger.LogInformation("Default response with {CommandName} command.", logCommand.CommandName);
+
+                var defaultChatState = new ChatState(0, ChatStateEnum.DefaultMessage.ToString());
+
+                return await logCommand.HandleAsync(message, defaultChatState, cancellationToken);
             }
 
-            logger.LogError("Not able to find {CommandName} command to send as default message.", StartCommand.StaticCommandName);
-            return replyMessage;
+            logger.LogError("Not able to find {CommandName} command to send as default message.", LogCommand.StaticCommandName);
+
+            return await sender.ReplyAsync(message.Chat, "Comando não reconhecido.", cancellationToken: cancellationToken);;
         }
 
         if (chatState?.ActiveCommand != null)
