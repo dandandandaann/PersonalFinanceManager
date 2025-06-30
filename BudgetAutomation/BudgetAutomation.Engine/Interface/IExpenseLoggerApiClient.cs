@@ -10,4 +10,5 @@ public interface ISpreadsheetManagerApiClient
     Task<SpreadsheetValidationResponse> ValidateSpreadsheet(string spreadsheetId, CancellationToken cancellationToken = default);
     Task<RemoveExpenseResponse> RemoveLastExpenseAsync(string spreadsheetId, CancellationToken cancellationToken = default);
     Task<ExpenseResponse> GetLastExpenseAsync(string spreadsheetId, CancellationToken cancellationToken = default);
+    Task<AddCategoryRuleResponse> AddCategoryRuleAsync(string spreadsheetId, string category, string descriptionPattern, CancellationToken cancellationToken = default);
 }
