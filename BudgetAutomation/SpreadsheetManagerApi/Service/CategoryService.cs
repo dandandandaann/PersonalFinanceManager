@@ -1,5 +1,6 @@
 using SpreadsheetManagerApi.Interface;
 using SharedLibrary.Constants;
+using SharedLibrary.Dto;
 
 namespace SpreadsheetManagerApi.Service;
 
@@ -87,6 +88,47 @@ public class CategoryService(ISheetsDataAccessor sheetsAccessor, ILogger<Categor
         {
             logger.LogError(ex, "Failed to retrieve auto-categorization rules from spreadsheet {SpreadsheetId}", spreadsheetId);
             throw;
+        }
+    }
+
+    public async Task<AddCategoryRuleResponse> AddCategoryRuleAsync(string spreadsheetId, string category, string descriptionPattern)
+    {
+        try
+        {
+            var sheetId = await sheetsAccessor.GetSheetIdByNameAsync(spreadsheetId, SpreadsheetConstants.Categorizator.SheetName);
+            var nextRow = await sheetsAccessor.FindFirstEmptyRowAsync(
+                spreadsheetId,
+                SpreadsheetConstants.Categorizator.SheetName,
+                SpreadsheetConstants.Categorizator.Column.Category,
+                SpreadsheetConstants.Categorizator.DataStartRow);
+
+            // Insert a new row at the next available position
+            await sheetsAccessor.InsertRowAsync(spreadsheetId, sheetId, nextRow);
+
+            // Prepare the values to write
+            var range = $"{SpreadsheetConstants.Categorizator.SheetName}!{SpreadsheetConstants.Categorizator.Column.Category}{nextRow}:{SpreadsheetConstants.Categorizator.Column.DescriptionPattern}{nextRow}";
+            var values = new List<IList<object>>
+            {
+                new List<object> { category, descriptionPattern }
+            };
+            var valueRange = new Google.Apis.Sheets.v4.Data.ValueRange
+            {
+                Range = range,
+                Values = values
+            };
+            var updateRequest = new Google.Apis.Sheets.v4.Data.BatchUpdateValuesRequest
+            {
+                Data = new List<Google.Apis.Sheets.v4.Data.ValueRange> { valueRange },
+                ValueInputOption = "RAW"
+            };
+            await sheetsAccessor.BatchUpdateValuesAsync(spreadsheetId, updateRequest);
+
+            return new AddCategoryRuleResponse { Success = true, Message = "Category rule added successfully."};
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to add category rule to spreadsheet {SpreadsheetId}", spreadsheetId);
+            return new AddCategoryRuleResponse { Success = false, Message = "Failed to add category rule."};
         }
     }
 } 

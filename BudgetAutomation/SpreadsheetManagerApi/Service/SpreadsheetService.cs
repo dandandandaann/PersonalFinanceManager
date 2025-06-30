@@ -70,7 +70,7 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
     {
 
         var transactionsSheet = SpreadsheetConstants.Transactions.SheetName;
-        logger.LogInformation("Removing expense process in spreadsheet '{SpreadsheetId}'.", spreadsheetId);
+        logger.LogInformation("GetLastExpenseAsync in spreadsheet '{SpreadsheetId}'.", spreadsheetId);
 
         try
         {

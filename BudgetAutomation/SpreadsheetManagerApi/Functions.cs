@@ -6,6 +6,7 @@ using SpreadsheetManagerApi.Misc;
 using SpreadsheetManagerApi.Service;
 using SharedLibrary.Dto;
 using SharedLibrary.Enum;
+using SpreadsheetManagerApi.Interface;
 using Results = SharedLibrary.Lambda.Results;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -234,6 +235,52 @@ public class Functions
         {
             logger.LogError(ex, "GetLastExpenseAsync: Failed to get expense for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
             return Results.InternalServerError("An error occurred while getting the expense");
+        }
+    }
+
+    [LambdaFunction(
+        ResourceName = "AddCategoryRule",
+        Policies = "AWSLambdaBasicExecutionRole, " +
+                   "arn:aws:iam::795287297286:policy/Configurations_Read",
+        MemorySize = 128,
+        Timeout = 15)]
+    [HttpApi(LambdaHttpMethod.Post, "/add-category-rule")]
+    public async Task<APIGatewayHttpApiV2ProxyResponse> AddCategoryRuleAsync(ILambdaContext context,
+        [FromServices] ICategoryService categoryService,
+        [FromBody] AddCategoryRuleRequest request)
+    {
+        var logger = context.Logger;
+        logger.LogInformation("AddCategoryRuleAsync: Received request for SpreadsheetId: {SpreadsheetId}", request.SpreadsheetId);
+
+        try
+        {
+            var response = await categoryService.AddCategoryRuleAsync(request.SpreadsheetId, request.Category, request.DescriptionPattern);
+            return Results.Ok(response);
+        }
+        catch (Exception ex) when (ex is SheetNotFoundException or SpreadsheetNotFoundException)
+        {
+            logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Spreadsheet or sheet doesn't exist.",
+                ErrorCode = ErrorCodeEnum.ResourceNotFound
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Not able to access the spreadsheet.",
+                ErrorCode = ErrorCodeEnum.UnauthorizedAccess
+            });
+        }
+        catch(Exception ex)
+        {
+            logger.LogError(ex, "AddCategoryRuleAsync: Failed for SpreadsheetId: {SpreadsheetId}", request.SpreadsheetId);
+            return Results.InternalServerError("Error while adding category rule.");
         }
     }
 }

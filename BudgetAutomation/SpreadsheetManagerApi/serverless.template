@@ -183,6 +183,42 @@
           }
         }
       }
+    },
+    "AddCategoryRule": {
+      "Type": "AWS::Serverless::Function",
+      "Metadata": {
+        "Tool": "Amazon.Lambda.Annotations",
+        "SyncedEvents": [
+          "RootPost"
+        ],
+        "SyncedEventProperties": {
+          "RootPost": [
+            "Path",
+            "Method"
+          ]
+        }
+      },
+      "Properties": {
+        "Runtime": "dotnet8",
+        "CodeUri": ".",
+        "MemorySize": 128,
+        "Timeout": 15,
+        "Policies": [
+          "AWSLambdaBasicExecutionRole",
+          "arn:aws:iam::795287297286:policy/Configurations_Read"
+        ],
+        "PackageType": "Zip",
+        "Handler": "SpreadsheetManagerApi::SpreadsheetManagerApi.Functions_AddCategoryRuleAsync_Generated::AddCategoryRuleAsync",
+        "Events": {
+          "RootPost": {
+            "Type": "HttpApi",
+            "Properties": {
+              "Path": "/add-category-rule",
+              "Method": "POST"
+            }
+          }
+        }
+      }
     }
   },
   "Outputs": {
