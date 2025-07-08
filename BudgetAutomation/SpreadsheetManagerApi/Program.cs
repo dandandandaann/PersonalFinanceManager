@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using SharedLibrary.Dto;
 using SharedLibrary.Enum;
 using SharedLibrary.Settings;
+using SpreadsheetManagerApi.Interface;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -193,10 +194,52 @@ app.MapGet("/lastitem",
                 ErrorCode = ErrorCodeEnum.UnauthorizedAccess
             });
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            app.Logger.LogError(ex, "GetLastExpenseAsync: Failed to get expense for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
+            app.Logger.LogError(ex, "GetLastExpenseAsync: Failed to get expense for SpreadsheetId: {SpreadsheetId}",
+                spreadsheetId);
             return Results.Problem("An error occurred while getting the expense");
+        }
+    });
+
+
+app.MapPost("/add-category-rule",
+    async ([FromServices] ICategoryService categoryService,
+        [FromBody] AddCategoryRuleRequest request) =>
+    {
+        app.Logger.LogInformation("AddCategoryRuleAsync: Received request for SpreadsheetId: {SpreadsheetId}",
+            request.SpreadsheetId);
+
+        try
+        {
+            var response =
+                await categoryService.AddCategoryRuleAsync(request.SpreadsheetId, request.Category, request.DescriptionPattern);
+            return Results.Ok(response);
+        }
+        catch (Exception ex) when (ex is SheetNotFoundException or SpreadsheetNotFoundException)
+        {
+            app.Logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Spreadsheet or sheet doesn't exist.",
+                ErrorCode = ErrorCodeEnum.ResourceNotFound
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            app.Logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Not able to access the spreadsheet.",
+                ErrorCode = ErrorCodeEnum.UnauthorizedAccess
+            });
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogError(ex, "AddCategoryRuleAsync: Failed for SpreadsheetId: {SpreadsheetId}", request.SpreadsheetId);
+            return Results.Problem("Error while adding category rule.");
         }
     });
 

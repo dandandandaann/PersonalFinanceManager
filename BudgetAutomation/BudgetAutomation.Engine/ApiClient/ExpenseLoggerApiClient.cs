@@ -4,7 +4,6 @@ using BudgetAutomation.Engine.Interface;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using SharedLibrary.Dto;
-using SharedLibrary.Enum;
 using SharedLibrary.Model;
 using SharedLibrary.Settings;
 
@@ -209,5 +208,41 @@ public class SpreadsheetManagerApiClient : ISpreadsheetManagerApiClient
         }
 
         return responseExpense;
+    }
+
+    public async Task<AddCategoryRuleResponse> AddCategoryRuleAsync(string spreadsheetId, string category, string descriptionPattern, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Sending request /add-category-rule for '{Category}' with pattern '{Pattern}'.", category, descriptionPattern);
+
+        var endpointUri = new Uri(_httpClient.BaseAddress!, "add-category-rule");
+        var request = new AddCategoryRuleRequest
+        {
+            SpreadsheetId = spreadsheetId,
+            Category = category,
+            DescriptionPattern = descriptionPattern
+        };
+        var content = JsonContent.Create(request, AppJsonSerializerContext.Default.AddCategoryRuleRequest);
+
+        var httpRequest = new HttpRequestMessage(HttpMethod.Post, endpointUri)
+        {
+            Content = content
+        };
+
+        var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogError("Failed to add category rule in Spreadsheet {SpreadsheetId}. Error: {ErrorMessage}",
+                spreadsheetId, response.RequestMessage);
+            return new AddCategoryRuleResponse { Success = false };
+        }
+
+        _logger.LogInformation("Add category rule request sent. Response code: {StatusCode}", response.StatusCode);
+
+        var responseObj = await response.Content.ReadFromJsonAsync(
+            AppJsonSerializerContext.Default.AddCategoryRuleResponse,
+            cancellationToken);
+
+        return responseObj ?? new AddCategoryRuleResponse { Success = false };
     }
 }

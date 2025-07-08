@@ -31,14 +31,16 @@ public class HelpCommand(ISenderGateway sender) : ICommand
     public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
         ParseMode parseMode = ParseMode.None;
-        var helpMessage = new StringBuilder("Escolha uma das opções de ajuda:");
+        var helpMessage = new StringBuilder("Escolha uma das opções de ajuda");
 
         if (!Utility.TryExtractCommandArguments(message.Text, CommandName, out var arguments) ||
             string.IsNullOrWhiteSpace(arguments) ||
             !Enum.TryParse<HelpArgumentEnum>(arguments.Replace(" ", string.Empty), true, out var helpArg))
         {
             var keyboardRows = new List<List<InlineKeyboardButton>>();
-            var buttons = new List<InlineKeyboardButton>();
+
+            var commandsButton = Utility.Button("Comandos", CommandName, HelpArgumentEnum.Commands);
+            keyboardRows.Add([commandsButton]);
 
             if (!UserManagerService.UserSignedIn)
             {
@@ -60,18 +62,15 @@ public class HelpCommand(ISenderGateway sender) : ICommand
             }
             else
             {
-                var contactButton = Utility.Button("Contato", CommandName, HelpArgumentEnum.Contact);
                 var reportProblemButton = Utility.Button("Reportar um problema", CommandName, HelpArgumentEnum.ReportProblem);
 
-                keyboardRows.AddRange([
-                    [contactButton],
-                    [reportProblemButton]
-                ]);
+                keyboardRows.Add([reportProblemButton]);
             }
 
-            var commandsButton = Utility.Button("Comandos", CommandName, HelpArgumentEnum.Commands);
             var aboutButton = Utility.Button("Sobre", CommandName, HelpArgumentEnum.About);
-            keyboardRows.AddRange([[commandsButton], [aboutButton]]);
+            var contactButton = Utility.Button("Contato", CommandName, HelpArgumentEnum.Contact);
+
+            keyboardRows.Add([contactButton, aboutButton]);
 
             var inlineKeyboard = new InlineKeyboardMarkup(keyboardRows);
 
@@ -132,7 +131,7 @@ public class HelpCommand(ISenderGateway sender) : ICommand
                 helpMessage.AppendLine("<b>Comandos:</b>");
                 helpMessage.AppendLine();
                 helpMessage.AppendLine($"Comandos no Telegram são mensagens que começam com /, " +
-                                       $"como por exemplo o /{StartCommand.StaticCommandName}. " +
+                                       $"como por exemplo o /{RegistrarCommandAlias.StaticCommandName}. " +
                                        $"Eles são usados para enviar instruções específicas para bots como o {BotConstants.Name}.");
                 helpMessage.AppendLine("Você pode executar comandos de 3 maneiras:");
                 helpMessage.AppendLine("<b>•</b> Escrevendo o comando diretamente no chat");
@@ -147,7 +146,7 @@ public class HelpCommand(ISenderGateway sender) : ICommand
                 helpMessage.AppendLine($"Contato do Telegram: {BotConstants.Creator}.");
                 break;
             case HelpArgumentEnum.ReportProblem:
-                helpMessage.AppendLine($"Se você encontrou algum problema, por favor, entre em contato pelo Telegram: {BotConstants.Creator} e descreva o problema encontrado.");
+                helpMessage.AppendLine($"Se você encontrou algum problema, por favor, entre em contato pelo Telegram e descreva o problema encontrado: {BotConstants.Creator}.");
                 break;
             default:
                 throw new NotImplementedException($"{nameof(HelpArgumentEnum)} option {helpArg} not implemented.");

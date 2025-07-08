@@ -2,5 +2,6 @@
 
 public enum ChatStateEnum
 {
-    AwaitingArguments
+    AwaitingArguments,
+    DefaultMessage
 }

@@ -60,15 +60,16 @@ public partial class LogCommand(
 
         ArgumentException.ThrowIfNullOrEmpty(message.Text);
 
-        await chatStateService.ClearState(message.Chat.Id);
-
         if (chatState.State == ChatStateEnum.AwaitingArguments.ToString())
         {
-            return await LogExpenseAsync(message.Chat, UserManagerService.Configuration.SpreadsheetId, message.Text,
-                cancellationToken);
+            await chatStateService.ClearState(message.Chat.Id);
         }
 
-        throw new NotImplementedException($"Log state {chatState} not implemented.");
+        return await LogExpenseAsync(
+            message.Chat,
+            UserManagerService.Configuration.SpreadsheetId,
+            message.Text,
+            cancellationToken);
     }
 
     private async Task<Message> LogExpenseAsync(Chat chat, string spreadsheetId, string expenseArguments,
@@ -145,7 +146,7 @@ public partial class LogCommand(
             var argumentsSplit = expenseArguments.Trim().Split(' ');
 
             if (argumentsSplit.Length < 2)
-                throw new InvalidUserInputException("Formato de mensagem inválido para registrar a despesa.");
+                throw new InvalidUserInputException("Formato de mensagem inválido para registrar despesa.");
 
             expense.Description = argumentsSplit[0];
             expense.Amount = argumentsSplit[1];
@@ -154,7 +155,7 @@ public partial class LogCommand(
 
         if (!decimal.TryParse(expense.Amount, out _))
         {
-            throw new InvalidUserInputException("Formato de mensagem inválido para registrar a despesa.");
+            throw new InvalidUserInputException("Formato de mensagem inválido para registrar despesa.");
         }
 
         return expense;
