@@ -48,4 +48,9 @@ public static class SpreadsheetConstants
         }
     }
 
+    public static class Urls
+    {
+        public const string spreadsheetUrl = "https://docs.google.com/spreadsheets/d/";
+    }
+
 }
