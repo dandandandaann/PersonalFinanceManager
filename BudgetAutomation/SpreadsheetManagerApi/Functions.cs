@@ -239,6 +239,52 @@ public class Functions
     }
 
     [LambdaFunction(
+        ResourceName = "ListCategories",
+        Policies = "AWSLambdaBasicExecutionRole, " +
+                   "arn:aws:iam::795287297286:policy/Configurations_Read",
+        MemorySize = 128,
+        Timeout = 15)]
+    [HttpApi(LambdaHttpMethod.Get, "/categories")]
+    public async Task<APIGatewayHttpApiV2ProxyResponse> ListCategoriesAsync(ILambdaContext context,
+        [FromServices] ICategoryService categoryService,
+        [FromQuery] string spreadsheetId)
+    {
+        var logger = context.Logger;
+        logger.LogInformation("ListCategoriesAsync: Received request for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
+
+        try
+        {
+            var categories = await categoryService.GetAllCategoriesAsync(spreadsheetId);
+            return Results.Ok(new { success = true, categories });
+        }
+        catch (Exception ex) when (ex is SheetNotFoundException or SpreadsheetNotFoundException)
+        {
+            logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Spreadsheet or sheet doesn't exist.",
+                ErrorCode = ErrorCodeEnum.ResourceNotFound
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Not able to access the spreadsheet.",
+                ErrorCode = ErrorCodeEnum.UnauthorizedAccess
+            });
+        }
+        catch(Exception ex)
+        {
+            logger.LogError(ex, "ListCategoriesAsync: Failed for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
+            return Results.InternalServerError("Error while listing categories.");
+        }
+    }
+
+    [LambdaFunction(
         ResourceName = "AddCategoryRule",
         Policies = "AWSLambdaBasicExecutionRole, " +
                    "arn:aws:iam::795287297286:policy/Configurations_Read",

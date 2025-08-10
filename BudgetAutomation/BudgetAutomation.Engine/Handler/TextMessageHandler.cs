@@ -47,20 +47,22 @@ public class TextMessageHandler(
 
         (bool hasState, ChatState? chatState) = await chatStateService.HasState(message.Chat.Id);
 
-        if (!hasState) // Default message
+        if (!hasState) // Default response
         {
+            var defaultCommand = LogCommand.StaticCommandName;
+
             UserManagerService.EnsureUserSignedIn();
 
-            if (commandsByName.TryGetValue(LogCommand.StaticCommandName, out var logCommand))
+            if (commandsByName.TryGetValue(defaultCommand, out var logCommand))
             {
                 logger.LogInformation("Default response with {CommandName} command.", logCommand.CommandName);
 
-                var defaultChatState = new ChatState(0, ChatStateEnum.DefaultMessage.ToString());
+                var defaultChatState = new ChatState(message.Chat.Id, ChatStateEnum.DefaultMessage.ToString());
 
                 return await logCommand.HandleAsync(message, defaultChatState, cancellationToken);
             }
 
-            logger.LogError("Not able to find {CommandName} command to send as default message.", LogCommand.StaticCommandName);
+            logger.LogError("Not able to find {CommandName} command to send as default message.", defaultCommand);
 
             return await sender.ReplyAsync(message.Chat, "Comando não reconhecido.", cancellationToken: cancellationToken);;
         }

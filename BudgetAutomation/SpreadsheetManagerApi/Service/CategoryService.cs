@@ -6,6 +6,30 @@ namespace SpreadsheetManagerApi.Service;
 
 public class CategoryService(ISheetsDataAccessor sheetsAccessor, ILogger<CategoryService> logger) : ICategoryService
 {
+    public async Task<IList<string>> GetAllCategoriesAsync(string spreadsheetId)
+    {
+        var categoriesSheet = SpreadsheetConstants.Categories.SheetName;
+        logger.LogInformation("Retrieving all categories in spreadsheet '{SpreadsheetId}'.", spreadsheetId);
+        try
+        {
+            var categories = await sheetsAccessor.ReadColumnValuesAsync(
+                spreadsheetId,
+                categoriesSheet,
+                SpreadsheetConstants.Categories.Column.Category,
+                SpreadsheetConstants.Categories.DataStartRow
+            );
+
+            return categories
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to retrieve categories from spreadsheet {SpreadsheetId}", spreadsheetId);
+            throw;
+        }
+    }
+
     public async Task<string> DecideCategoryAsync(string spreadsheetId, string userCategory, string description)
     {
         description = description.Trim().Normalize();

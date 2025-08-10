@@ -245,4 +245,37 @@ public class SpreadsheetManagerApiClient : ISpreadsheetManagerApiClient
 
         return responseObj ?? new AddCategoryRuleResponse { Success = false };
     }
+
+    public async Task<ListCategoriesResponse> ListCategoriesAsync(string spreadsheetId, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Sending request /categories");
+
+        var endpointUri = new Uri(_httpClient.BaseAddress!, "categories");
+
+        var queryParams = new Dictionary<string, string?>
+        {
+            ["spreadsheetId"] = spreadsheetId
+        };
+
+        var request = new HttpRequestMessage
+        (
+            HttpMethod.Get,
+            QueryHelpers.AddQueryString(endpointUri.ToString(), queryParams)
+        );
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogError("Failed to list categories in Spreadsheet {SpreadsheetId}. Response code: {StatusCode}",
+                spreadsheetId, response.StatusCode);
+            return new ListCategoriesResponse { Success = false };
+        }
+
+        var responseObj = await response.Content.ReadFromJsonAsync(
+            AppJsonSerializerContext.Default.ListCategoriesResponse,
+            cancellationToken);
+
+        return responseObj ?? new ListCategoriesResponse { Success = false };
+    }
 }

@@ -166,8 +166,7 @@ app.MapDelete("/undo",
     });
 
 app.MapGet("/lastitem",
-    async ([FromServices] SpreadsheetService spreadsheetService,
-        [FromQuery] string spreadsheetId) =>
+    async ([FromServices] SpreadsheetService spreadsheetService, [FromQuery] string spreadsheetId) =>
     {
         try
         {
@@ -240,6 +239,47 @@ app.MapPost("/add-category-rule",
         {
             app.Logger.LogError(ex, "AddCategoryRuleAsync: Failed for SpreadsheetId: {SpreadsheetId}", request.SpreadsheetId);
             return Results.Problem("Error while adding category rule.");
+        }
+    });
+
+
+app.MapGet("/categories",
+    async ([FromServices] ICategoryService categoryService,
+        [FromQuery] string spreadsheetId) =>
+    {
+        try
+        {
+            var categories = await categoryService.GetAllCategoriesAsync(spreadsheetId);
+            return Results.Ok(new ListCategoriesResponse
+            {
+                Success = true,
+                Categories = categories
+            });
+        }
+        catch (Exception ex) when (ex is SheetNotFoundException or SpreadsheetNotFoundException)
+        {
+            app.Logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Spreadsheet or sheet doesn't exist.",
+                ErrorCode = ErrorCodeEnum.ResourceNotFound
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            app.Logger.LogWarning(ex.Message);
+            return Results.Ok(new RemoveExpenseResponse
+            {
+                Success = false,
+                Message = "Not able to access the spreadsheet.",
+                ErrorCode = ErrorCodeEnum.UnauthorizedAccess
+            });
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogError(ex, "ListCategories: Failed for SpreadsheetId: {SpreadsheetId}", spreadsheetId);
+            return Results.Problem("Error while listing categories.");
         }
     });
 
