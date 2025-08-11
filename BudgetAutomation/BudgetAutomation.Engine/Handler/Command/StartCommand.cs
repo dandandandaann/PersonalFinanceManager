@@ -56,10 +56,10 @@ public class StartCommand(ISenderGateway sender) : ICommand
                 InlineKeyboardButton.WithCallbackData("🧾 Ver última despesa", $"/{LastItemCommand.StaticCommandName}");
             var undoButton =
                 InlineKeyboardButton.WithCallbackData("🗑️ Deletar última despesa", $"/{UndoCommand.StaticCommandName}");
-            var addCategoryRuleCommand =
-                InlineKeyboardButton.WithCallbackData("🔁 Criar regra de categoria", $"/{AddCategoryRuleCommand.StaticCommandName}");
+            var categoryButton =
+                InlineKeyboardButton.WithCallbackData("🗄 Categorias", $"/{CategoryCommand.StaticCommandName}");
 
-            keyboardRows.AddRange([[logButton], [lastItemButton], [undoButton], [addCategoryRuleCommand]]);
+            keyboardRows.AddRange([[logButton], [lastItemButton], [undoButton], [categoryButton]]);
         }
 
         var helpButton = InlineKeyboardButton.WithCallbackData("❓ Ajuda", $"/{HelpCommand.StaticCommandName}");

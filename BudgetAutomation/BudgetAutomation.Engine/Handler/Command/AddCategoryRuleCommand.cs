@@ -35,7 +35,9 @@ public class AddCategoryRuleCommand(
         {
             await chatStateService.SetStateAsync(message.Chat.Id, ChatStateEnum.AwaitingArguments, CommandName);
             return await sender.ReplyAsync(message.Chat,
-                "Insira a categoria seguida do padrão de descrição. Exemplo: 'Restaurante Lanche'",
+                "Insira a categoria seguida do padrão de descrição. \n" +
+                "Por exemplo, para incluir na categoria 'Restaurante' todas as despesas que incluam 'Lanche' na descrição envie:\n" +
+                "'Restaurante Lanche'",
                 cancellationToken: cancellationToken);
         }
 

@@ -21,6 +21,7 @@ namespace BudgetAutomation.Engine.AtoTypes;
 [JsonSerializable(typeof(SpreadsheetValidationResponse))]
 [JsonSerializable(typeof(AddCategoryRuleRequest))]
 [JsonSerializable(typeof(AddCategoryRuleResponse))]
+[JsonSerializable(typeof(ListCategoriesResponse))]
 
 [JsonSerializable(typeof(User))]
 [JsonSerializable(typeof(UserConfiguration))]
