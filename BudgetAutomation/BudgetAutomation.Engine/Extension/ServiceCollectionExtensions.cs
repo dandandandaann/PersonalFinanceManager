@@ -91,6 +91,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommand, ReturnSpreadsheetCommand>();
         services.AddScoped<ICommand, AddCategoryRuleCommand>();
         services.AddScoped<ICommand, ListCategoriesCommand>();
+        services.AddScoped<ICommand, CategoryCommand>();
 
         // Register commands alias
         services.AddScoped<CommandAliasBase, RegistrarCommandAlias>();
