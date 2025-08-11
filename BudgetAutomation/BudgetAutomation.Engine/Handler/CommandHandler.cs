@@ -9,7 +9,7 @@ namespace BudgetAutomation.Engine.Handler;
 public class CommandHandler(
     ISenderGateway sender,
     IEnumerable<ICommand> commandImplementations,
-    IEnumerable<CommandAliasBase> commandAliasImplementations
+    IEnumerable<AliasCommandBase> commandAliasImplementations
 ) : ICommandHandler
 {
     public async Task<Message> HandleCommandAsync(Message message, CancellationToken cancellationToken = default)

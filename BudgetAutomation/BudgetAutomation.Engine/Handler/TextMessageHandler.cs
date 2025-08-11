@@ -13,7 +13,7 @@ public class TextMessageHandler(
     ISenderGateway sender,
     IChatStateService chatStateService,
     IEnumerable<ICommand> commandImplementations,
-    IEnumerable<CommandAliasBase> commandAliasImplementations) : ITextMessageHandler
+    IEnumerable<AliasCommandBase> commandAliasImplementations) : ITextMessageHandler
 {
     private static readonly string[] CommandsAllowedAsPlainText = [LogCommand.StaticCommandName];
 

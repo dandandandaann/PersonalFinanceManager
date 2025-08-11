@@ -17,7 +17,6 @@ public partial class SpreadsheetCommand(
     IChatStateService chatStateService) : ICommand
 {
     public string CommandName => StaticCommandName;
-    // TODO: check if it's possible to have this static property coming from the interface somehow
     public static string StaticCommandName => "spreadsheet";
 
     public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)

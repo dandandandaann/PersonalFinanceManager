@@ -8,7 +8,7 @@ using MessageEntityType = SharedLibrary.Telegram.Enums.MessageEntityType;
 
 namespace BudgetAutomation.Engine.Handler.Command.Alias;
 
-public abstract class CommandAliasBase(IEnumerable<ICommand> commandImplementations) : ICommand
+public abstract class AliasCommandBase(IEnumerable<ICommand> commandImplementations) : ICommand
 {
     public required string TargetCommandName { get; init; }
     public string CommandName { get; protected init; } = null!;
@@ -56,6 +56,6 @@ public abstract class CommandAliasBase(IEnumerable<ICommand> commandImplementati
             name = name.Substring(0, name.Length - classSuffix.Length);
         }
 
-        return name.ToLowerInvariant();
+        return name;
     }
 }

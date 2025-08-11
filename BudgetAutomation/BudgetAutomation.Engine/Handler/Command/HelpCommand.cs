@@ -11,7 +11,7 @@ using BudgetAutomation.Engine.Handler.Command.Alias;
 
 namespace BudgetAutomation.Engine.Handler.Command;
 
-public class HelpCommand(ISenderGateway sender) : ICommand
+public class HelpCommand(ISenderGateway sender, IServiceProvider serviceProvider) : ICommand
 {
     public string CommandName => StaticCommandName;
     public static string StaticCommandName => "help";
@@ -33,7 +33,7 @@ public class HelpCommand(ISenderGateway sender) : ICommand
         ParseMode parseMode = ParseMode.None;
         var helpMessage = new StringBuilder("Escolha uma das opções de ajuda");
 
-        if (!Utility.TryExtractCommandArguments(message.Text, CommandName, out var arguments) ||
+        if (!Utility.TryExtractCommandArguments(message.Text ?? "", CommandName, out var arguments) ||
             string.IsNullOrWhiteSpace(arguments) ||
             !Enum.TryParse<HelpArgumentEnum>(arguments.Replace(" ", string.Empty), true, out var helpArg))
         {
@@ -120,7 +120,7 @@ public class HelpCommand(ISenderGateway sender) : ICommand
                 helpMessage.AppendLine("<b>4.</b> Escolher a opção \"<b>Compartilhar</b>\"");
                 helpMessage.AppendLine($"<b>5.</b> Adicionar o email: \"<i>{BotConstants.Email}</i>\".");
                 helpMessage.AppendLine();
-                helpMessage.AppendLine($"Depois disso você precisa usar o comando /{PlanilhaCommandAlias.StaticCommandName} para " +
+                helpMessage.AppendLine($"Depois disso você precisa usar o comando /{PlanilhaConfigurarAliasCommand.StaticCommandName} para " +
                                        $"enviar o link da sua planilha para o {BotConstants.Name}.");
                 break;
             case HelpArgumentEnum.SpreadsheetConfiguration:
@@ -128,15 +128,20 @@ public class HelpCommand(ISenderGateway sender) : ICommand
                 break;
             case HelpArgumentEnum.Commands:
                 parseMode = ParseMode.Html;
+
+                var commandAliasList = string.Join(", ", serviceProvider.GetServices<AliasCommandBase>()
+                    .Select(a => "/" + a.CommandName).OrderBy(n => n));
+
                 helpMessage.AppendLine("<b>Comandos:</b>");
                 helpMessage.AppendLine();
-                helpMessage.AppendLine($"Comandos no Telegram são mensagens que começam com /, " +
-                                       $"como por exemplo o /{RegistrarCommandAlias.StaticCommandName}. " +
+                helpMessage.AppendLine($"Comandos no Telegram são mensagens que começam com <b>/</b>, " +
+                                       $"como por exemplo o /{RegistrarDespesaAliasCommand.StaticCommandName}. " +
                                        $"Eles são usados para enviar instruções específicas para bots como o {BotConstants.Name}.");
                 helpMessage.AppendLine("Você pode executar comandos de 3 maneiras:");
                 helpMessage.AppendLine("<b>•</b> Escrevendo o comando diretamente no chat");
-                helpMessage.AppendLine($"<b>•</b> Clicando no comando que já está escrito -> /{AjudaCommandAlias.StaticCommandName}");
+                helpMessage.AppendLine($"<b>•</b> Clicando no comando que já está escrito -> /{AjudaAliasCommand.StaticCommandName}");
                 helpMessage.AppendLine("<b>•</b> Clicando em algum botão das mensagens que o Bot te enviou");
+                helpMessage.AppendLine($"Lista de comandos disponíveis: {commandAliasList}");
                 break;
             case HelpArgumentEnum.About:
                 helpMessage.AppendLine("Este sistema ajuda você a gerenciar suas finanças pessoais de forma simples e integrada ao Google Sheets.");
