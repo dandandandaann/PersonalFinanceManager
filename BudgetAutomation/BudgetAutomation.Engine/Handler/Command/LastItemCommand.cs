@@ -21,7 +21,7 @@ public class LastItemCommand(
         if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
         {
             return await sender.ReplyAsync(message.Chat,
-                $"Por favor configure sua planilha com o commando /{PlanilhaCommandAlias.StaticCommandName} " +
+                $"Por favor configure sua planilha com o commando /{PlanilhaConfigurarAliasCommand.StaticCommandName} " +
                 $"antes de usar o comando /{CommandName}.",
                 cancellationToken: cancellationToken);
         }

@@ -94,13 +94,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommand, CategoryCommand>();
 
         // Register commands alias
-        services.AddScoped<CommandAliasBase, RegistrarCommandAlias>();
-        services.AddScoped<CommandAliasBase, PlanilhaCommandAlias>();
-        services.AddScoped<CommandAliasBase, CadastrarCommandAlias>();
-        services.AddScoped<CommandAliasBase, CancelarCommandAlias>();
-        services.AddScoped<CommandAliasBase, MostrarUltimoCommandAlias>();
-        services.AddScoped<CommandAliasBase, AjudaCommandAlias>();
-        services.AddScoped<CommandAliasBase, PlanilhaUrlCommandAlias>();
+        services.AddScoped<AliasCommandBase, RegistrarDespesaAliasCommand>();
+        services.AddScoped<AliasCommandBase, PlanilhaConfigurarAliasCommand>();
+        services.AddScoped<AliasCommandBase, CancelarAliasCommand>();
+        services.AddScoped<AliasCommandBase, UltimaDespesaAliasCommand>();
+        services.AddScoped<AliasCommandBase, AjudaAliasCommand>();
+        services.AddScoped<AliasCommandBase, PlanilhaUrlAliasCommand>();
+        services.AddScoped<AliasCommandBase, ListarCategoriasAliasCommand>();
 
         // Register mappers
         services.AddSingleton<ReplyMarkupMapper>();

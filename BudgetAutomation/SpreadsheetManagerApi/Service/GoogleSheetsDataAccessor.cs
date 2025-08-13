@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Collections.Concurrent;
 using SpreadsheetManagerApi.Interface;
 using SpreadsheetManagerApi.Misc;
 using Google;
@@ -12,8 +13,14 @@ namespace SpreadsheetManagerApi.Service;
 
 public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<GoogleSheetsDataAccessor> logger) : ISheetsDataAccessor
 {
+    private readonly ConcurrentDictionary<string, int> _sheetIdCache = new();
+
     public async Task<int> GetSheetIdByNameAsync(string spreadsheetId, string sheetName)
     {
+        var cacheKey = $"{spreadsheetId}:{sheetName}";
+        if (_sheetIdCache.TryGetValue(cacheKey, out var cachedId))
+            return cachedId;
+
         var request = sheetsService.Spreadsheets.Get(spreadsheetId);
 
         request.Fields = "sheets(properties(title,sheetId))"; // Request only titles and sheetIds within sheets
@@ -40,7 +47,9 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
         if (sheet?.Properties.SheetId is null or 0)
             throw new SheetNotFoundException($"Sheet '{sheetName}' not found in Spreadsheet id '{spreadsheetId}'.");
 
-        return sheet.Properties.SheetId.Value;
+        var sheetId = sheet.Properties.SheetId.Value;
+        _sheetIdCache.TryAdd(cacheKey, sheetId);
+        return sheetId;
     }
 
     public async Task<int> FindFirstEmptyRowAsync(string spreadsheetId, string sheetName, string column, int startRow)
@@ -64,19 +73,6 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
         return startRow + values.Count;
     }
 
-    public async Task<int> FindLastItemAsync(string spreadsheetId, string sheetName, string column, int startRow)
-    {
-        var lastItem = (await FindFirstEmptyRowAsync(spreadsheetId, sheetName, column, startRow)) - 1;
-
-        if (lastItem < startRow)
-        {
-            logger.LogInformation("No item found in column '{Column}' of Spreadsheet '{SheetName}'.", column, sheetName);
-            throw new InvalidOperationException("No item found in column of the spreadsheet.");
-        }
-
-        return lastItem;
-    }
-
     public async Task InsertRowAsync(string spreadsheetId, int sheetId, int rowIndex)
     {
         var requestBody = new Request
@@ -89,7 +85,8 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
                     Dimension = "ROWS",
                     StartIndex = rowIndex - 1,
                     EndIndex = rowIndex
-                }
+                },
+                InheritFromBefore = true
             }
         };
 
@@ -181,5 +178,46 @@ public class GoogleSheetsDataAccessor(SheetsService sheetsService, ILogger<Googl
             Success = true,
             Message = "Empty spreadsheet."
         };
+    }
+
+    private async Task<int> GetSheetRowCountAsync(string spreadsheetId, string sheetName)
+    {
+        var request = sheetsService.Spreadsheets.Get(spreadsheetId);
+        request.Fields = "sheets(properties(title,gridProperties(rowCount)))";
+
+        var spreadsheet = await request.ExecuteAsync();
+        var sheet = spreadsheet.Sheets.FirstOrDefault(s => s.Properties.Title == sheetName)
+                   ?? throw new InvalidOperationException($"Sheet '{sheetName}' not found.");
+
+        return sheet.Properties.GridProperties.RowCount ?? 0;
+    }
+
+    public async Task<int> FindFirstEmptyRowAsync(string spreadsheetId, string sheetName, string column)
+    {
+        const int searchWindow = 20;
+        var rowCount = await GetSheetRowCountAsync(spreadsheetId, sheetName);
+        if (rowCount <= 0) return 1;
+
+        var startSearchRow = Math.Max(1, rowCount - searchWindow + 1);
+        var endSearchRow = rowCount;
+
+        ValueRange? resp;
+
+        do
+        {
+            var range = $"{sheetName}!{column}{startSearchRow}:{column}{endSearchRow}";
+            resp = await sheetsService.Spreadsheets.Values.Get(spreadsheetId, range).ExecuteAsync();
+
+            startSearchRow = Math.Max(1, startSearchRow - searchWindow);
+            endSearchRow = Math.Max(0, endSearchRow - searchWindow);
+
+        } while (resp.Values == null && endSearchRow != 0);
+
+        // If endRow gets to 1, the API only returned empty, which means the whole column is empty.
+        if (resp.Values != null)
+            return endSearchRow + resp.Values.Count + 1;
+
+        return 1;
+
     }
 }

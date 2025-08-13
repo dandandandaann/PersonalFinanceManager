@@ -39,8 +39,7 @@ public class ExpenseLoggerService(
             var sheetId = await sheetsAccessor.GetSheetIdByNameAsync(spreadsheetId, sheetName);
 
             var row = await sheetsAccessor.FindFirstEmptyRowAsync(
-                spreadsheetId, sheetName,
-                SpreadsheetConstants.Transactions.Column.Description, SpreadsheetConstants.Transactions.DataStartRow
+                spreadsheetId, sheetName, SpreadsheetConstants.Transactions.Column.Description
             );
 
             await sheetsAccessor.InsertRowAsync(spreadsheetId, sheetId, row);

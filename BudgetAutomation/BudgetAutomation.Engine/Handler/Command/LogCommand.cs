@@ -30,7 +30,7 @@ public partial class LogCommand(
         if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
         {
             return await sender.ReplyAsync(message.Chat,
-                $"Por favor configure sua planilha com o commando /{PlanilhaCommandAlias.StaticCommandName} antes de " +
+                $"Por favor configure sua planilha com o commando /{PlanilhaConfigurarAliasCommand.StaticCommandName} antes de " +
                 $"usar o comando /{CommandName}.",
                 cancellationToken: cancellationToken);
         }

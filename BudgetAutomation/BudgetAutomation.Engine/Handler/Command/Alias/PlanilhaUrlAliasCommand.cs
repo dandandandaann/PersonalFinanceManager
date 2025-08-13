@@ -1,14 +1,14 @@
 ﻿using BudgetAutomation.Engine.Interface;
 
 namespace BudgetAutomation.Engine.Handler.Command.Alias;
-    public class PlanilhaUrlCommandAlias : CommandAliasBase
+    public class PlanilhaUrlAliasCommand : AliasCommandBase
     {
-        public PlanilhaUrlCommandAlias(IEnumerable<ICommand> commandImplementations) : base(commandImplementations)
+        public PlanilhaUrlAliasCommand(IEnumerable<ICommand> commandImplementations) : base(commandImplementations)
         {
             TargetCommandName = ReturnSpreadsheetCommand.StaticCommandName;
             base.CommandName = CommandName;
         }
 
-        public static readonly string StaticCommandName = GetCommandNameFromType(typeof(PlanilhaUrlCommandAlias));
+        public static readonly string StaticCommandName = GetCommandNameFromType(typeof(PlanilhaUrlAliasCommand));
         private new string CommandName => StaticCommandName;
     }

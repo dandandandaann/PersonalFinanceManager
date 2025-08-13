@@ -25,16 +25,18 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
         {
             var sheetId = await sheetsAccessor.GetSheetIdByNameAsync(spreadsheetId, transactionsSheet);
 
-            var lastRow = await sheetsAccessor.FindLastItemAsync(
-                spreadsheetId, transactionsSheet, SpreadsheetConstants.Transactions.Column.Description, SpreadsheetConstants.Transactions.DataStartRow);
+            var lastItemRow = await sheetsAccessor.FindFirstEmptyRowAsync(
+                spreadsheetId, transactionsSheet, SpreadsheetConstants.Transactions.Column.Description
+            );
+            lastItemRow -= 1; // Last item should be above first empty row
 
-            if (lastRow < SpreadsheetConstants.Transactions.DataStartRow)
+            if (lastItemRow < SpreadsheetConstants.Transactions.DataStartRow)
             {
                 logger.LogWarning("No expenses found to remove in spreadsheet '{SpreadsheetId}'.", transactionsSheet);
                 throw new InvalidOperationException("No expense found.");
             }
 
-            var values = await sheetsAccessor.ReadRowValuesAsync(spreadsheetId, transactionsSheet, lastRow);
+            var values = await sheetsAccessor.ReadRowValuesAsync(spreadsheetId, transactionsSheet, lastItemRow);
 
             if (values == null || values.Count == 0)
             {
@@ -43,7 +45,7 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
             }
 
             // Apaga a linha só depois de garantir os dados
-            await sheetsAccessor.DeleteRowAsync(spreadsheetId, sheetId, lastRow);
+            await sheetsAccessor.DeleteRowAsync(spreadsheetId, sheetId, lastItemRow);
 
             var expense = new Expense
             {
@@ -74,18 +76,18 @@ public class SpreadsheetService(ISheetsDataAccessor sheetsAccessor, ILogger<Spre
 
         try
         {
-            var sheetId = await sheetsAccessor.GetSheetIdByNameAsync(spreadsheetId, transactionsSheet);
+            var lastDataRow = await sheetsAccessor.FindFirstEmptyRowAsync(
+                spreadsheetId, transactionsSheet, SpreadsheetConstants.Transactions.Column.Description
+            );
+            lastDataRow -= 1;
 
-            var lastRow = await sheetsAccessor.FindLastItemAsync(
-                spreadsheetId, transactionsSheet, SpreadsheetConstants.Transactions.Column.Description, SpreadsheetConstants.Transactions.DataStartRow);
-
-            if (lastRow < SpreadsheetConstants.Transactions.DataStartRow)
+            if (lastDataRow < SpreadsheetConstants.Transactions.DataStartRow)
             {
                 logger.LogWarning("No expenses found in spreadsheet '{SpreadsheetId}'.", transactionsSheet);
                 throw new InvalidOperationException("No expense found.");
             }
 
-            var values = await sheetsAccessor.ReadRowValuesAsync(spreadsheetId, transactionsSheet, lastRow);
+            var values = await sheetsAccessor.ReadRowValuesAsync(spreadsheetId, transactionsSheet, lastDataRow);
 
             if (values == null || values.Count == 0)
             {
