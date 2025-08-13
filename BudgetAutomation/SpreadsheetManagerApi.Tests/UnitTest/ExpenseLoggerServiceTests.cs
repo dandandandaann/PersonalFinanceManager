@@ -45,7 +45,7 @@ public class ExpenseLoggerServiceTests : IDisposable
         _mockSheetsAccessor.Setup(s => s.GetSheetIdByNameAsync(SpreadsheetId, _expectedSheetName))
             .ReturnsAsync(expectedSheetId);
 
-        _mockSheetsAccessor.Setup(s => s.FindFirstEmptyRowAsync(SpreadsheetId, _expectedSheetName, "B", 15))
+        _mockSheetsAccessor.Setup(s => s.FindFirstEmptyRowAsync(SpreadsheetId, _expectedSheetName, "B"))
             .ReturnsAsync(expectedRow);
 
         _mockSheetsAccessor.Setup(s => s.InsertRowAsync(SpreadsheetId, expectedSheetId, expectedRow))
@@ -85,7 +85,7 @@ public class ExpenseLoggerServiceTests : IDisposable
 
         // Verify Sheets Accessor Calls
         _mockSheetsAccessor.Verify(s => s.GetSheetIdByNameAsync(SpreadsheetId, _expectedSheetName), Times.Once);
-        _mockSheetsAccessor.Verify(s => s.FindFirstEmptyRowAsync(SpreadsheetId, _expectedSheetName, "B", 15), Times.Once);
+        _mockSheetsAccessor.Verify(s => s.FindFirstEmptyRowAsync(SpreadsheetId, _expectedSheetName, "B"), Times.Once);
         _mockSheetsAccessor.Verify(s => s.InsertRowAsync(SpreadsheetId, expectedSheetId, expectedRow), Times.Once);
 
         // Verify Batch Update Content
@@ -171,7 +171,7 @@ public class ExpenseLoggerServiceTests : IDisposable
         // Verify no sheet interactions occurred
         _mockSheetsAccessor.Verify(s => s.GetSheetIdByNameAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         _mockSheetsAccessor.Verify(
-            s => s.FindFirstEmptyRowAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()),
+            s => s.FindFirstEmptyRowAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
             Times.Never);
         _mockSheetsAccessor.Verify(s => s.InsertRowAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
         _mockSheetsAccessor.Verify(s => s.BatchUpdateValuesAsync(It.IsAny<string>(), It.IsAny<BatchUpdateValuesRequest>()),
@@ -210,7 +210,7 @@ public class ExpenseLoggerServiceTests : IDisposable
 
         // Verify subsequent sheet interactions did not occur
         _mockSheetsAccessor.Verify(
-            s => s.FindFirstEmptyRowAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()),
+            s => s.FindFirstEmptyRowAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
             Times.Never);
         _mockSheetsAccessor.Verify(s => s.InsertRowAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
         _mockSheetsAccessor.Verify(s => s.BatchUpdateValuesAsync(It.IsAny<string>(), It.IsAny<BatchUpdateValuesRequest>()),

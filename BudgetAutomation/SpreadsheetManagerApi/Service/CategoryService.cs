@@ -123,8 +123,7 @@ public class CategoryService(ISheetsDataAccessor sheetsAccessor, ILogger<Categor
             var nextRow = await sheetsAccessor.FindFirstEmptyRowAsync(
                 spreadsheetId,
                 SpreadsheetConstants.Categorizator.SheetName,
-                SpreadsheetConstants.Categorizator.Column.Category,
-                SpreadsheetConstants.Categorizator.DataStartRow);
+                SpreadsheetConstants.Categorizator.Column.Category);
 
             // Insert a new row at the next available position
             await sheetsAccessor.InsertRowAsync(spreadsheetId, sheetId, nextRow);

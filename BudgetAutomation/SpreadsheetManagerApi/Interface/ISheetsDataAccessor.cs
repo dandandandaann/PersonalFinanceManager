@@ -15,12 +15,6 @@ namespace SpreadsheetManagerApi.Interface
         Task<int> GetSheetIdByNameAsync(string spreadsheetId, string sheetName);
 
         /// <summary>
-        /// Finds the first row index in a specific column that is empty or whitespace, starting from a given row.
-        /// </summary>
-        Task<int> FindFirstEmptyRowAsync(string spreadsheetId, string sheetName, string column, int startRow);
-        Task<int> FindLastItemAsync(string spreadsheetId, string sheetName, string column, int startRow);
-
-        /// <summary>
         /// Inserts a new empty row at the specified index within a sheet.
         /// </summary>
         Task InsertRowAsync(string spreadsheetId, int sheetId, int rowIndex);
@@ -37,5 +31,10 @@ namespace SpreadsheetManagerApi.Interface
         /// Check if we have access to the Spreadsheet
         /// </summary>
         Task<SpreadsheetValidationResponse> ValidateSpreadsheetIdAsync(SpreadsheetValidationRequest request);
+
+        /// <summary>
+        /// Finds the last empty row searching from the bottom of a sheet.
+        /// </summary>
+        Task<int> FindFirstEmptyRowAsync(string spreadsheetId, string sheetName, string column);
     }
 }
