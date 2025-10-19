@@ -151,7 +151,11 @@ public class UserApiClient : IUserApiClient
     {
         var requestUri = new Uri(_httpClient.BaseAddress!, $"/user/{userId}/configuration");
         var configurationUpdateRequest = new UserConfigurationUpdateRequest(
-            new UserConfigurationDto { SpreadsheetId = userConfiguration.SpreadsheetId }
+            new UserConfigurationDto
+            {
+                SpreadsheetId = userConfiguration.SpreadsheetId,
+                ExchangeRate = userConfiguration.ExchangeRate,
+            }
         );
 
         _logger.LogInformation("Sending configuration update request for UserId {UserId}", userId);

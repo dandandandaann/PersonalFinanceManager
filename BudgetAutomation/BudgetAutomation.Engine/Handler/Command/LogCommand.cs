@@ -85,6 +85,7 @@ public partial class LogCommand(
         }
 
         var expense = MapExpenseArguments(expenseArguments);
+        expense.ExchangeRate = UserManagerService.Configuration.ExchangeRate;
 
         try
         {

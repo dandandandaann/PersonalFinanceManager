@@ -38,7 +38,8 @@ public class SpreadsheetManagerApiClient : ISpreadsheetManagerApiClient
             SpreadsheetId = spreadsheetId,
             Description = expense.Description,
             Amount = expense.Amount,
-            Category = expense.Category
+            Category = expense.Category,
+            ExchangeRate = expense.ExchangeRate
         };
         var content = JsonContent.Create(logExpenseRequest, AppJsonSerializerContext.Default.LogExpenseRequest);
 

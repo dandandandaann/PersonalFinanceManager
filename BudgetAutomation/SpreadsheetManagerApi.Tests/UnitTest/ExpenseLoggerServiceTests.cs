@@ -75,7 +75,7 @@ public class ExpenseLoggerServiceTests : IDisposable
         SetupSuccessfulSheetsApiFlow(expectedRow, expectedSheetId);
 
         // Act
-        var result = await _service.LogExpense(SpreadsheetId, description, amount, categoryInput);
+        var result = await _service.LogExpense(SpreadsheetId, description, amount, categoryInput, "");
 
         // Assert
         result.ShouldNotBeNull();
@@ -124,7 +124,7 @@ public class ExpenseLoggerServiceTests : IDisposable
         SetupSuccessfulSheetsApiFlow(expectedRow);
 
         // Act
-        var result = await _service.LogExpense(SpreadsheetId, description, amount, categoryInput);
+        var result = await _service.LogExpense(SpreadsheetId, description, amount, categoryInput, "");
 
         // Assert
         result.ShouldNotBeNull();
@@ -151,7 +151,7 @@ public class ExpenseLoggerServiceTests : IDisposable
         var categoryInput = "Groceries";
 
         // Act
-        async Task Action() => await _service.LogExpense(SpreadsheetId, description, invalidAmount, categoryInput);
+        async Task Action() => await _service.LogExpense(SpreadsheetId, description, invalidAmount, categoryInput, "");
 
         // Assert
         var exception = await Should.ThrowAsync<ArgumentException>((Func<Task>)Action);
@@ -192,7 +192,7 @@ public class ExpenseLoggerServiceTests : IDisposable
             .ThrowsAsync(expectedException);
 
         // Act
-        Func<Task> action = async () => await _service.LogExpense(SpreadsheetId, description, amount, categoryInput);
+        Func<Task> action = async () => await _service.LogExpense(SpreadsheetId, description, amount, categoryInput, "");
 
         // Assert
         var exception = await Should.ThrowAsync<Exception>(action);
@@ -248,7 +248,7 @@ public class ExpenseLoggerServiceTests : IDisposable
         SetupSuccessfulSheetsApiFlow(expectedRow);
 
         // Act
-        var result = await customService.LogExpense(SpreadsheetId, description, amount, userCategory);
+        var result = await customService.LogExpense(SpreadsheetId, description, amount, userCategory, "");
 
         // Assert
         result.ShouldNotBeNull();

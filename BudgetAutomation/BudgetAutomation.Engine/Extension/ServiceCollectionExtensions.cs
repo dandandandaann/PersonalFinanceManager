@@ -92,6 +92,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommand, AddCategoryRuleCommand>();
         services.AddScoped<ICommand, ListCategoriesCommand>();
         services.AddScoped<ICommand, CategoryCommand>();
+        services.AddScoped<ICommand, ExchangeRateCommand>();
+        services.AddScoped<ICommand, UpdateExchangeRateCommand>();
 
         // Register commands alias
         services.AddScoped<AliasCommandBase, RegistrarDespesaAliasCommand>();
@@ -101,6 +103,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AliasCommandBase, AjudaAliasCommand>();
         services.AddScoped<AliasCommandBase, PlanilhaUrlAliasCommand>();
         services.AddScoped<AliasCommandBase, ListarCategoriasAliasCommand>();
+        services.AddScoped<AliasCommandBase, CambioAliasCommand>();
 
         // Register mappers
         services.AddSingleton<ReplyMarkupMapper>();

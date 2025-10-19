@@ -1,4 +1,5 @@
-﻿using BudgetAutomation.Engine.Interface;
+﻿using System.Globalization;
+using BudgetAutomation.Engine.Interface;
 using SharedLibrary.Model;
 
 namespace BudgetAutomation.Engine.Service;
@@ -44,7 +45,10 @@ public class UserManagerService(IUserApiClient userApiClient) : IUserManagerServ
         Current = new User(registeredUser.UserId, telegramId: telegramId);
 
         if (registeredUser.userConfiguration != null)
+        {
             Current.Configuration.SpreadsheetId = registeredUser.userConfiguration.SpreadsheetId;
+            Current.Configuration.ExchangeRate = registeredUser.userConfiguration.ExchangeRate;
+        }
 
         return true;
     }
@@ -58,5 +62,23 @@ public class UserManagerService(IUserApiClient userApiClient) : IUserManagerServ
 
         return userApiClient.UpdateUserConfigurationAsync(Current.UserId, Current.Configuration, cancellationToken)
             .GetAwaiter().GetResult();
+    }
+
+    public string UpdateExchangeRate(string newExchangeRate, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(Current?.UserId))
+            throw new UnauthorizedAccessException();
+
+        // Use CultureInfo.InvariantCulture for reliable decimal parsing
+        if (!double.TryParse(newExchangeRate.Replace(',', '.'), CultureInfo.InvariantCulture, out var doubleAmount)) // This will break if user sends 1,000.00
+        {
+            throw new ArgumentException("Invalid exchange rate format.", nameof(newExchangeRate));
+        }
+
+        Current.Configuration.ExchangeRate = doubleAmount.ToString(CultureInfo.InvariantCulture).Replace(",", "").Replace(".", ",");
+
+        userApiClient.UpdateUserConfigurationAsync(Current.UserId, Current.Configuration, cancellationToken).GetAwaiter().GetResult();
+
+        return Current.Configuration.ExchangeRate;
     }
 }

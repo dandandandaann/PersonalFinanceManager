@@ -16,12 +16,14 @@ public class StartCommand(ISenderGateway sender) : ICommand
 
     public async Task<Message> HandleAsync(Message message, CancellationToken cancellationToken = default)
     {
-        var startMessage = new StringBuilder("Escolha uma das opções");
+        var startMessage = new StringBuilder();
+
+        startMessage.AppendLine("Escolha uma das opções");
 
         var keyboardRows = new List<List<InlineKeyboardButton>>();
         var buttons = new List<InlineKeyboardButton>();
 
-        if (!UserManagerService.UserSignedIn)
+        if (!UserManagerService.UserSignedIn) // New chat without a user
         {
             startMessage.Clear();
             startMessage.AppendLine($"{Utility.GetGreetingByTimeOfDay()}!");
@@ -32,7 +34,7 @@ public class StartCommand(ISenderGateway sender) : ICommand
 
             keyboardRows.Add([button]);
         }
-        else if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId))
+        else if (string.IsNullOrWhiteSpace(UserManagerService.Configuration.SpreadsheetId)) // User without spreadsheet
         {
             startMessage.Clear();
             startMessage.AppendLine("Agora você precisa configurar sua planilha.");
@@ -49,7 +51,7 @@ public class StartCommand(ISenderGateway sender) : ICommand
 
             keyboardRows.Add([button]);
         }
-        else
+        else // Normal users
         {
             var logButton = InlineKeyboardButton.WithCallbackData("💳 Registrar despesa", $"/{LogCommand.StaticCommandName}");
             var lastItemButton =
@@ -57,9 +59,11 @@ public class StartCommand(ISenderGateway sender) : ICommand
             var undoButton =
                 InlineKeyboardButton.WithCallbackData("🗑️ Deletar última despesa", $"/{UndoCommand.StaticCommandName}");
             var categoryButton =
-                InlineKeyboardButton.WithCallbackData("🗄 Categorias", $"/{CategoryCommand.StaticCommandName}");
+                InlineKeyboardButton.WithCallbackData("🗄️ Categorias", $"/{CategoryCommand.StaticCommandName}");
+            var exchangeRateButton =
+                InlineKeyboardButton.WithCallbackData("💹 Câmbio", $"/{ExchangeRateCommand.StaticCommandName}");
 
-            keyboardRows.AddRange([[logButton], [lastItemButton], [undoButton], [categoryButton]]);
+            keyboardRows.AddRange([[logButton], [lastItemButton], [undoButton], [categoryButton], [exchangeRateButton]]);
         }
 
         var helpButton = InlineKeyboardButton.WithCallbackData("❓ Ajuda", $"/{HelpCommand.StaticCommandName}");

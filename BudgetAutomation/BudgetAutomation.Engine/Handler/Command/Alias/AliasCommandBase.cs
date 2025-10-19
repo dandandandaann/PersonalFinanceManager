@@ -49,7 +49,7 @@ public abstract class AliasCommandBase(IEnumerable<ICommand> commandImplementati
 
     protected static string GetCommandNameFromType(Type type)
     {
-        var classSuffix = "CommandAlias";
+        var classSuffix = "AliasCommand";
         string name = type.Name;
         if (name.EndsWith(classSuffix, StringComparison.OrdinalIgnoreCase))
         {
