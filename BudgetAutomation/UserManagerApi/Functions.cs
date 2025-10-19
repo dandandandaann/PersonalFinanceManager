@@ -132,7 +132,11 @@ public class Functions(IUserService userService)
         try
         {
             var updatedUser = await userService.UpdateUserConfigurationAsync(userId,
-                new UserConfiguration { SpreadsheetId = request.UserConfiguration.SpreadsheetId }, logger
+                new UserConfiguration
+                {
+                    SpreadsheetId = request.UserConfiguration.SpreadsheetId,
+                    ExchangeRate = request.UserConfiguration.ExchangeRate
+                }, logger
             );
 
             if (updatedUser == null)
@@ -206,9 +210,11 @@ public class Functions(IUserService userService)
             }
 
             // TODO: create a data mapper
-            var userConfiguration = new UserConfigurationDto();
-            if (!string.IsNullOrEmpty(user.Configuration.SpreadsheetId))
-                userConfiguration.SpreadsheetId = user.Configuration.SpreadsheetId;
+            var userConfiguration = new UserConfigurationDto
+            {
+                SpreadsheetId = user.Configuration.SpreadsheetId,
+                ExchangeRate = user.Configuration.ExchangeRate
+            };
 
             return Results.Ok(new UserGetResponse
                 {

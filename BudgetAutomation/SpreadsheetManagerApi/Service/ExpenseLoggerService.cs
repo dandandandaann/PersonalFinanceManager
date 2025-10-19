@@ -11,8 +11,9 @@ public class ExpenseLoggerService(
     ICategoryService categoryService,
     ILogger<ExpenseLoggerService> logger)
 {
-    public async Task<Expense> LogExpense(string spreadsheetId, string description, string amount, string categoryInput)
+    public async Task<Expense> LogExpense(string spreadsheetId, string description, string amount, string categoryInput, string? exchangeRate)
     {
+
         var expense = new Expense
         {
             Description = description,
@@ -20,16 +21,16 @@ public class ExpenseLoggerService(
         };
 
         // Use CultureInfo.InvariantCulture for reliable decimal parsing
-        if (!double.TryParse(amount.Replace(',', '.'), CultureInfo.InvariantCulture, out var doubleAmount))
+        if (!double.TryParse(amount.Replace(',', '.'), CultureInfo.InvariantCulture, out var doubleAmount)) // This will break if user sends 1,000.00
         {
             logger.LogError("Invalid amount format received: '{Amount}'.", amount);
             throw new ArgumentException("Invalid amount format.", nameof(amount));
         }
 
-        doubleAmount = Math.Round(doubleAmount, 2);
+        var hasExchangeRateValue = double.TryParse(exchangeRate?.Replace(',', '.'), CultureInfo.InvariantCulture, out double exchangeRateValue);
+        exchangeRateValue = hasExchangeRateValue ? exchangeRateValue : 1d;
 
-        // Parse amount manually to pt-BR to send back in the response
-        expense.Amount = doubleAmount.ToString("0.00", CultureInfo.InvariantCulture).Replace(",", "").Replace(".", ",");
+        expense.Amount = CurrencyFormatBr(doubleAmount * exchangeRateValue);
 
         var sheetName = SpreadsheetConstants.Transactions.SheetName;
         logger.LogInformation("Starting expense logging process in spreadsheet '{SpreadsheetId}'.", spreadsheetId);
@@ -58,6 +59,10 @@ public class ExpenseLoggerService(
                 {
                     // let spreadsheet format the number
                     Range = $"{sheetName}!{SpreadsheetConstants.Transactions.Column.Amount}{row}", Values = Value(doubleAmount)
+                },
+                new()
+                {
+                    Range = $"{sheetName}!{SpreadsheetConstants.Transactions.Column.ExchangeRate}{row}", Values = Value(hasExchangeRateValue ? exchangeRateValue : "")
                 },
                 new()
                 {
@@ -99,6 +104,12 @@ public class ExpenseLoggerService(
             logger.LogError(ex, "Failed to log expense for description '{Description}'.", description);
             throw;
         }
+    }
+
+    // Parse amount manually to pt-BR to send back in the response
+    private string CurrencyFormatBr(double amount)
+    {
+        return Math.Round(amount, 2).ToString("0.00", CultureInfo.InvariantCulture).Replace(",", "").Replace(".", ",");
     }
 
     // Simple static helper to wrap value in the required list structure

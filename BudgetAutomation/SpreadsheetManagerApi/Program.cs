@@ -46,7 +46,8 @@ app.MapPut("/log-expense",
                 request.SpreadsheetId,
                 request.Description,
                 request.Amount,
-                request.Category
+                request.Category,
+                request.ExchangeRate
             );
 
             return Results.Ok(new LogExpenseResponse { Success = true, expense = expense });
