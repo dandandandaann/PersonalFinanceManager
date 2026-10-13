@@ -18,7 +18,7 @@
         }
       },
       "Properties": {
-        "Runtime": "dotnet8",
+        "Runtime": "dotnet10",
         "CodeUri": ".",
         "MemorySize": 128,
         "Timeout": 3,
@@ -54,7 +54,7 @@
         }
       },
       "Properties": {
-        "Runtime": "dotnet8",
+        "Runtime": "dotnet10",
         "CodeUri": ".",
         "MemorySize": 128,
         "Timeout": 15,
@@ -91,7 +91,7 @@
         }
       },
       "Properties": {
-        "Runtime": "dotnet8",
+        "Runtime": "dotnet10",
         "CodeUri": ".",
         "MemorySize": 128,
         "Timeout": 15,
@@ -127,7 +127,7 @@
         }
       },
       "Properties": {
-        "Runtime": "dotnet8",
+        "Runtime": "dotnet10",
         "CodeUri": ".",
         "MemorySize": 128,
         "Timeout": 15,
@@ -163,7 +163,7 @@
         }
       },
       "Properties": {
-        "Runtime": "dotnet8",
+        "Runtime": "dotnet10",
         "CodeUri": ".",
         "MemorySize": 128,
         "Timeout": 15,
@@ -199,7 +199,7 @@
         }
       },
       "Properties": {
-        "Runtime": "dotnet8",
+        "Runtime": "dotnet10",
         "CodeUri": ".",
         "MemorySize": 128,
         "Timeout": 15,
@@ -235,7 +235,7 @@
         }
       },
       "Properties": {
-        "Runtime": "dotnet8",
+        "Runtime": "dotnet10",
         "CodeUri": ".",
         "MemorySize": 128,
         "Timeout": 15,

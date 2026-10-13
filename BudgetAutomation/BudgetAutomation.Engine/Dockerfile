@@ -1,5 +1,5 @@
 # Stage 1: Build stage (SDK + AOT prerequisites)
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS build
 
 # Install Native AOT prerequisites for Linux (clang and zlib headers)
 RUN apt-get update && apt-get install -y clang zlib1g-dev --no-install-recommends \
@@ -28,7 +28,7 @@ RUN dotnet publish "BudgetAutomation.Engine.csproj" \
     /p:InvariantGlobalization=true
 
 # Stage 2: Final runtime stage (Minimal dependencies for ARM64)
-FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy AS final
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-noble AS final
 
 WORKDIR /app
 
