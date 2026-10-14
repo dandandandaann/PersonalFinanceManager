@@ -7,6 +7,11 @@
 secrets/
 *.rsuser
 *.suo
+
+# Local agent/session scratch space
+.tmp/
+
+*.user
 *.user
 *.userosscache
 *.sln.docstates
